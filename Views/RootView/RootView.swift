@@ -15,7 +15,7 @@ struct RootView: View {
         Group {
             if authManager.user != nil {
                 // User is logged in
-                HomeScreen()
+                ContentView()
                     .transition(.move(edge: .trailing)) // Smooth slide animation
             } else {
                 // User is NOT logged in
