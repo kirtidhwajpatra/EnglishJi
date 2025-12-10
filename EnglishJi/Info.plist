@@ -15,11 +15,16 @@
 			</array>
 		</dict>
 	</array>
+	<key>GIDClientID</key>
+	<string>1013892999740-l6jqtjf7eeopjq0aa965blrq4sdq43di.apps.googleusercontent.com</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>FuturaDemiCTT</string>
+		<string>Futura-CondensedExtraBold</string>
 	</array>
-	<key>GIDClientID</key>
-	<string>1013892999740-l6jqtjf7eeopjq0aa965blrq4sdq43di.apps.googleusercontent.com</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+	</array>
 </dict>
 </plist>

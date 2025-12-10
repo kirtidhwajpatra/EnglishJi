@@ -1,0 +1,14 @@
+//
+//  WebRTCConfig.xcconfig
+//  EnglishJi
+//
+//  Created by Mr SwiftUI on 09/12/25.
+//
+
+// Fix WebRTC "non-modular includes" errors
+CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES
+CLANG_ENABLE_MODULES = YES
+
+// Ensure WebRTC C++ modules compile
+CPLUSPLUS_LANGUAGE_STANDARD = gnu++17
+CPLUSPLUS_LIBRARY = libc++
