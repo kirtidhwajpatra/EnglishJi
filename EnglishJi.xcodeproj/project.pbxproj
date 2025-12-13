@@ -9,7 +9,7 @@
 /* Begin PBXBuildFile section */
 		78013F552EE8856800A024FB /* WebRTC.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 78013F532EE884A800A024FB /* WebRTC.xcframework */; };
 		78013F562EE8856800A024FB /* WebRTC.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 78013F532EE884A800A024FB /* WebRTC.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		78013F592EE9023D00A024FB /* SginalingClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78013F582EE9023D00A024FB /* SginalingClient.swift */; };
+		78013F592EE9023D00A024FB /* SignalingClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78013F582EE9023D00A024FB /* SignalingClient.swift */; };
 		78013F5B2EE9027300A024FB /* WebRTCManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78013F5A2EE9027300A024FB /* WebRTCManager.swift */; };
 		78013F5D2EE903AE00A024FB /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 78013F5C2EE903AE00A024FB /* FirebaseFirestore */; };
 		784D28B42EE84C4D003F70DF /* FuturaCondensedExtraBoldNormal.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 784D28B32EE84C4D003F70DF /* FuturaCondensedExtraBoldNormal.ttf */; };
@@ -40,7 +40,7 @@
 
 /* Begin PBXFileReference section */
 		78013F532EE884A800A024FB /* WebRTC.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = WebRTC.xcframework; sourceTree = "<group>"; };
-		78013F582EE9023D00A024FB /* SginalingClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SginalingClient.swift; sourceTree = "<group>"; };
+		78013F582EE9023D00A024FB /* SignalingClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalingClient.swift; sourceTree = "<group>"; };
 		78013F5A2EE9027300A024FB /* WebRTCManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRTCManager.swift; sourceTree = "<group>"; };
 		784D28B32EE84C4D003F70DF /* FuturaCondensedExtraBoldNormal.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = FuturaCondensedExtraBoldNormal.ttf; sourceTree = "<group>"; };
 		785E5A762EE8640300720C40 /* WebRTCConfig.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = WebRTCConfig.xcconfig; sourceTree = "<group>"; };
@@ -145,7 +145,7 @@
 				787109652EE438580002AAD5 /* EnglishJi.app */,
 				785E5A762EE8640300720C40 /* WebRTCConfig.xcconfig */,
 				78013F532EE884A800A024FB /* WebRTC.xcframework */,
-				78013F582EE9023D00A024FB /* SginalingClient.swift */,
+				78013F582EE9023D00A024FB /* SignalingClient.swift */,
 				78B3164E2EE9ED70002DCA00 /* WebRTCClient.swift */,
 				78013F5A2EE9027300A024FB /* WebRTCManager.swift */,
 				787109242EE411D30002AAD5 /* EnglishJiApp.swift */,
@@ -251,7 +251,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				78013F5B2EE9027300A024FB /* WebRTCManager.swift in Sources */,
-				78013F592EE9023D00A024FB /* SginalingClient.swift in Sources */,
+				78013F592EE9023D00A024FB /* SignalingClient.swift in Sources */,
 				787109252EE411D30002AAD5 /* EnglishJiApp.swift in Sources */,
 				78B3164F2EE9ED70002DCA00 /* WebRTCClient.swift in Sources */,
 			);

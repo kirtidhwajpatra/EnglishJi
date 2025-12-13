@@ -22,7 +22,9 @@
 		<string>FuturaDemiCTT</string>
 		<string>Futura-CondensedExtraBold</string>
 	</array>
-	<key>UIBackgroundModes</key>
+	        <key>NSMicrophoneUsageDescription</key>
+        <string>We need access to your microphone for calls.</string>
+        <key>UIBackgroundModes</key>
 	<array>
 		<string>audio</string>
 	</array>

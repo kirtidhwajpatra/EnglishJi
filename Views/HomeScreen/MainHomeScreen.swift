@@ -7,6 +7,7 @@
 
 import SwiftUI
 import AVFoundation
+import FirebaseAuth
 
 // MARK: - Models / State
 
@@ -22,6 +23,7 @@ enum AppPhase {
 struct ContentView: View {
     // This state variable controls the entire flow of the application.
     @State private var currentPhase: AppPhase = .home
+    @StateObject private var webRTCManager = WebRTCManager()
     @Namespace private var animationNamespace
 
     var body: some View {
@@ -30,20 +32,17 @@ struct ContentView: View {
             Color(UIColor.systemGroupedBackground)
                 .ignoresSafeArea()
             
-            
-
-
             // Main Switcher Logic
             Group {
                 switch currentPhase {
                 case .home:
-                    HomeView(currentPhase: $currentPhase)
+                    HomeView(currentPhase: $currentPhase, webRTCManager: webRTCManager)
                         .transition(.opacity.combined(with: .move(edge: .leading)))
                 case .searching:
-                    SearchingView(currentPhase: $currentPhase)
+                    SearchingView(currentPhase: $currentPhase, webRTCManager: webRTCManager)
                         .transition(.opacity.combined(with: .scale(scale: 0.95)))
                 case .inCall:
-                    CallInProgressView(currentPhase: $currentPhase)
+                    CallInProgressView(currentPhase: $currentPhase, webRTCManager: webRTCManager)
                         .transition(.move(edge: .bottom))
                 }
             }
@@ -54,6 +53,17 @@ struct ContentView: View {
                 .padding(.top, 700)
                 
         }
+        // REAL LOGIC: React to WebRTC State Changes
+        .onChange(of: webRTCManager.connectionState) { newState in
+            print("UI Received State Update: \(newState)")
+            
+            if newState == "Connected" {
+                currentPhase = .inCall
+            }
+            else if newState == "Disconnected" || newState == "Failed" {
+                currentPhase = .home
+            }
+        }
     }
 }
 
@@ -61,6 +71,7 @@ struct ContentView: View {
 
 struct HomeView: View {
     @Binding var currentPhase: AppPhase
+    @ObservedObject var webRTCManager: WebRTCManager
 
     var body: some View {
         VStack(spacing: 30) {
@@ -108,7 +119,6 @@ struct HomeView: View {
     }
 
     func startSearching() {
-        // Simple haptic feedback for button press
         let generator = UIImpactFeedbackGenerator(style: .medium)
         generator.impactOccurred()
         
@@ -122,9 +132,8 @@ struct HomeView: View {
 
 struct SearchingView: View {
     @Binding var currentPhase: AppPhase
-    // State to animate dots or show different text over time
-    @State private var searchStatusText = "Finding a conversation partner..."
-
+    @ObservedObject var webRTCManager: WebRTCManager
+    
     var body: some View {
         VStack(spacing: 40) {
             Spacer()
@@ -140,14 +149,28 @@ struct SearchingView: View {
                     .tint(.blue)
             }
 
-            Text(searchStatusText)
+            // REAL STATUS FROM MANAGER
+            Text("\(webRTCManager.connectionState)")
                 .font(.headline)
                 .foregroundColor(.secondary)
+            
+            // DEBUG LOG
+            ScrollView {
+                Text("\(webRTCManager.debugLog)")
+                    .font(.caption2)
+                    .foregroundColor(.gray)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding()
+            }
+            .frame(height: 150)
+            .background(Color.black.opacity(0.05))
+            .cornerRadius(10)
             
             Spacer()
 
             // Cancel Button
             Button("Cancel Search") {
+                webRTCManager.disconnect()
                 currentPhase = .home
             }
             .foregroundColor(.red)
@@ -155,23 +178,9 @@ struct SearchingView: View {
         }
         .padding()
         .onAppear {
-            simulateFindingMatch()
-        }
-    }
-
-    /// Simulates backend matchmaking logic
-    func simulateFindingMatch() {
-        // Delay for 2 seconds to simulate searching, then transition to call
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            // Ensure we are still on the searching screen before transitioning
-            // (in case they hit cancel quickly)
-            if currentPhase == .searching {
-                searchStatusText = "Partner found! Connecting..."
-                
-                // Slight delay further before showing the call screen
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                   currentPhase = .inCall
-                }
+            if webRTCManager.connectionState == "Idle" || webRTCManager.connectionState == "Disconnected" {
+                let userId = AuthManager.shared.user?.uid ?? UUID().uuidString
+                webRTCManager.startMatchmaking(userId: userId)
             }
         }
     }
@@ -181,17 +190,15 @@ struct SearchingView: View {
 
 struct CallInProgressView: View {
     @Binding var currentPhase: AppPhase
+    @ObservedObject var webRTCManager: WebRTCManager
     
     @State private var isMuted = false
-    @State private var isSpeakerOn = false
+    @State private var isSpeakerOn = true
     @State private var callDurationSeconds = 0
     @State private var timer: Timer? = nil
 
     var body: some View {
         VStack {
-            
-            
-            // Top Spacer to push content down
             Spacer().frame(height: 60)
 
             // Partner Info area
@@ -208,30 +215,27 @@ struct CallInProgressView: View {
                     .font(.subheadline)
                     .foregroundColor(.gray)
 
-                Text("Maria S.") // Placeholder name
+                Text("Language Partner")
                     .font(.title)
                     .fontWeight(.bold)
 
-                // Call Timer
                 Text(formattedDuration)
                     .font(.title2)
-                    .monospacedDigit() // Keeps numbers from jumping around
+                    .monospacedDigit()
                     .foregroundColor(.gray)
             }
 
             Spacer()
 
-            // Call Controls Container
+            // Call Controls
             HStack(spacing: 40) {
-                
-                // Mute Button
                 CallControlButton(icon: isMuted ? "mic.slash.fill" : "mic.fill",
                                   label: "Mute",
                                   isActive: isMuted) {
                     isMuted.toggle()
+                    webRTCManager.toggleMute(isMuted: isMuted)
                 }
 
-                // End Call Button (Prominent)
                 Button(action: endCall) {
                     Image(systemName: "phone.down.fill")
                         .font(.title)
@@ -242,27 +246,17 @@ struct CallInProgressView: View {
                         .shadow(color: .red.opacity(0.4), radius: 10)
                 }
 
-                // Speaker Button
                 CallControlButton(icon: isSpeakerOn ? "speaker.wave.3.fill" : "speaker.fill",
                                   label: "Speaker",
                                   isActive: isSpeakerOn) {
                     isSpeakerOn.toggle()
                 }
-                
-                
             }
             .padding(.bottom, 50)
-            
-            
         }
         .background(.white)
-        .onAppear {
-            startTimer()
-        }
-        .onDisappear {
-            stopTimer()
-        }
-        
+        .onAppear { startTimer() }
+        .onDisappear { stopTimer() }
     }
 
     // MARK: - Call Logic Helpers
@@ -288,11 +282,10 @@ struct CallInProgressView: View {
         let generator = UINotificationFeedbackGenerator()
         generator.notificationOccurred(.success)
         stopTimer()
-        currentPhase = .home
+        webRTCManager.disconnect()
     }
 }
 
-// Helper component for square call buttons (Mute/Speaker)
 struct CallControlButton: View {
     let icon: String
     let label: String
@@ -306,7 +299,6 @@ struct CallControlButton: View {
                     .font(.title2)
                     .foregroundColor(isActive ? .white : .primary)
                     .frame(width: 60, height: 60)
-                    // Change background color if active
                     .background(isActive ? Color.blue : Color.gray.opacity(0.15))
                     .clipShape(Circle())
                 
@@ -318,15 +310,12 @@ struct CallControlButton: View {
     }
 }
 
-
 struct SignOutView: View {
+    // Uses the Singleton accessed from your other file
     @ObservedObject var authManager = AuthManager.shared
     
     var body: some View {
-        // SIGN OUT BUTTON
         Button(action: {
-            // This single line triggers the logout
-            // The RootView will detect this and automatically switch back to Login screen
             authManager.signOut()
         }) {
             Text("Sign Out")
@@ -338,13 +327,8 @@ struct SignOutView: View {
                 .cornerRadius(25)
         }
         .padding(.horizontal, 100)
-
     }
-    }
-
-
-
-// MARK: - Preview
+}
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
