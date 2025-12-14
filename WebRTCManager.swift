@@ -1,147 +1,171 @@
 import Foundation
 import WebRTC
-import Combine
 import AVFoundation
+import Combine
 
-class WebRTCManager: ObservableObject {
-    
-    // MARK: - Dependencies
-    private let signalingClient = SignalingClient()
-    private let webRTCClient = WebRTCClient() // Assumes WebRTCClient is initialized properly
-    
-    // MARK: - State Properties
+@MainActor
+final class WebRTCManager: ObservableObject {
+
+    // MARK: - UI Bindings
     @Published var connectionState: String = "Idle"
-    @Published var debugLog: String = "Ready..."
-    
-    private var currentRoomId: String?
-    private var isCaller: Bool = false
-    private var myUserId: String?
-    
+    @Published var debugLog: String = ""
+
+    // MARK: - Core
+    private let rtc = WebRTCClient()
+    private let signaling = SignalingClient()
+
+    // MARK: - State
+    private var isConnecting = false
+    private var isRemoteDescriptionSet = false
+    private var pendingICE: [RTCIceCandidate] = []
+
+    // MARK: - Init
     init() {
-        self.webRTCClient.delegate = self
-        // Redirect Signaling logs to our debug log
-        self.signalingClient.onLog = { [weak self] message in
-            DispatchQueue.main.async {
-                self?.debugLog += "\n\(message)"
+        AudioSessionManager.configure()
+        log("Manager initialized")
+
+        rtc.onIceCandidate = { [weak self] candidate in
+            guard let self else { return }
+
+            if self.isRemoteDescriptionSet {
+                self.sendICE(candidate)
+            } else {
+                self.pendingICE.append(candidate)
+                self.log("Queued ICE")
             }
         }
+
+        signaling.onMessage = handleSignal
     }
-    
+
+    // MARK: - Public API (UI calls)
+
     func startMatchmaking(userId: String) {
-        self.myUserId = userId
-        self.connectionState = "Searching..."
-        self.debugLog = "🔍 Starting matchmaking for \(userId)..."
-        
-        signalingClient.startMatchmaking(userId: userId) { [weak self] (roomId, isCaller) in
-            guard let self = self else { return }
-            self.currentRoomId = roomId
-            self.isCaller = isCaller
-            
-            DispatchQueue.main.async {
-                self.connectionState = "Connecting..."
-                self.debugLog += "\n✅ Match Found! Room: \(roomId)"
-                self.startCall(roomId: roomId, isCaller: isCaller)
-            }
-        }
+        guard !isConnecting else { return }
+        isConnecting = true
+
+        resetState()
+
+        connectionState = "Searching"
+        log("Connecting signaling…")
+
+        signaling.connect()
+        signaling.join()
     }
-    
-    func cancelMatchmaking() {
-        if let userId = myUserId {
-            signalingClient.cancelMatchmaking(userId: userId)
-        }
-        disconnect()
-    }
-    
+
     func disconnect() {
-        if let roomId = currentRoomId {
-            // Optional: Send "bye" message
-            signalingClient.deleteCall(sessionId: roomId)
-        }
-        
-        webRTCClient.close()
-        signalingClient.cancelListeners()
-        
-        self.currentRoomId = nil
-        self.connectionState = "Disconnected"
-        self.debugLog += "\n🛑 Disconnected."
+        isConnecting = false
+        connectionState = "Disconnected"
+        log("Disconnected")
     }
-    
+
     func toggleMute(isMuted: Bool) {
-        webRTCClient.muteAudio(isMuted)
-        print("Microphone is now: \(isMuted ? "Muted" : "Unmuted")")
+        rtc.setMuted(isMuted)
+        log(isMuted ? "Mic muted" : "Mic unmuted")
     }
-    
-    // MARK: - Private Call Logic
-    
-    private func startCall(roomId: String, isCaller: Bool) {
-        // 1. Listen for ICE Candidates
-        signalingClient.listenForRemoteCandidates(sessionId: roomId, isCaller: isCaller) { [weak self] candidate in
-            self?.webRTCClient.set(remoteCandidate: candidate) { error in
-                if let error = error { print("❌ Error setting remote candidate: \(error)") }
-            }
-        }
-        
-        // 2. Handle SDP Exchange
-        if isCaller {
-            // I am CALLER: Create Offer
-            webRTCClient.offer { [weak self] sdp in
-                self?.signalingClient.send(sdp: sdp, sessionId: roomId)
-            }
-            
-            // Listen for Answer
-            signalingClient.listenForRemoteSdp(sessionId: roomId, isCaller: isCaller) { [weak self] sdp in
-                guard let sdp = sdp else { return }
-                self?.webRTCClient.set(remoteSdp: sdp) { error in
-                   if let error = error { print("❌ Error setting remote answer: \(error)") }
+
+    // MARK: - Signaling
+
+    private func handleSignal(_ json: [String: Any]) {
+        guard let type = json["type"] as? String else { return }
+
+        switch type {
+
+        case "matched":
+            let role = json["role"] as? String ?? "callee"
+            log("Matched as \(role)")
+            connectionState = "Connecting"
+
+            if role == "caller" {
+                rtc.createOffer { offer in
+                    self.signaling.send([
+                        "type": "offer",
+                        "sdp": offer.sdp
+                    ])
+                    self.log("Sent offer")
                 }
             }
-            
-        } else {
-            // I am CALLEE: Listen for Offer
-            signalingClient.listenForRemoteSdp(sessionId: roomId, isCaller: isCaller) { [weak self] sdp in
-                guard let sdp = sdp else { return }
-                
-                // Set Remote Offer
-                self?.webRTCClient.set(remoteSdp: sdp) { error in
-                    if let error = error {
-                        print("❌ Error setting remote offer: \(error)")
-                        return
-                    }
-                    
-                    // Create Answer
-                    self?.webRTCClient.answer { [weak self] answerSdp in
-                        self?.signalingClient.send(sdp: answerSdp, sessionId: roomId)
-                    }
-                }
+
+        case "offer":
+            log("Received offer")
+
+            let sdp = RTCSessionDescription(
+                type: .offer,
+                sdp: json["sdp"] as! String
+            )
+
+            rtc.setRemote(sdp)
+            isRemoteDescriptionSet = true
+            flushICE()
+
+            rtc.createAnswer { answer in
+                self.signaling.send([
+                    "type": "answer",
+                    "sdp": answer.sdp
+                ])
+                self.log("Sent answer")
+                self.connectionState = "Connected"
             }
+
+        case "answer":
+            log("Received answer")
+
+            let sdp = RTCSessionDescription(
+                type: .answer,
+                sdp: json["sdp"] as! String
+            )
+
+            rtc.setRemote(sdp)
+            isRemoteDescriptionSet = true
+            flushICE()
+
+            connectionState = "Connected"
+
+        case "candidate":
+            let candidate = RTCIceCandidate(
+                sdp: json["candidate"] as! String,
+                sdpMLineIndex: json["sdpMLineIndex"] as! Int32,
+                sdpMid: json["sdpMid"] as? String
+            )
+            rtc.addCandidate(candidate)
+            log("Added ICE")
+
+        default:
+            break
         }
+    }
+
+    // MARK: - ICE
+
+    private func sendICE(_ candidate: RTCIceCandidate) {
+        signaling.send([
+            "type": "candidate",
+            "candidate": candidate.sdp,
+            "sdpMid": candidate.sdpMid ?? "",
+            "sdpMLineIndex": candidate.sdpMLineIndex
+        ])
+        log("Sent ICE")
+    }
+
+    private func flushICE() {
+        guard !pendingICE.isEmpty else { return }
+        pendingICE.forEach { sendICE($0) }
+        pendingICE.removeAll()
+        log("Flushed ICE")
+    }
+
+    // MARK: - Reset
+
+    private func resetState() {
+        isRemoteDescriptionSet = false
+        pendingICE.removeAll()
+    }
+
+    // MARK: - Logging
+
+    private func log(_ message: String) {
+        debugLog += "• \(message)\n"
+        print("[WebRTC]", message)
     }
 }
 
-extension WebRTCManager: WebRTCClientDelegate {
-    func webRTCClient(_ client: WebRTCClient, didDiscoverLocalCandidate candidate: RTCIceCandidate) {
-        // Send local candidate to Firestore
-        if let roomId = currentRoomId {
-            signalingClient.send(candidate: candidate, sessionId: roomId, isCaller: self.isCaller)
-        }
-    }
-    
-    func webRTCClient(_ client: WebRTCClient, didChangeConnectionState state: RTCIceConnectionState) {
-        DispatchQueue.main.async {
-            switch state {
-            case .connected, .completed:
-                self.connectionState = "Connected"
-            case .disconnected, .failed, .closed:
-                self.connectionState = "Disconnected"
-            case .checking:
-                self.connectionState = "Connecting..."
-            default:
-                break
-            }
-        }
-    }
-    
-    func webRTCClient(_ client: WebRTCClient, didReceiveData data: Data) {
-        // Handle data channel if needed
-    }
-}

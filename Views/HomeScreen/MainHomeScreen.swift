@@ -121,11 +121,15 @@ struct HomeView: View {
     func startSearching() {
         let generator = UIImpactFeedbackGenerator(style: .medium)
         generator.impactOccurred()
-        
+
+        let userId = AuthManager.shared.user?.uid ?? UUID().uuidString
+        webRTCManager.startMatchmaking(userId: userId)
+
         withAnimation {
             currentPhase = .searching
         }
     }
+
 }
 
 // MARK: - 2. Searching Screen View
