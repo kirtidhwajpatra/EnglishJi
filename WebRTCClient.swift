@@ -78,6 +78,12 @@ final class WebRTCClient: NSObject {
     func addCandidate(_ candidate: RTCIceCandidate) {
         peer.add(candidate, completionHandler: { _ in })
     }
+    
+    func close() {
+        audioTrack = nil
+        peer.close()
+    }
+
 }
 
 // MARK: - RTCPeerConnectionDelegate

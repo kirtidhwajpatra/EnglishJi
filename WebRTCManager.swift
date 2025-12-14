@@ -54,10 +54,17 @@ final class WebRTCManager: ObservableObject {
     }
 
     func disconnect() {
-        isConnecting = false
-        connectionState = "Disconnected"
-        log("Disconnected")
+        guard isConnecting else { return }
+
+        log("Ending call")
+
+        signaling.send([
+            "type": "end"
+        ])
+
+        cleanup()
     }
+
 
     func toggleMute(isMuted: Bool) {
         rtc.setMuted(isMuted)
@@ -129,6 +136,11 @@ final class WebRTCManager: ObservableObject {
             )
             rtc.addCandidate(candidate)
             log("Added ICE")
+            
+        case "end":
+            log("Remote ended call")
+            cleanup()
+
 
         default:
             break
@@ -160,6 +172,8 @@ final class WebRTCManager: ObservableObject {
         isRemoteDescriptionSet = false
         pendingICE.removeAll()
     }
+    
+    
 
     // MARK: - Logging
 
@@ -167,5 +181,19 @@ final class WebRTCManager: ObservableObject {
         debugLog += "• \(message)\n"
         print("[WebRTC]", message)
     }
+    
+    
+    private func cleanup() {
+        isConnecting = false
+        isRemoteDescriptionSet = false
+        pendingICE.removeAll()
+
+        rtc.close()
+        signaling.close()
+
+        connectionState = "Disconnected"
+        log("Call cleaned up")
+    }
+
 }
 

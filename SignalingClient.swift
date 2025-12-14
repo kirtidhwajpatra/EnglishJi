@@ -44,5 +44,11 @@ final class SignalingClient {
             self?.listen()
         }
     }
+    
+    func close() {
+        socket?.cancel(with: .normalClosure, reason: nil)
+        socket = nil
+    }
+
 }
 
