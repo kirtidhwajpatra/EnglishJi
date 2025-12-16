@@ -1,40 +1,54 @@
 const WebSocket = require("ws");
-const wss = new WebSocket.Server({ port: 8080 });
 
-let waiting = null;
+const wss = new WebSocket.Server({ port: 8080 });
+let waitingClients = [];
+
+console.log("Signaling server running on ws://localhost:8080");
 
 wss.on("connection", ws => {
-    console.log("🟢 Client connected");
+    console.log("Client connected");
 
-    ws.on("message", message => {
-        const data = JSON.parse(message);
+    ws.on("message", data => {
+        const message = JSON.parse(data);
 
-        // JOIN
-        if (data.type === "join") {
-            if (waiting) {
-                ws.peer = waiting;
-                waiting.peer = ws;
+        if (message.type === "join") {
+            if (waitingClients.length > 0) {
+                const peer = waitingClients.shift();
+
+                ws.room = peer;
+                peer.room = ws;
 
                 ws.send(JSON.stringify({ type: "matched", role: "caller" }));
-                waiting.send(JSON.stringify({ type: "matched", role: "callee" }));
-
-                waiting = null;
+                peer.send(JSON.stringify({ type: "matched", role: "callee" }));
             } else {
-                waiting = ws;
+                waitingClients.push(ws);
             }
-            return;
         }
 
-        // RELAY EVERYTHING ELSE SAFELY
-        if (ws.peer && ws.peer.readyState === WebSocket.OPEN) {
-            ws.peer.send(JSON.stringify(data));
+        if (message.type === "leave") {
+            console.log("Client left matchmaking");
+            waitingClients = waitingClients.filter(c => c !== ws);
+            ws.room = null;
+        }
+
+        if (message.type === "end") {
+            if (ws.room) {
+                ws.room.send(JSON.stringify({ type: "end" }));
+                ws.room.room = null;
+                ws.room = null;
+            }
+        }
+
+        if (["offer", "answer", "candidate"].includes(message.type)) {
+            if (ws.room) {
+                ws.room.send(JSON.stringify(message));
+            }
         }
     });
 
     ws.on("close", () => {
-        if (waiting === ws) waiting = null;
-        if (ws.peer) ws.peer.peer = null;
+        waitingClients = waitingClients.filter(c => c !== ws);
+        ws.room = null;
+        console.log("Client disconnected");
     });
 });
-
-console.log("🚀 Signaling server running on ws://0.0.0.0:8080");

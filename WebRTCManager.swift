@@ -3,6 +3,7 @@ import WebRTC
 import AVFoundation
 import Combine
 
+
 @MainActor
 final class WebRTCManager: ObservableObject {
 
@@ -11,13 +12,16 @@ final class WebRTCManager: ObservableObject {
     @Published var debugLog: String = ""
 
     // MARK: - Core
-    private let rtc = WebRTCClient()
+    private var rtc = WebRTCClient()
     private let signaling = SignalingClient()
 
     // MARK: - State
     private var isConnecting = false
     private var isRemoteDescriptionSet = false
     private var pendingICE: [RTCIceCandidate] = []
+    
+    private var canStartMatchmaking = true
+
 
     // MARK: - Init
     init() {
@@ -35,36 +39,36 @@ final class WebRTCManager: ObservableObject {
             }
         }
 
-        signaling.onMessage = handleSignal
+        signaling.onmsg = handleSignal
     }
 
     // MARK: - Public API (UI calls)
 
     func startMatchmaking(userId: String) {
-        guard !isConnecting else { return }
+        guard !isConnecting, canStartMatchmaking else {
+            log("Matchmaking blocked")
+            return
+        }
+
+        canStartMatchmaking = false
         isConnecting = true
 
         resetState()
 
         connectionState = "Searching"
-        log("Connecting signaling…")
-
+        log("Connecting signaling...")
         signaling.connect()
         signaling.join()
     }
+
 
     func disconnect() {
         guard isConnecting else { return }
 
         log("Ending call")
-
-        signaling.send([
-            "type": "end"
-        ])
-
-        cleanup()
+        signaling.send(["type": "end"])
+        // ❌ DO NOT call cleanup here
     }
-
 
     func toggleMute(isMuted: Bool) {
         rtc.setMuted(isMuted)
@@ -140,7 +144,10 @@ final class WebRTCManager: ObservableObject {
         case "end":
             log("Remote ended call")
             cleanup()
-
+            
+        case "leave":
+            log("Remote left")
+            cleanup()
 
         default:
             break
@@ -173,27 +180,33 @@ final class WebRTCManager: ObservableObject {
         pendingICE.removeAll()
     }
     
-    
-
     // MARK: - Logging
 
-    private func log(_ message: String) {
-        debugLog += "• \(message)\n"
-        print("[WebRTC]", message)
+    private func log(_ msg: String) {
+        debugLog += "• \(msg)\n"
+        print("[WebRTC]", msg)
     }
-    
     
     private func cleanup() {
         isConnecting = false
-        isRemoteDescriptionSet = false
-        pendingICE.removeAll()
+        resetState()
+
+        // 🔴 IMPORTANT: tell server we left matchmaking
+        signaling.send(["type": "leave"])
 
         rtc.close()
         signaling.close()
 
         connectionState = "Disconnected"
         log("Call cleaned up")
+
+        // Allow strict re-entry
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            self.canStartMatchmaking = true
+            self.log("Ready for match")
+        }
     }
+
 
 }
 

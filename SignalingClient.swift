@@ -10,9 +10,13 @@ import Foundation
 final class SignalingClient {
 
     private var socket: URLSessionWebSocketTask?
-    var onMessage: (([String: Any]) -> Void)?
+    var onmsg: (([String: Any]) -> Void)?
 
     func connect() {
+        if let socket = socket {
+            socket.cancel() // Close existing
+        }
+        
         let url = URL(string: "ws://10.109.124.242:8080")!
         socket = URLSession.shared.webSocketTask(with: url)
         socket?.resume()
@@ -39,7 +43,7 @@ final class SignalingClient {
                 ) as! [String: Any]
 
                 print("⬇️ Received:", json)
-                self?.onMessage?(json)
+                self?.onmsg?(json)
             }
             self?.listen()
         }

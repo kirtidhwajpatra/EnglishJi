@@ -7,22 +7,19 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		78013F552EE8856800A024FB /* WebRTC.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 78013F532EE884A800A024FB /* WebRTC.xcframework */; };
-		78013F562EE8856800A024FB /* WebRTC.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 78013F532EE884A800A024FB /* WebRTC.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		78013F5D2EE903AE00A024FB /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 78013F5C2EE903AE00A024FB /* FirebaseFirestore */; };
 		784D28B42EE84C4D003F70DF /* FuturaCondensedExtraBoldNormal.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 784D28B32EE84C4D003F70DF /* FuturaCondensedExtraBoldNormal.ttf */; };
-		785E5A772EE8642300720C40 /* WebRTCConfig.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 785E5A762EE8640300720C40 /* WebRTCConfig.xcconfig */; };
 		787109252EE411D30002AAD5 /* EnglishJiApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 787109242EE411D30002AAD5 /* EnglishJiApp.swift */; };
 		787109292EE411D40002AAD5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 787109282EE411D40002AAD5 /* Assets.xcassets */; };
-		787109B72EE744400002AAD5 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 787109B62EE744400002AAD5 /* FirebaseAuth */; };
-		787109B92EE744400002AAD5 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 787109B82EE744400002AAD5 /* FirebaseMessaging */; };
-		787109BC2EE744A70002AAD5 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 787109BB2EE744A70002AAD5 /* GoogleSignIn */; };
-		787109BE2EE744A70002AAD5 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 787109BD2EE744A70002AAD5 /* GoogleSignInSwift */; };
 		787109C02EE747AD0002AAD5 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 787109BF2EE747AD0002AAD5 /* GoogleService-Info.plist */; };
 		78E384802EEECD09005F0DFD /* AudioSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78E3847F2EEECD09005F0DFD /* AudioSessionManager.swift */; };
 		78E384842EEECD8A005F0DFD /* SignalingClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78E384832EEECD8A005F0DFD /* SignalingClient.swift */; };
 		78E384862EEECDB7005F0DFD /* WebRTCManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78E384852EEECDB7005F0DFD /* WebRTCManager.swift */; };
 		78E384882EEECECD005F0DFD /* WebRTCClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78E384872EEECECD005F0DFD /* WebRTCClient.swift */; };
+		78F317602EF121C800E25D00 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 78F3175F2EF121C800E25D00 /* FirebaseAuth */; };
+		78F317632EF1220C00E25D00 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 78F317622EF1220C00E25D00 /* GoogleSignIn */; };
+		78F317652EF1220C00E25D00 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 78F317642EF1220C00E25D00 /* GoogleSignInSwift */; };
+		78F3176C2EF12F6300E25D00 /* WebRTC.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 78F3176A2EF12E2500E25D00 /* WebRTC.xcframework */; };
+		78F3176D2EF12F6300E25D00 /* WebRTC.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 78F3176A2EF12E2500E25D00 /* WebRTC.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -32,7 +29,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				78013F562EE8856800A024FB /* WebRTC.xcframework in Embed Frameworks */,
+				78F3176D2EF12F6300E25D00 /* WebRTC.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -40,9 +37,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		78013F532EE884A800A024FB /* WebRTC.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = WebRTC.xcframework; sourceTree = "<group>"; };
 		784D28B32EE84C4D003F70DF /* FuturaCondensedExtraBoldNormal.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = FuturaCondensedExtraBoldNormal.ttf; sourceTree = "<group>"; };
-		785E5A762EE8640300720C40 /* WebRTCConfig.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = WebRTCConfig.xcconfig; sourceTree = "<group>"; };
 		787109242EE411D30002AAD5 /* EnglishJiApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnglishJiApp.swift; sourceTree = "<group>"; };
 		787109282EE411D40002AAD5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		787109652EE438580002AAD5 /* EnglishJi.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = EnglishJi.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -51,6 +46,7 @@
 		78E384832EEECD8A005F0DFD /* SignalingClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalingClient.swift; sourceTree = "<group>"; };
 		78E384852EEECDB7005F0DFD /* WebRTCManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRTCManager.swift; sourceTree = "<group>"; };
 		78E384872EEECECD005F0DFD /* WebRTCClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRTCClient.swift; sourceTree = "<group>"; };
+		78F3176A2EF12E2500E25D00 /* WebRTC.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = WebRTC.xcframework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -119,12 +115,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				78013F552EE8856800A024FB /* WebRTC.xcframework in Frameworks */,
-				787109B92EE744400002AAD5 /* FirebaseMessaging in Frameworks */,
-				787109B72EE744400002AAD5 /* FirebaseAuth in Frameworks */,
-				787109BC2EE744A70002AAD5 /* GoogleSignIn in Frameworks */,
-				787109BE2EE744A70002AAD5 /* GoogleSignInSwift in Frameworks */,
-				78013F5D2EE903AE00A024FB /* FirebaseFirestore in Frameworks */,
+				78F3176C2EF12F6300E25D00 /* WebRTC.xcframework in Frameworks */,
+				78F317652EF1220C00E25D00 /* GoogleSignInSwift in Frameworks */,
+				78F317602EF121C800E25D00 /* FirebaseAuth in Frameworks */,
+				78F317632EF1220C00E25D00 /* GoogleSignIn in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -149,11 +143,10 @@
 				787109232EE411D30002AAD5 /* EnglishJi */,
 				787109282EE411D40002AAD5 /* Assets.xcassets */,
 				787109652EE438580002AAD5 /* EnglishJi.app */,
-				785E5A762EE8640300720C40 /* WebRTCConfig.xcconfig */,
-				78013F532EE884A800A024FB /* WebRTC.xcframework */,
 				787109242EE411D30002AAD5 /* EnglishJiApp.swift */,
 				787109BF2EE747AD0002AAD5 /* GoogleService-Info.plist */,
 				784D28B32EE84C4D003F70DF /* FuturaCondensedExtraBoldNormal.ttf */,
+				78F3176A2EF12E2500E25D00 /* WebRTC.xcframework */,
 			);
 			sourceTree = "<group>";
 		};
@@ -185,13 +178,6 @@
 				787109682EE43D270002AAD5 /* TextAnimation */,
 			);
 			name = EnglishJi;
-			packageProductDependencies = (
-				787109B62EE744400002AAD5 /* FirebaseAuth */,
-				787109B82EE744400002AAD5 /* FirebaseMessaging */,
-				787109BB2EE744A70002AAD5 /* GoogleSignIn */,
-				787109BD2EE744A70002AAD5 /* GoogleSignInSwift */,
-				78013F5C2EE903AE00A024FB /* FirebaseFirestore */,
-			);
 			productName = EnglishJi;
 			productReference = 787109652EE438580002AAD5 /* EnglishJi.app */;
 			productType = "com.apple.product-type.application";
@@ -221,8 +207,8 @@
 			mainGroup = 787109182EE411D30002AAD5;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				787109B52EE744400002AAD5 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
-				787109BA2EE744A70002AAD5 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
+				78F3175E2EF121C800E25D00 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				78F317612EF1220C00E25D00 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 787109182EE411D30002AAD5;
@@ -240,7 +226,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				787109C02EE747AD0002AAD5 /* GoogleService-Info.plist in Resources */,
-				785E5A772EE8642300720C40 /* WebRTCConfig.xcconfig in Resources */,
 				787109292EE411D40002AAD5 /* Assets.xcassets in Resources */,
 				784D28B42EE84C4D003F70DF /* FuturaCondensedExtraBoldNormal.ttf in Resources */,
 			);
@@ -266,7 +251,6 @@
 /* Begin XCBuildConfiguration section */
 		7871092A2EE411D40002AAD5 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 785E5A762EE8640300720C40 /* WebRTCConfig.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -301,7 +285,7 @@
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 8XU7G4WPRA;
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_STRICT_OBJC_messageSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
@@ -331,7 +315,6 @@
 		};
 		7871092B2EE411D40002AAD5 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 785E5A762EE8640300720C40 /* WebRTCConfig.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -367,7 +350,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8XU7G4WPRA;
 				ENABLE_NS_ASSERTIONS = NO;
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_STRICT_OBJC_messageSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -389,7 +372,6 @@
 		};
 		7871092D2EE411D40002AAD5 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 785E5A762EE8640300720C40 /* WebRTCConfig.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -398,6 +380,7 @@
 				CLANG_CXX_STANDARD_LIBRARY_HARDENING = none;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8XU7G4WPRA;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -416,6 +399,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kirtidhwaj.EnglishJi;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
@@ -428,7 +412,6 @@
 		};
 		7871092E2EE411D40002AAD5 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 785E5A762EE8640300720C40 /* WebRTCConfig.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -437,6 +420,7 @@
 				CLANG_CXX_STANDARD_LIBRARY_HARDENING = none;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 8XU7G4WPRA;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -455,6 +439,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kirtidhwaj.EnglishJi;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
@@ -489,15 +474,15 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		787109B52EE744400002AAD5 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+		78F3175E2EF121C800E25D00 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 12.6.0;
+				minimumVersion = 12.7.0;
 			};
 		};
-		787109BA2EE744A70002AAD5 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+		78F317612EF1220C00E25D00 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
 			requirement = {
@@ -508,29 +493,19 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		78013F5C2EE903AE00A024FB /* FirebaseFirestore */ = {
+		78F3175F2EF121C800E25D00 /* FirebaseAuth */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 787109B52EE744400002AAD5 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseFirestore;
-		};
-		787109B62EE744400002AAD5 /* FirebaseAuth */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 787109B52EE744400002AAD5 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			package = 78F3175E2EF121C800E25D00 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseAuth;
 		};
-		787109B82EE744400002AAD5 /* FirebaseMessaging */ = {
+		78F317622EF1220C00E25D00 /* GoogleSignIn */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 787109B52EE744400002AAD5 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseMessaging;
-		};
-		787109BB2EE744A70002AAD5 /* GoogleSignIn */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 787109BA2EE744A70002AAD5 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			package = 78F317612EF1220C00E25D00 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
 			productName = GoogleSignIn;
 		};
-		787109BD2EE744A70002AAD5 /* GoogleSignInSwift */ = {
+		78F317642EF1220C00E25D00 /* GoogleSignInSwift */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 787109BA2EE744A70002AAD5 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			package = 78F317612EF1220C00E25D00 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
 			productName = GoogleSignInSwift;
 		};
 /* End XCSwiftPackageProductDependency section */

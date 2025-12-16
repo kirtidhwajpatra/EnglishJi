@@ -99,7 +99,17 @@ struct HomeView: View {
 
             // Connect Button
             Button(action: {
-                startSearching()
+                let generator = UIImpactFeedbackGenerator(style: .medium)
+                    generator.impactOccurred()
+
+                    // ✅ Start matchmaking ONLY from here
+                    let userId = AuthManager.shared.user?.uid ?? UUID().uuidString
+
+                    withAnimation {
+                        currentPhase = .searching
+                    }
+
+                    webRTCManager.startMatchmaking(userId: userId)
             }) {
                 Text("Connect Now")
                     .font(.title3)
@@ -184,7 +194,7 @@ struct SearchingView: View {
         .onAppear {
             if webRTCManager.connectionState == "Idle" || webRTCManager.connectionState == "Disconnected" {
                 let userId = AuthManager.shared.user?.uid ?? UUID().uuidString
-                webRTCManager.startMatchmaking(userId: userId)
+//                webRTCManager.log("Searching screen shown")
             }
         }
     }

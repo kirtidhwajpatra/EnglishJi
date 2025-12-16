@@ -12,7 +12,6 @@ final class WebRTCClient: NSObject {
 
     // MARK: - Init
     override init() {
-        RTCInitializeSSL()
         self.factory = RTCPeerConnectionFactory()
         super.init()
         setupPeer()
@@ -76,12 +75,19 @@ final class WebRTCClient: NSObject {
 
     // MARK: - ICE
     func addCandidate(_ candidate: RTCIceCandidate) {
-        peer.add(candidate, completionHandler: { _ in })
+        peer?.add(candidate)
     }
     
+    // MARK: - Cleanup
+    
     func close() {
+        audioTrack?.isEnabled = false
         audioTrack = nil
-        peer.close()
+        
+        peer?.close()
+        peer = nil
+        
+        print("[WebRTCClient] Resources freed")
     }
 
 }
@@ -95,10 +101,14 @@ extension WebRTCClient: RTCPeerConnectionDelegate {
     }
 
     func peerConnection(_ peerConnection: RTCPeerConnection,
-                        didChange stateChanged: RTCSignalingState) {}
+                        didChange stateChanged: RTCSignalingState) {
+        // print("Signaling State: \(stateChanged.rawValue)")
+    }
 
     func peerConnection(_ peerConnection: RTCPeerConnection,
-                        didChange newState: RTCIceConnectionState) {}
+                        didChange newState: RTCIceConnectionState) {
+        // print("ICE Connection State: \(newState.rawValue)")
+    }
 
     func peerConnection(_ peerConnection: RTCPeerConnection,
                         didChange newState: RTCIceGatheringState) {}
@@ -108,7 +118,7 @@ extension WebRTCClient: RTCPeerConnectionDelegate {
 
     func peerConnection(_ peerConnection: RTCPeerConnection,
                         didRemove stream: RTCMediaStream) {}
-
+    
     func peerConnection(_ peerConnection: RTCPeerConnection,
                         didRemove candidates: [RTCIceCandidate]) {}
 

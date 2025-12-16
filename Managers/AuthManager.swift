@@ -14,7 +14,7 @@ import Combine
 
 class AuthManager: NSObject, ObservableObject {
     @Published var user: User?
-    @Published var errorMessage: String = ""
+    @Published var errormsg: String = ""
     
     // Singleton instance
     static let shared = AuthManager()
@@ -39,7 +39,7 @@ class AuthManager: NSObject, ObservableObject {
         // 2. Start the Google Sign In flow
         GIDSignIn.sharedInstance.signIn(withPresenting: rootViewController) { [weak self] result, error in
             if let error = error {
-                self?.errorMessage = error.localizedDescription
+                self?.errormsg = error.localizedDescription
                 completion(false)
                 return
             }
@@ -59,7 +59,7 @@ class AuthManager: NSObject, ObservableObject {
             // 4. Authenticate with Firebase
             Auth.auth().signIn(with: credential) { res, error in
                 if let error = error {
-                    self?.errorMessage = error.localizedDescription
+                    self?.errormsg = error.localizedDescription
                     completion(false)
                     return
                 }

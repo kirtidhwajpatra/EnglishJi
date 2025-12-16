@@ -50,7 +50,7 @@ struct AuthenticationScreen: View {
                                                     print("User Logged in! User ID: \(authManager.user?.uid ?? "Unknown")")
                                                     // Navigate to next screen here
                                                 } else {
-                                                    print("Login Failed: \(authManager.errorMessage)")
+                                                    print("Login Failed: \(authManager.errormsg)")
                                                 }
                                             }
                                         }

@@ -6,11 +6,15 @@
 //
 
 import SwiftUI
-import FirebaseCore
+import Firebase
 import GoogleSignIn
+import WebRTC
 
 @main
 struct EnglishJiApp: App {
+    init() {
+            RTCInitializeSSL()
+        }
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
 
     var body: some Scene {

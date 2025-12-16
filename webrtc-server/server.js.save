@@ -1,0 +1,94 @@
+const WebSocket = require('ws');
+
+const wss = new WebSocket.Server({ port: 8080 });
+console.log('🚀 Signaling server running on ws://localhost:8080');
+
+let waitingClient = null;
+
+wss.on('connection', (ws) => {
+  console.log('🟢 Client connected');
+
+  ws.on('message', (message) => {
+    const data = JSON.parse(message);
+    console.log('📩 Received:', data);
+
+    if (data.type === 'join') {
+      if (waitingClient === null) {
+        waitingClient = ws;
+        ws.partner = null;
+        console.log('⏳ Client waiting for match');
+      } else {
+        // Match found
+        ws.partner = waitingClient;
+        waitingClient.partner = ws;
+
+        ws.send(JSON.stringify({ type: 'matched', role: 'caller' }));
+        waitingClient.send(JSON.stringify({ type: 'matched', role: 'callee' }));
+
+        waitingClient = null;
+        console.log('🤝 Clients matched');
+      }
+    }
+
+    // Relay WebRTC messages
+    if (
+      data.type === 'offer' ||
+      data.type === 'answer' ||
+      data.type === 'candidate'
+    ) {
+      if (ws.partner) {
+        ws.partner.send(JSON.stringify(data));
+      }
+    }
+
+    if (data.type === 'leave' || data.type === 'end') {
+      if (ws.partner) {
+        ws.partner.send(JSON.stringify({ type: 'leave' }));
+        ws.partner.partner = null;
+      }
+      ws.partner = null;
+    }
+  });
+
+  ws.on('close', () => {
+    console.log('🔴 Client disconnected');
+    if (waitingClient === ws) {
+      waitingClient = null;
+    }
+    if (ws.partner) {
+      ws.partner.send(JSON.stringify({ type: 'leave' }));
+      ws.partner.partner = null;
+    }
+  });
+});
+const WebSocket = require('ws');
+
+const wss = new WebSocket.Server({ port: 8080 });
+let clients = [];
+
+wss.on('connection', (ws) => {
+  console.log('🟢 Client connected');
+  clients.push(ws);
+
+  ws.on('message', (message) => {
+    console.log('📨 Received:', message.toString());
+
+    // Broadcast to other clients
+    clients.forEach(client => {
+      if (client !== ws && client.readyState === WebSocket.OPEN) {
+        client.send(message.toString());
+      }
+    });
+  });
+
+  ws.on('close', () => {
+    console.log('🔴 Client disconnected');
+    clients = clients.filter(c => c !== ws);
+  });
+
+  ws.on('error', (err) => {
+    console.error('⚠️ Socket error:', err);
+  });
+});
+
+console.log('🚀 Signaling server running on ws://localhost:8080');
