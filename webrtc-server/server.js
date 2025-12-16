@@ -1,64 +1,89 @@
-const WebSocket = require('ws');
+const WebSocket = require("ws");
 
-const wss = new WebSocket.Server({ port: 8080 });
-console.log('🚀 Signaling server running on ws://localhost:8080');
+const PORT = 8080;
+const wss = new WebSocket.Server({ port: PORT });
+
+console.log(`🚀 Signaling server running on ws://localhost:${PORT}`);
 
 let waitingClient = null;
 
-wss.on('connection', (ws) => {
-  console.log('🟢 Client connected');
+wss.on("connection", (ws) => {
+  console.log("🟢 Client connected");
 
-  ws.on('message', (message) => {
-    const data = JSON.parse(message);
-    console.log('📩 Received:', data);
+  ws.partner = null;
 
-    if (data.type === 'join') {
+  ws.on("message", (message) => {
+    let data;
+
+    try {
+      data = JSON.parse(message);
+    } catch (e) {
+      console.error("❌ Invalid JSON received");
+      return;
+    }
+
+    console.log("📩 Received:", data.type);
+
+    // ---- JOIN MATCHMAKING ----
+    if (data.type === "join") {
       if (waitingClient === null) {
         waitingClient = ws;
-        ws.partner = null;
-        console.log('⏳ Client waiting for match');
+        console.log("⏳ Client waiting for match");
       } else {
-        // Match found
         ws.partner = waitingClient;
         waitingClient.partner = ws;
 
-        ws.send(JSON.stringify({ type: 'matched', role: 'caller' }));
-        waitingClient.send(JSON.stringify({ type: 'matched', role: 'callee' }));
+        ws.send(JSON.stringify({ type: "matched", role: "caller" }));
+        waitingClient.send(
+          JSON.stringify({ type: "matched", role: "callee" })
+        );
 
         waitingClient = null;
-        console.log('🤝 Clients matched');
+        console.log("🤝 Clients matched");
       }
+      return;
     }
 
-    // Relay WebRTC messages
+    // ---- RELAY WEBRTC SIGNALS ----
     if (
-      data.type === 'offer' ||
-      data.type === 'answer' ||
-      data.type === 'candidate'
+      data.type === "offer" ||
+      data.type === "answer" ||
+      data.type === "candidate" ||
+      data.type === "ice"
     ) {
-      if (ws.partner) {
+      if (ws.partner && ws.partner.readyState === WebSocket.OPEN) {
         ws.partner.send(JSON.stringify(data));
+        console.log(`➡️ Relayed ${data.type}`);
       }
+      return;
     }
 
-    if (data.type === 'leave' || data.type === 'end') {
+    // ---- CALL END ----
+    if (data.type === "leave" || data.type === "end") {
       if (ws.partner) {
-        ws.partner.send(JSON.stringify({ type: 'leave' }));
+        ws.partner.send(JSON.stringify({ type: "leave" }));
         ws.partner.partner = null;
+        ws.partner = null;
       }
-      ws.partner = null;
+      console.log("📴 Call ended");
+      return;
     }
   });
 
-  ws.on('close', () => {
-    console.log('🔴 Client disconnected');
+  ws.on("close", () => {
+    console.log("🔴 Client disconnected");
+
     if (waitingClient === ws) {
       waitingClient = null;
     }
+
     if (ws.partner) {
-      ws.partner.send(JSON.stringify({ type: 'leave' }));
+      ws.partner.send(JSON.stringify({ type: "leave" }));
       ws.partner.partner = null;
     }
   });
-});
 
+  ws.on("error", (err) => {
+    console.error("⚠️ WebSocket error:", err.message);
+  });
+});

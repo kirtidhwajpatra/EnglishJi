@@ -3,47 +3,41 @@ import WebRTC
 import AVFoundation
 import Combine
 
-
 @MainActor
 final class WebRTCManager: ObservableObject {
 
-    // MARK: - UI Bindings
+    // MARK: - UI State (THIS DRIVES SCREENS)
+    @Published var isInCall: Bool = false
     @Published var connectionState: String = "Idle"
     @Published var debugLog: String = ""
 
     // MARK: - Core
     private var rtc: WebRTCClient?
-
     private let signaling = SignalingClient()
 
     // MARK: - State
     private var isConnecting = false
     private var isRemoteDescriptionSet = false
     private var pendingICE: [RTCIceCandidate] = []
-    
     private var canStartMatchmaking = true
-
 
     // MARK: - Init
     init() {
         AudioSessionManager.configure()
         log("Manager initialized")
 
-        // ✅ ONLY signaling is safe here
-        signaling.onmsg = handleSignal
+        signaling.onMessage = handleSignal
     }
 
-    // MARK: - Public API (UI calls)
+    // MARK: - Public API (UI)
 
     func startMatchmaking(userId: String) {
         guard !isConnecting, canStartMatchmaking else { return }
 
         canStartMatchmaking = false
         isConnecting = true
-
         resetState()
 
-        // ✅ CREATE A NEW RTC INSTANCE PER CALL
         rtc = WebRTCClient()
         setupRTCCallbacks()
 
@@ -53,27 +47,32 @@ final class WebRTCManager: ObservableObject {
         signaling.join()
     }
 
-
-
-
+    /// Used by End button OR when screen is dismissed
     func disconnect() {
         guard isConnecting else { return }
+        endCall()
+    }
 
-        log("Ending call")
-        signaling.send(["type": "end"])
-        // ❌ DO NOT call cleanup here
+    /// LOCAL hang-up
+    func endCall() {
+        guard isConnecting else { return }
+
+        log("Local user ended call")
+
+        // 1️⃣ Notify remote
+        signaling.send(["type": "leave"])
+
+        // 2️⃣ Allow async WebSocket send to flush
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+            self.endCallAndResetUI()
+        }
     }
 
     func toggleMute(isMuted: Bool) {
-        guard let rtc = rtc else {
-            log("Mute ignored — RTC not ready")
-            return
-        }
-
+        guard let rtc else { return }
         rtc.setMuted(isMuted)
         log(isMuted ? "Mic muted" : "Mic unmuted")
     }
-
 
     // MARK: - Signaling
 
@@ -83,10 +82,7 @@ final class WebRTCManager: ObservableObject {
         switch type {
 
         case "matched":
-            guard let rtc = rtc else {
-                log("RTC not ready on matched")
-                return
-            }
+            guard let rtc else { return }
 
             let role = json["role"] as? String ?? "callee"
             log("Matched as \(role)")
@@ -103,21 +99,15 @@ final class WebRTCManager: ObservableObject {
             }
 
         case "offer":
-            guard let rtc = rtc else {
-                log("RTC missing on offer")
-                return
-            }
+            guard let rtc,
+                  let sdpString = json["sdp"] as? String else { return }
 
             log("Received offer")
 
-            guard let sdpString = json["sdp"] as? String else { return }
-
-            let sdp = RTCSessionDescription(
-                type: .offer,
-                sdp: sdpString
+            rtc.setRemote(
+                RTCSessionDescription(type: .offer, sdp: sdpString)
             )
 
-            rtc.setRemote(sdp)
             isRemoteDescriptionSet = true
             flushICE()
 
@@ -127,65 +117,49 @@ final class WebRTCManager: ObservableObject {
                     "sdp": answer.sdp
                 ])
                 self.log("Sent answer")
+
+                self.isInCall = true          // 🔥 UI OPENS HERE
                 self.connectionState = "Connected"
             }
 
         case "answer":
-            guard let rtc = rtc else {
-                log("RTC missing on answer")
-                return
-            }
+            guard let rtc,
+                  let sdpString = json["sdp"] as? String else { return }
 
             log("Received answer")
 
-            guard let sdpString = json["sdp"] as? String else { return }
-
-            let sdp = RTCSessionDescription(
-                type: .answer,
-                sdp: sdpString
+            rtc.setRemote(
+                RTCSessionDescription(type: .answer, sdp: sdpString)
             )
 
-            rtc.setRemote(sdp)
             isRemoteDescriptionSet = true
             flushICE()
 
+            isInCall = true                 // 🔥 UI OPENS HERE
             connectionState = "Connected"
 
         case "candidate":
-            guard let rtc = rtc else {
-                log("RTC missing on candidate")
-                return
-            }
-
-            guard
-                let sdp = json["candidate"] as? String,
-                let sdpMLineIndex = json["sdpMLineIndex"] as? Int32
-            else { return }
+            guard let rtc,
+                  let sdp = json["candidate"] as? String,
+                  let index = json["sdpMLineIndex"] as? Int32 else { return }
 
             let candidate = RTCIceCandidate(
                 sdp: sdp,
-                sdpMLineIndex: sdpMLineIndex,
+                sdpMLineIndex: index,
                 sdpMid: json["sdpMid"] as? String
             )
 
             rtc.addCandidate(candidate)
             log("Added ICE")
 
-        case "end":
-            log("Remote ended call")
-            cleanup()
-
         case "leave":
-            log("Remote left")
-            cleanup()
+            log("Remote ended call")
+            endCallAndResetUI()              // 🔥 UI CLOSES HERE
 
         default:
             break
         }
     }
-
-    
-  
 
     // MARK: - ICE
 
@@ -212,37 +186,26 @@ final class WebRTCManager: ObservableObject {
         isRemoteDescriptionSet = false
         pendingICE.removeAll()
     }
-    
-    // MARK: - Logging
 
-    private func log(_ msg: String) {
-        debugLog += "• \(msg)\n"
-        print("[WebRTC]", msg)
-    }
-    
-    private func cleanup() {
-        isConnecting = false
-        resetState()
+    // MARK: - FINAL CLEANUP (NO SIGNALING HERE)
 
-        signaling.send(["type": "leave"])
-        signaling.close()
+    private func endCallAndResetUI() {
+        log("Cleaning up call state")
 
         rtc?.close()
-        rtc = nil   // 🔴 REQUIRED
+        rtc = nil
 
-        connectionState = "Disconnected"
-        log("Call cleaned up")
+        isConnecting = false
+        isRemoteDescriptionSet = false
+        pendingICE.removeAll()
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            self.canStartMatchmaking = true
-            self.log("Ready for match")
-        }
+        isInCall = false                   // 🔥 UI CLOSES
+        connectionState = "Idle"
+        canStartMatchmaking = true
     }
 
+    // MARK: - RTC Callbacks
 
-    
-    // MARK: - RTCCallbacks
-    
     private func setupRTCCallbacks() {
         rtc?.onIceCandidate = { [weak self] candidate in
             guard let self else { return }
@@ -256,9 +219,11 @@ final class WebRTCManager: ObservableObject {
         }
     }
 
+    // MARK: - Logging
 
-
-
-
+    private func log(_ msg: String) {
+        debugLog += "• \(msg)\n"
+        print("[WebRTC]", msg)
+    }
 }
 
