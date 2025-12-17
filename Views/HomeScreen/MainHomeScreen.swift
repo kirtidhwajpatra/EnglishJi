@@ -1,200 +1,320 @@
+//
+//  MainHomeScreen.swift
+//  EnglishJi
+//
+//  Created by Mr SwiftUI on 09/12/25.
+//
+
 import SwiftUI
 import AVFoundation
+import FirebaseAuth
 
-// MARK: - App State
+// MARK: - App Phase
 enum AppPhase {
     case home
     case searching
     case inCall
 }
 
-// MARK: - Main Controller
+// MARK: - Root Content View
+
 struct ContentView: View {
-    @State private var currentPhase: AppPhase = .home
+
     @StateObject private var webRTCManager = WebRTCManager()
+    @State private var currentPhase: AppPhase = .home
 
     var body: some View {
         ZStack {
-            Color(UIColor.systemGroupedBackground).ignoresSafeArea()
+            Color(UIColor.systemGroupedBackground)
+                .ignoresSafeArea()
 
-            Group {
-                switch currentPhase {
-                case .home:
-                    HomeView(currentPhase: $currentPhase, webRTCManager: webRTCManager)
-                        .transition(.move(edge: .leading))
-                    
-                case .searching:
-                    SearchingView(currentPhase: $currentPhase, webRTCManager: webRTCManager)
-                        .transition(.opacity)
-                    
-                case .inCall:
-                    CallInProgressView(currentPhase: $currentPhase, webRTCManager: webRTCManager)
-                        .transition(.move(edge: .bottom))
-                }
+            switch currentPhase {
+            case .home:
+                HomeView(webRTCManager: webRTCManager)
+
+            case .searching:
+                SearchingView(webRTCManager: webRTCManager)
+
+            case .inCall:
+                CallInProgressView(webRTCManager: webRTCManager)
             }
-            .animation(.easeInOut(duration: 0.4), value: currentPhase)
+
+            VStack {
+                Spacer()
+                SignOutView()
+                    .padding(.bottom, 30)
+            }
         }
-        // Listener to react to WebRTC state changes
-        .onChange(of: webRTCManager.connectionState) { newState in
-            print("UI Received State Update: \(newState)")
-            
-            if newState == "Connected" {
-                currentPhase = .inCall
+        // 🔥 SINGLE SOURCE OF TRUTH FOR CALL UI
+        .onChange(of: webRTCManager.isInCall) { inCall in
+            withAnimation(.easeInOut(duration: 0.3)) {
+                currentPhase = inCall ? .inCall : .home
             }
-            else if newState == "Disconnected" || newState == "Failed" {
-                currentPhase = .home
+        }
+        // 🔥 SEARCHING STATE DRIVEN BY CONNECTION STATE
+        .onChange(of: webRTCManager.connectionState) { state in
+            withAnimation(.easeInOut(duration: 0.3)) {
+                if state == "Searching" {
+                    currentPhase = .searching
+                }
             }
         }
     }
 }
 
-// MARK: - Views
+//
+// MARK: - Home View
+//
 
 struct HomeView: View {
-    @Binding var currentPhase: AppPhase
+
     @ObservedObject var webRTCManager: WebRTCManager
-    @ObservedObject var authManager = AuthManager.shared
 
     var body: some View {
         VStack(spacing: 30) {
-            // Sign Out
-            HStack {
-                Spacer()
-                Button("Sign Out") { authManager.signOut() }
-                    .foregroundColor(.red)
-                    .padding()
-            }
             Spacer()
-            
-            // Title
+
             VStack(spacing: 10) {
                 Image(systemName: "waveform.circle.fill")
-                    .resizable().frame(width: 80, height: 80).foregroundColor(.blue)
-                Text("English Talk").font(.largeTitle).fontWeight(.bold)
+                    .resizable()
+                    .frame(width: 80, height: 80)
+                    .foregroundColor(.blue)
+
+                Text("English Talk")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+
                 Text("Practice speaking with learners worldwide.")
-                    .font(.subheadline).foregroundColor(.gray)
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+                    .multilineTextAlignment(.center)
             }
+
             Spacer()
-            
-            // Connect Button
-            Button(action: {
-                // 1. Move UI to Searching IMMEDIATELY
-                currentPhase = .searching
-                // 2. Trigger Logic
-                // We do this in the SearchingView .onAppear, but we can also trigger it here to be safe
-            }) {
+
+            Button {
+                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+
+                let userId = AuthManager.shared.user?.uid ?? UUID().uuidString
+                webRTCManager.startMatchmaking(userId: userId)
+
+            } label: {
                 Text("Connect Now")
-                    .font(.title3).fontWeight(.semibold).foregroundColor(.white)
-                    .padding().frame(maxWidth: .infinity)
-                    .background(Color.blue).cornerRadius(50)
+                    .font(.title3)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.blue)
+                    .cornerRadius(50)
+                    .shadow(color: .blue.opacity(0.3), radius: 10)
             }
             .padding(.horizontal, 40)
+
             Spacer().frame(height: 50)
         }
+        .padding()
     }
 }
 
+//
+// MARK: - Searching View
+//
+
 struct SearchingView: View {
-    @Binding var currentPhase: AppPhase
+
     @ObservedObject var webRTCManager: WebRTCManager
-    
+
     var body: some View {
         VStack(spacing: 40) {
             Spacer()
+
             ZStack {
-                Circle().stroke(Color.blue.opacity(0.3), lineWidth: 4).frame(width: 150, height: 150)
-                ProgressView().scaleEffect(2).tint(.blue)
+                Circle()
+                    .stroke(Color.blue.opacity(0.3), lineWidth: 4)
+                    .frame(width: 150, height: 150)
+
+                ProgressView()
+                    .scaleEffect(2)
+                    .tint(.blue)
             }
-            
-            // Show Status
+
             Text(webRTCManager.connectionState)
-                .font(.headline).foregroundColor(.secondary)
-            
-            Spacer()
-            Button("Cancel Search") {
-                webRTCManager.disconnect() // Stop the search logic
-                currentPhase = .home
+                .font(.headline)
+                .foregroundColor(.secondary)
+
+            ScrollView {
+                Text(webRTCManager.debugLog)
+                    .font(.caption2)
+                    .foregroundColor(.gray)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding()
             }
-            .foregroundColor(.red).padding(.bottom, 50)
+            .frame(height: 150)
+            .background(Color.black.opacity(0.05))
+            .cornerRadius(10)
+
+            Spacer()
+
+            Button("Cancel Search") {
+                webRTCManager.disconnect()
+            }
+            .foregroundColor(.red)
+            .padding(.bottom, 50)
         }
         .padding()
-        .onAppear {
-            // Trigger logic when view appears
-            if webRTCManager.connectionState == "Idle" || webRTCManager.connectionState == "Disconnected" {
-                webRTCManager.startMatchmaking()
-            }
-        }
     }
 }
 
+//
+// MARK: - Call In Progress View
+//
+
 struct CallInProgressView: View {
-    @Binding var currentPhase: AppPhase
+
     @ObservedObject var webRTCManager: WebRTCManager
-    
+
     @State private var isMuted = false
     @State private var callDurationSeconds = 0
-    @State private var timer: Timer? = nil
+    @State private var timer: Timer?
 
     var body: some View {
         VStack {
             Spacer().frame(height: 60)
+
             VStack(spacing: 20) {
                 Image(systemName: "person.crop.circle.fill")
-                    .resizable().frame(width: 120, height: 120)
+                    .resizable()
+                    .frame(width: 120, height: 120)
                     .foregroundColor(.gray.opacity(0.5))
-                Text("Connected").font(.headline).foregroundColor(.green)
-                Text(formattedDuration).font(.title2).monospacedDigit().foregroundColor(.gray)
+
+                Text("Speaking with")
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+
+                Text("Language Partner")
+                    .font(.title)
+                    .fontWeight(.bold)
+
+                Text(formattedDuration)
+                    .font(.title2)
+                    .monospacedDigit()
+                    .foregroundColor(.gray)
             }
+
             Spacer()
+
             HStack(spacing: 40) {
-                Button(action: {
+
+                CallControlButton(
+                    icon: isMuted ? "mic.slash.fill" : "mic.fill",
+                    label: "Mute",
+                    isActive: isMuted
+                ) {
                     isMuted.toggle()
                     webRTCManager.toggleMute(isMuted: isMuted)
-                }) {
-                    VStack {
-                        Image(systemName: isMuted ? "mic.slash.fill" : "mic.fill")
-                            .font(.title2).foregroundColor(.white)
-                            .frame(width: 60, height: 60)
-                            .background(isMuted ? Color.orange : Color.gray.opacity(0.3))
-                            .clipShape(Circle())
-                        Text("Mute").font(.caption).foregroundColor(.gray)
-                    }
                 }
-                
-                Button(action: endCall) {
+
+                Button {
+                    endCall()
+                } label: {
                     Image(systemName: "phone.down.fill")
-                        .font(.title).foregroundColor(.white)
-                        .padding(25).background(Color.red)
+                        .font(.title)
+                        .foregroundColor(.white)
+                        .padding(25)
+                        .background(Color.red)
                         .clipShape(Circle())
+                        .shadow(color: .red.opacity(0.4), radius: 10)
                 }
             }
             .padding(.bottom, 50)
         }
-        .background(Color(UIColor.systemBackground).ignoresSafeArea())
+        .background(Color.white)
         .onAppear { startTimer() }
         .onDisappear { stopTimer() }
     }
 
-    var formattedDuration: String {
-        let minutes = callDurationSeconds / 60
-        let seconds = callDurationSeconds % 60
-        return String(format: "%02d:%02d", minutes, seconds)
+    private var formattedDuration: String {
+        let m = callDurationSeconds / 60
+        let s = callDurationSeconds % 60
+        return String(format: "%02d:%02d", m, s)
     }
 
-    func startTimer() {
-        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-            self.callDurationSeconds += 1
+    private func startTimer() {
+        timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
+            callDurationSeconds += 1
         }
     }
 
-    func stopTimer() {
+    private func stopTimer() {
         timer?.invalidate()
         timer = nil
     }
 
-    func endCall() {
+    private func endCall() {
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
         stopTimer()
         webRTCManager.disconnect()
-        // The View will automatically transition to .home via the .onChange listener
+    }
+}
+
+//
+// MARK: - Reusable Call Button
+//
+
+struct CallControlButton: View {
+
+    let icon: String
+    let label: String
+    let isActive: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 8) {
+                Image(systemName: icon)
+                    .font(.title2)
+                    .foregroundColor(isActive ? .white : .primary)
+                    .frame(width: 60, height: 60)
+                    .background(isActive ? Color.blue : Color.gray.opacity(0.15))
+                    .clipShape(Circle())
+
+                Text(label)
+                    .font(.caption)
+                    .foregroundColor(.gray)
+            }
+        }
+    }
+}
+
+//
+// MARK: - Sign Out View
+//
+
+struct SignOutView: View {
+
+    @ObservedObject var authManager = AuthManager.shared
+
+    var body: some View {
+        Button("Sign Out") {
+            authManager.signOut()
+        }
+        .font(.headline)
+        .foregroundColor(.white)
+        .frame(maxWidth: .infinity)
+        .frame(height: 50)
+        .background(Color.red)
+        .cornerRadius(25)
+        .padding(.horizontal, 100)
+    }
+}
+
+//
+// MARK: - Preview
+//
+
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
     }
 }

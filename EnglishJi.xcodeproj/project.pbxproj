@@ -21,6 +21,8 @@
 		787109BE2EE744A70002AAD5 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 787109BD2EE744A70002AAD5 /* GoogleSignInSwift */; };
 		787109C02EE747AD0002AAD5 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 787109BF2EE747AD0002AAD5 /* GoogleService-Info.plist */; };
 		78B3164F2EE9ED70002DCA00 /* WebRTCClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78B3164E2EE9ED70002DCA00 /* WebRTCClient.swift */; };
+		78C85DB02EF2669F002BE743 /* AudioSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78C85DAF2EF2669F002BE743 /* AudioSessionManager.swift */; };
+		78C85DB12EF2684D002BE743 /* SignalingClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78013F582EE9023D00A024FB /* SignalingClient.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -48,6 +50,7 @@
 		787109652EE438580002AAD5 /* EnglishJi.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = EnglishJi.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		787109BF2EE747AD0002AAD5 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		78B3164E2EE9ED70002DCA00 /* WebRTCClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRTCClient.swift; sourceTree = "<group>"; };
+		78C85DAF2EF2669F002BE743 /* AudioSessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioSessionManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -146,6 +149,7 @@
 				78013F532EE884A800A024FB /* WebRTC.xcframework */,
 				78013F582EE9023D00A024FB /* SignalingClient.swift */,
 				78B3164E2EE9ED70002DCA00 /* WebRTCClient.swift */,
+				78C85DAF2EF2669F002BE743 /* AudioSessionManager.swift */,
 				78013F5A2EE9027300A024FB /* WebRTCManager.swift */,
 				787109242EE411D30002AAD5 /* EnglishJiApp.swift */,
 				787109BF2EE747AD0002AAD5 /* GoogleService-Info.plist */,
@@ -249,6 +253,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				78C85DB02EF2669F002BE743 /* AudioSessionManager.swift in Sources */,
+				78C85DB12EF2684D002BE743 /* SignalingClient.swift in Sources */,
 				78013F5B2EE9027300A024FB /* WebRTCManager.swift in Sources */,
 				787109252EE411D30002AAD5 /* EnglishJiApp.swift in Sources */,
 				78B3164F2EE9ED70002DCA00 /* WebRTCClient.swift in Sources */,
