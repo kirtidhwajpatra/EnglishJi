@@ -1,9 +1,35 @@
-const WebSocket = require("ws");
+import express from "express";
+import fetch from "node-fetch";
+import http from "http";
+import WebSocket from "ws";
+
+const app = express();
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
 
 const PORT = process.env.PORT || 8080;
-const wss = new WebSocket.Server({ port: PORT });
 
-console.log(`🚀 Signaling server running on ws://localhost:${PORT}`);
+/* ===============================
+   🔐 TURN CREDENTIALS ENDPOINT
+   =============================== */
+
+app.get("/turn-credentials", async (req, res) => {
+  try {
+    const response = await fetch(
+      `https://englishji.metered.live/api/v1/turn/credentials?apiKey=${process.env.METERED_API_KEY}`
+    );
+
+    const iceServers = await response.json();
+    res.json(iceServers);
+  } catch (err) {
+    console.error("❌ TURN fetch failed", err);
+    res.status(500).json({ error: "Failed to fetch TURN credentials" });
+  }
+});
+
+/* ===============================
+   📡 WEBSOCKET SIGNALING
+   =============================== */
 
 let waitingClient = null;
 
@@ -17,8 +43,8 @@ wss.on("connection", (ws) => {
 
     try {
       data = JSON.parse(message);
-    } catch (e) {
-      console.error("❌ Invalid JSON received");
+    } catch {
+      console.error("❌ Invalid JSON");
       return;
     }
 
@@ -26,9 +52,9 @@ wss.on("connection", (ws) => {
 
     // ---- JOIN MATCHMAKING ----
     if (data.type === "join") {
-      if (waitingClient === null) {
+      if (!waitingClient) {
         waitingClient = ws;
-        console.log("⏳ Client waiting for match");
+        console.log("⏳ Client waiting");
       } else {
         ws.partner = waitingClient;
         waitingClient.partner = ws;
@@ -66,16 +92,13 @@ wss.on("connection", (ws) => {
         ws.partner = null;
       }
       console.log("📴 Call ended");
-      return;
     }
   });
 
   ws.on("close", () => {
     console.log("🔴 Client disconnected");
 
-    if (waitingClient === ws) {
-      waitingClient = null;
-    }
+    if (waitingClient === ws) waitingClient = null;
 
     if (ws.partner) {
       ws.partner.send(JSON.stringify({ type: "leave" }));
@@ -86,4 +109,13 @@ wss.on("connection", (ws) => {
   ws.on("error", (err) => {
     console.error("⚠️ WebSocket error:", err.message);
   });
+});
+
+/* ===============================
+   🚀 START SERVER
+   =============================== */
+
+server.listen(PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`📡 WebSocket on ws://localhost:${PORT}`);
 });

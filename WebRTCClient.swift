@@ -21,8 +21,22 @@ final class WebRTCClient: NSObject {
     // MARK: - Peer Setup
     private func setupPeer() {
         let config = RTCConfiguration()
+
         config.iceServers = [
-            RTCIceServer(urlStrings: ["stun:stun.l.google.com:19302"])
+            RTCIceServer(urlStrings: [
+                "stun:stun.relay.metered.ca:80"
+            ]),
+
+            RTCIceServer(
+                urlStrings: [
+                    "turn:global.relay.metered.ca:80",
+                    "turn:global.relay.metered.ca:80?transport=tcp",
+                    "turns:global.relay.metered.ca:443",
+                    "turns:global.relay.metered.ca:443?transport=tcp"
+                ],
+                username: "36726cf73dbc7bf92d764894",
+                credential: "+7YCgmTXnpk3IV7"
+            )
         ]
 
         let constraints = RTCMediaConstraints(
@@ -30,12 +44,13 @@ final class WebRTCClient: NSObject {
             optionalConstraints: ["DtlsSrtpKeyAgreement": "true"]
         )
 
-        peer = factory.peerConnection(
+        self.peer = factory.peerConnection(
             with: config,
             constraints: constraints,
             delegate: self
         )
     }
+
 
     // MARK: - Audio
     private func setupAudio() {
