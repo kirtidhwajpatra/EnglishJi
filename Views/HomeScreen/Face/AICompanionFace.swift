@@ -27,6 +27,7 @@ struct AICompanionFace: View {
     var body: some View {
         ZStack {
             // 1. SCANNER RING (Only in Searching Mode)
+            // The ring stays centered while the head moves inside it -> Creates Depth
             if state == .searching {
                 Circle()
                     .trim(from: 0, to: 0.75)
@@ -40,7 +41,6 @@ struct AICompanionFace: View {
                     .frame(width: 140, height: 140)
                     .rotationEffect(.degrees(scannerRotation))
                     .onAppear {
-                        // 🔥 FIX: Always reset to 0 before starting animation
                         scannerRotation = 0
                         withAnimation(.linear(duration: 1.0).repeatForever(autoreverses: false)) {
                             scannerRotation = 360
@@ -53,6 +53,10 @@ struct AICompanionFace: View {
                 .fill(faceColor)
                 .frame(width: 110, height: 110)
                 .shadow(color: faceColor.opacity(0.4), radius: 10, y: 5)
+                // 🔥 THE MAGIC: Head follows eyes, but only 30% of the distance
+                .offset(x: lookOffset.width * 0.3, y: lookOffset.height * 0.3)
+                // 🔥 EXTRA COOL: Slight tilt in the direction of look
+                .rotationEffect(.degrees(Double(lookOffset.width) * 0.1))
             
             // 3. THE EYES CONTAINER
             HStack(spacing: 8) {
@@ -68,6 +72,10 @@ struct AICompanionFace: View {
                     isHappy: state == .connected
                 )
             }
+            // Eyes also need to move with the head, plus their own movement
+            // So we apply the head's offset to the container too
+            .offset(x: lookOffset.width * 0.3, y: lookOffset.height * 0.3)
+            .rotationEffect(.degrees(Double(lookOffset.width) * 0.1))
         }
         // MARK: - BEHAVIOR LOGIC
         .onReceive(lookTimer) { _ in
@@ -77,12 +85,9 @@ struct AICompanionFace: View {
             performBlink()
         }
         .onChange(of: state) { newState in
-            // 1. If we stop searching, RESET the rotation so it's ready for next time
             if newState != .searching {
                 scannerRotation = 0
             }
-            
-            // 2. If connected, center the eyes
             if newState == .connected {
                 withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
                     lookOffset = .zero
@@ -96,23 +101,24 @@ struct AICompanionFace: View {
     func performLookBehavior() {
         guard state != .connected else { return }
         
-        // Dynamic Timing: Searching is faster/jittery, Idle is lazy/smooth
+        // Dynamic Timing
         let isSearching = state == .searching
-        let range: CGFloat = isSearching ? 18 : 10
+        // Increased range slightly so the head movement is noticeable
+        let range: CGFloat = isSearching ? 22 : 15
         
-        // Random Coordinate within the eye range
         let x = CGFloat.random(in: -range...range)
         let y = CGFloat.random(in: -range...range)
         
+        // Smoother spring for the head follow effect
         let animation: Animation = isSearching
-            ? .interpolatingSpring(stiffness: 170, damping: 15) // Snappy/Alert
-            : .interpolatingSpring(stiffness: 50, damping: 10)  // Lazy/Gooey
+            ? .interpolatingSpring(stiffness: 170, damping: 15)
+            : .interpolatingSpring(stiffness: 50, damping: 12)
             
         withAnimation(animation) {
             lookOffset = CGSize(width: x, height: y)
         }
         
-        // Occasional "Double Take"
+        // Double Take Logic
         if Bool.random() {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                 let x2 = CGFloat.random(in: -range...range)
@@ -146,7 +152,7 @@ struct SmoothEyeView: View {
     
     var body: some View {
         ZStack {
-            // 1. SCLERA (White Part)
+            // 1. SCLERA
             Circle()
                 .fill(Color.white)
                 .frame(width: 38, height: 38)
@@ -172,7 +178,7 @@ struct SmoothEyeView: View {
                         .frame(width: 5, height: 5)
                         .offset(x: -3, y: -3)
                 }
-                .offset(lookOffset)
+                .offset(lookOffset) // The pupil moves full distance
                 .mask(
                     Circle().frame(width: 38, height: 38)
                 )
@@ -185,7 +191,7 @@ struct SmoothEyeView: View {
 #Preview {
     ZStack {
         Color.black.ignoresSafeArea()
-        AICompanionFace(state: .constant(.searching))
+        AICompanionFace(state: .constant(.idle))
             .scaleEffect(2)
     }
 }
