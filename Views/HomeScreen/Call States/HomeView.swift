@@ -11,50 +11,157 @@ import FirebaseAuth
 struct HomeView: View {
 
     @ObservedObject var webRTCManager: WebRTCManager
+    
+    // For tabs
+    @State private var selectedTab: String = "Call"
 
     var body: some View {
-        VStack(spacing: 30) {
-            Spacer()
-
-            VStack(spacing: 10) {
-                Image(systemName: "waveform.circle.fill")
-                    .resizable()
-                    .frame(width: 80, height: 80)
-                    .foregroundColor(.blue)
-
-                Text("English Talk")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-
-                Text("Practice speaking with learners worldwide.")
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
-                    .multilineTextAlignment(.center)
+        ZStack {
+            // MARK: - 1. Background
+            // Using a high-quality snowy/nature image similar to mock
+            AsyncImage(url: URL(string: "https://images.unsplash.com/photo-1548783060-cc45d55e0c96?q=80&w=2787&auto=format&fit=crop")) { phase in
+                switch phase {
+                case .empty:
+                    Color.gray
+                case .success(let image):
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                case .failure:
+                    Color.gray // Fallback
+                @unknown default:
+                    Color.gray
+                }
             }
+            .ignoresSafeArea()
+            .overlay(
+                // Dark gradient overlay for text readability
+                LinearGradient(
+                    colors: [
+                        .black.opacity(0.6),
+                        .black.opacity(0.2),
+                        .black.opacity(0.4)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
+            )
 
-            Spacer()
+            // MARK: - 2. Content
+            VStack(spacing: 0) {
+                
+                // --- Header ---
+                HStack {
+                    Spacer()
+                    // Profile / VS Circle
+                    Circle()
+                        .fill(Color.white)
+                        .frame(width: 50, height: 50)
+                        .overlay(
+                            Text("VS")
+                                .font(.system(size: 20, weight: .bold))
+                                .foregroundColor(.black)
+                        )
+                        .shadow(radius: 4)
+                        .padding(.trailing, 20)
+                        .padding(.top, 10) // Adjust for status bar if needed handled by safe area
+                }
+                
+                Spacer().frame(height: 20)
 
-            Button {
-                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                // --- Subtext ---
+                Text("350 Learners are practicing near you")
+                    .font(.caption)
+                    .foregroundColor(.white.opacity(0.8))
+                    .padding(.bottom, 30)
 
-                let userId = AuthManager.shared.user?.uid ?? UUID().uuidString
-                webRTCManager.startMatchmaking(userId: userId)
+                // --- Tabs (Call | Message) ---
+                HStack(spacing: 40) {
+                    Button {
+                        selectedTab = "Call"
+                    } label: {
+                        Text("Call")
+                            .font(.title2)
+                            .fontWeight(selectedTab == "Call" ? .bold : .regular)
+                            .foregroundColor(.white)
+                            .opacity(selectedTab == "Call" ? 1.0 : 0.6)
+                    }
 
-            } label: {
-                Text("Connect Now")
-                    .font(.title3)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.white)
+                    Button {
+                        selectedTab = "Message"
+                    } label: {
+                        Text("Message")
+                            .font(.title2)
+                            .fontWeight(selectedTab == "Message" ? .bold : .regular)
+                            .foregroundColor(.white)
+                            .opacity(selectedTab == "Message" ? 1.0 : 0.6)
+                    }
+                }
+                .padding(.bottom, 20)
+
+                // --- Main Card ---
+                RoundedRectangle(cornerRadius: 30)
+                    .fill(Color.white)
                     .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.blue)
-                    .cornerRadius(50)
-                    .shadow(color: .blue.opacity(0.3), radius: 10)
-            }
-            .padding(.horizontal, 40)
+                    // Take up significant vertical space
+                    .frame(height: UIScreen.main.bounds.height * 0.55)
+                    .overlay(
+                        VStack {
+                            Spacer()
+                            
+                            // Connect Button
+                            Button {
+                                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                                let userId = AuthManager.shared.user?.uid ?? UUID().uuidString
+                                webRTCManager.startMatchmaking(userId: userId)
+                            } label: {
+                                HStack(spacing: 12) {
+                                    Text("Connect")
+                                        .font(.title3)
+                                        .fontWeight(.bold)
+                                    
+                                    // Audio wave icon imitation
+                                    HStack(spacing: 3) {
+                                        RoundedRectangle(cornerRadius: 2).frame(width: 3, height: 10)
+                                        RoundedRectangle(cornerRadius: 2).frame(width: 3, height: 16)
+                                        RoundedRectangle(cornerRadius: 2).frame(width: 3, height: 8)
+                                    }
+                                }
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 16)
+                                .background(Color(red: 0.25, green: 0.10, blue: 0.55)) // Deep Purple
+                                .cornerRadius(25)
+                            }
+                            .padding(.horizontal, 40)
+                            .padding(.bottom, 40)
+                        }
+                    )
+                    .padding(.horizontal, 20)
+                
+                Spacer()
+                
+                // --- Bottom Floating Area ---
+                HStack(alignment: .center, spacing: 8) {
+                    
+                    AudioToggleView()
 
-            Spacer().frame(height: 50)
+                    
+                    // Right Avatar Stack
+                    SocialPillView(users: [
+                        EnglishJiUser(name: "A", imageURL: "https://i.pravatar.cc/150?img=1"),
+                        EnglishJiUser(name: "B", imageURL: "https://i.pravatar.cc/150?img=2"),
+                        EnglishJiUser(name: "C", imageURL: "https://i.pravatar.cc/150?img=3")
+                    ], totalCount: 45)
+                        
+                    }
+                    .padding(.vertical, 8)
+                    .background(Color.clear) // Container
+                }
+                .padding(.horizontal, 10)
+                .padding(.bottom, 20)
+            }
         }
-        .padding()
-    }
+    
 }

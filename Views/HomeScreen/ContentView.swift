@@ -34,11 +34,11 @@ struct ContentView: View {
                 CallInProgressView(webRTCManager: webRTCManager)
             }
 
-            VStack {
-                Spacer()
-                SignOutView()
-                    .padding(.bottom, 30)
-            }
+//            VStack {
+//                Spacer()
+//                SignOutView()
+//                    .padding(.bottom, 30)
+//            }
         }
         // 🔥 SINGLE SOURCE OF TRUTH FOR CALL UI
         .onChange(of: webRTCManager.isInCall) { inCall in

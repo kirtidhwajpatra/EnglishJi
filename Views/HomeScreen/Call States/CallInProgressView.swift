@@ -14,59 +14,158 @@ struct CallInProgressView: View {
     @State private var isMuted = false
     @State private var callDurationSeconds = 0
     @State private var timer: Timer?
+    @State private var animationWave = false
 
     var body: some View {
-        VStack {
-            Spacer().frame(height: 60)
+        ZStack {
+            // MARK: - Background
+            LinearGradient(
+                colors: [Color(hex: "#1A1A2E"), Color(hex: "#16213E")],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+            
+            // Subtle animated elements
+            Circle()
+                .fill(Color.blue.opacity(0.1))
+                .frame(width: 400, height: 400)
+                .offset(x: -100, y: -200)
+                .blur(radius: 50)
+            
+            Circle()
+                .fill(Color.purple.opacity(0.1))
+                .frame(width: 300, height: 300)
+                .offset(x: 100, y: 150)
+                .blur(radius: 50)
 
-            VStack(spacing: 20) {
-                Image(systemName: "person.crop.circle.fill")
-                    .resizable()
-                    .frame(width: 120, height: 120)
-                    .foregroundColor(.gray.opacity(0.5))
+            // MARK: - Content
+            VStack {
+                Spacer().frame(height: 50)
+                
+                // Connection Status
+                Text("Connected")
+                    .font(.caption)
+                    .foregroundColor(.green)
+                    .padding(.vertical, 6)
+                    .padding(.horizontal, 12)
+                    .background(Color.green.opacity(0.1))
+                    .cornerRadius(20)
 
-                Text("Speaking with")
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
-
-                Text("Language Partner")
-                    .font(.title)
-                    .fontWeight(.bold)
-
-                Text(formattedDuration)
-                    .font(.title2)
-                    .monospacedDigit()
-                    .foregroundColor(.gray)
-            }
-
-            Spacer()
-
-            HStack(spacing: 40) {
-
-                CallControlButton(
-                    icon: isMuted ? "mic.slash.fill" : "mic.fill",
-                    label: "Mute",
-                    isActive: isMuted
-                ) {
-                    isMuted.toggle()
-                    webRTCManager.toggleMute(isMuted: isMuted)
+                Spacer()
+                
+                // Avatar Area with Ripple
+                ZStack {
+                    if !isMuted {
+                        Circle()
+                            .stroke(Color.white.opacity(0.2), lineWidth: 2)
+                            .frame(width: 220, height: 220)
+                            .scaleEffect(animationWave ? 1.1 : 1.0)
+                            .opacity(animationWave ? 0 : 1)
+                            .animation(Animation.easeOut(duration: 1.5).repeatForever(autoreverses: false), value: animationWave)
+                    }
+                    
+                    AsyncImage(url: URL(string: "https://i.pravatar.cc/300?img=32")) { image in
+                        image.resizable()
+                             .aspectRatio(contentMode: .fill)
+                    } placeholder: {
+                        Color.gray
+                    }
+                    .frame(width: 180, height: 180)
+                    .clipShape(Circle())
+                    .overlay(Circle().stroke(Color.white, lineWidth: 4))
+                    .shadow(radius: 10)
                 }
+                .onAppear {
+                    animationWave = true
+                }
+                
+                Spacer().frame(height: 30)
 
-                Button {
-                    endCall()
-                } label: {
-                    Image(systemName: "phone.down.fill")
+                VStack(spacing: 8) {
+                    Text("Language Partner")
                         .font(.title)
+                        .fontWeight(.bold)
                         .foregroundColor(.white)
-                        .padding(25)
-                        .background(Color.red)
-                        .clipShape(Circle())
-                        .shadow(color: .red.opacity(0.4), radius: 10)
+
+                    Text(formattedDuration)
+                        .font(.title2)
+                        .monospacedDigit()
+                        .foregroundColor(.white.opacity(0.8))
                 }
+                
+                Spacer()
+
+                // Bottom Controls
+                HStack(spacing: 50) {
+                    
+                    // Mute Button
+                    Button {
+                        isMuted.toggle()
+                        webRTCManager.toggleMute(isMuted: isMuted)
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    } label: {
+                        VStack(spacing: 8) {
+                            ZStack {
+                                Circle()
+                                    .fill(isMuted ? Color.white : Color.white.opacity(0.1))
+                                    .frame(width: 70, height: 70)
+                                
+                                Image(systemName: isMuted ? "mic.slash.fill" : "mic.fill")
+                                    .font(.title2)
+                                    .foregroundColor(isMuted ? .black : .white)
+                            }
+                            Text("Mute")
+                                .font(.caption)
+                                .foregroundColor(.white)
+                        }
+                    }
+
+                    // End Call Button
+                    Button {
+                        endCall()
+                    } label: {
+                        VStack(spacing: 8) {
+                            ZStack {
+                                Circle()
+                                    .fill(Color.red)
+                                    .frame(width: 80, height: 80) // Slightly larger
+                                    .shadow(color: .red.opacity(0.5), radius: 10)
+                                
+                                Image(systemName: "phone.down.fill")
+                                    .font(.title)
+                                    .foregroundColor(.white)
+                            }
+                            Text("End")
+                                .font(.caption)
+                                .foregroundColor(.white)
+                        }
+                    }
+                    
+                    // Speaker Button (Mock for now)
+                    Button {
+                         UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                         // Toggle speaker logic here
+                    } label: {
+                        VStack(spacing: 8) {
+                            ZStack {
+                                Circle()
+                                    .fill(Color.white.opacity(0.1))
+                                    .frame(width: 70, height: 70)
+                                
+                                Image(systemName: "speaker.wave.2.fill")
+                                    .font(.title2)
+                                    .foregroundColor(.white)
+                            }
+                            Text("Speaker")
+                                .font(.caption)
+                                .foregroundColor(.white)
+                        }
+                    }
+                }
+                .padding(.bottom, 50)
             }
-            .padding(.bottom, 50)
         }
-        .background(Color.white)
         .onAppear { startTimer() }
         .onDisappear { stopTimer() }
     }
@@ -94,3 +193,4 @@ struct CallInProgressView: View {
         webRTCManager.disconnect()
     }
 }
+
