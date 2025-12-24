@@ -3,9 +3,11 @@ import fetch from "node-fetch";
 import http from "http";
 import WebSocket from "ws";
 
+import { WebSocketServer } from "ws";
+
 const app = express();
 const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
+const wss = new WebSocketServer({ server });
 
 const PORT = process.env.PORT || 8080;
 

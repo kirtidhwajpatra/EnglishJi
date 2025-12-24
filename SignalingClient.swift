@@ -13,7 +13,7 @@ final class SignalingClient {
     private var socket: URLSessionWebSocketTask?
     var onMessage: (([String: Any]) -> Void)?
 
-    private let serverURL = URL(string: "ws://10.238.253.242:8080")!
+    private let serverURL = URL(string: "wss://englishcallingapp.onrender.com")!
 
     // MARK: - Connect
     func connect() {
