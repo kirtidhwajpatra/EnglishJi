@@ -12,6 +12,8 @@ struct HomeView: View {
 
     @ObservedObject var webRTCManager: WebRTCManager
     
+    @State private var showLearnerMap = false
+    
     // For tabs
     @State private var selectedTab: String = "Call"
 
@@ -145,23 +147,44 @@ struct HomeView: View {
                 // --- Bottom Floating Area ---
                 HStack(alignment: .center, spacing: 8) {
                     
-                    AudioToggleView()
-
+                    // Left Circle Button (Audio config?)
+                    Button(action: {
+                                            withAnimation(.spring()) {
+                                                showLearnerMap = true // <--- TRIGGER
+                                            }
+                                        }) {
+                                            AudioToggleView()
+                                        }
+                                        .buttonStyle(PlainButtonStyle())
                     
                     // Right Avatar Stack
                     SocialPillView(users: [
                         EnglishJiUser(name: "A", imageURL: "https://i.pravatar.cc/150?img=1"),
                         EnglishJiUser(name: "B", imageURL: "https://i.pravatar.cc/150?img=2"),
                         EnglishJiUser(name: "C", imageURL: "https://i.pravatar.cc/150?img=3")
-                    ], totalCount: 45)
-                        
-                    }
-                    .padding(.vertical, 8)
-                    .background(Color.clear) // Container
+                    ], totalCount: 45)// Container
                 }
-                .padding(.horizontal, 10)
+                .padding(.horizontal, 30)
                 .padding(.bottom, 20)
+                
+               
+                
             }
         }
+        
+        
+        if showLearnerMap {
+                        LearnerRadarView(onClose: {
+                            withAnimation(.spring()) {
+                                showLearnerMap = false
+                            }
+                        })
+                        .transition(.opacity.combined(with: .scale(scale: 0.9))) // Nice zoom effect
+                        .zIndex(100) // Ensure it sits on top
+                    }
+      
+        
+    }
+    
     
 }

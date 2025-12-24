@@ -51,6 +51,8 @@ struct ContentView: View {
             withAnimation(.easeInOut(duration: 0.3)) {
                 if state == "Searching" {
                     currentPhase = .searching
+                } else if state == "Idle" && currentPhase == .searching {
+                    currentPhase = .home
                 }
             }
         }
