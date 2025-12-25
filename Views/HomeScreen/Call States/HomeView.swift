@@ -21,6 +21,7 @@ struct HomeView: View {
     // --- 2. LOCAL UI STATES ---
     @State private var showLearnerMap = false
     @State private var selectedTab: String = "Call"
+    @State private var showProfile = false
 
     // --- 3. COMPUTED HELPERS ---
     var isSearching: Bool { currentPhase == .searching }
@@ -52,45 +53,44 @@ struct HomeView: View {
         ZStack(alignment: .top) {
             
             // MARK: - 1. BACKGROUND LAYER
-            AsyncImage(url: URL(string: "https://images.unsplash.com/photo-1548783060-cc45d55e0c96?q=80&w=2787&auto=format&fit=crop")) { phase in
-                if let image = phase.image {
-                    image.resizable().aspectRatio(contentMode: .fill)
-                } else {
-                    Color.gray
-                }
-            }
+            Color(red: 241/255, green: 241/255, blue: 241/255) // Hex #F1F1F1
             .ignoresSafeArea()
-            .overlay(
-                LinearGradient(
-                    colors: [.black.opacity(0.6), .black.opacity(0.2), .black.opacity(0.4)],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .ignoresSafeArea()
-            )
 
             // MARK: - 2. HEADER & TABS (Layer 0)
             // We shift this UP to fix the empty space issue
             if !isSearching {
                 VStack(spacing: 0) {
                     // A. Header Row
-                    HStack {
+                    // Replace your existing Circle() block with this Button:
+                    HStack{
                         Spacer()
-                        Circle()
-                            .fill(Color.white)
-                            .frame(width: 48, height: 48)
-                            .overlay(Text("VS").font(.system(size: 18, weight: .bold)))
-                            .shadow(radius: 4)
-                            .padding(.trailing, 24)
+                        
+                        Button(action: {
+                            // 1. Add haptic feedback for a premium feel
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                            // 2. Trigger the state change
+                            showProfile = true
+                        }) {
+                            // This is your existing VS Circle UI
+                            Circle()
+                                .fill(Color.white)
+                                .frame(width: 48, height: 48)
+                                .overlay(
+                                    Text("VS")
+                                        .font(.system(size: 18, weight: .bold))
+                                        .foregroundColor(.black)
+                                )
+                                .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
+                        }
                     }
-                    // FIX: Reduced from 70 to 50 to remove excess top gap
+                    .padding(.horizontal, 20)
                     .padding(.top, 0)
                     
                     // B. Subtext
                     // FIX: Removed large Spacer(), used tight padding instead
                     Text("350 Learners are practicing near you")
                         .font(.subheadline)
-                        .foregroundColor(.white.opacity(0.9))
+                        .foregroundColor(Color(hex: "110037"))
                         .padding(.top, 20)
                         .padding(.bottom, 25)
 
@@ -124,7 +124,7 @@ struct HomeView: View {
                         if isSearching { Spacer().frame(height: 140) }
                         
                         AICompanionFace(state: .constant(derivedFaceState))
-                            .scaleEffect(isSearching ? 1.5 : 1.3)
+                            .scaleEffect(isSearching ? 1.6 : 2.4)
                         
                         if isSearching { Spacer() }
                     }
@@ -229,6 +229,10 @@ struct HomeView: View {
             }
         }
         .animation(.spring(response: 0.6, dampingFraction: 0.8), value: currentPhase)
+        
+        .fullScreenCover(isPresented: $showProfile) {
+            ProfileView()
+        }
     }
 }
 
@@ -243,7 +247,7 @@ struct TabButton: View {
             Text(text)
                 .font(.title2)
                 .fontWeight(selectedTab == text ? .bold : .medium)
-                .foregroundColor(.white)
+                .foregroundColor(Color(hex: "110037"))
                 .opacity(selectedTab == text ? 1.0 : 0.6)
                 .scaleEffect(selectedTab == text ? 1.05 : 1.0)
         }

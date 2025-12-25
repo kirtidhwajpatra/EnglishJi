@@ -22,7 +22,7 @@ struct AICompanionFace: View {
     let blinkTimer = Timer.publish(every: 4.0, on: .main, in: .common).autoconnect()
     
     // Theme Colors
-    let faceColor = Color(red: 0.22, green: 0.08, blue: 0.55) // Deep Purple Brand
+    let faceColor = Color(red: 221/255, green: 76/255, blue: 161/255)
     
     var body: some View {
         ZStack {
