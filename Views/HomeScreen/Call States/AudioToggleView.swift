@@ -12,7 +12,7 @@ struct AudioToggleView: View {
         ZStack {
             Circle()
                 .fill(Color.white)
-                .frame(width: 60, height: 60)
+                .frame(width: 60, height: 64)
                 .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
             
             HStack(spacing: 3) {

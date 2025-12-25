@@ -22,6 +22,7 @@ struct HomeView: View {
     @State private var showLearnerMap = false
     @State private var selectedTab: String = "Call"
     @State private var showProfile = false
+    @State private var showMessages = false
 
     // --- 3. COMPUTED HELPERS ---
     var isSearching: Bool { currentPhase == .searching }
@@ -40,7 +41,7 @@ struct HomeView: View {
     // Height: 50% of screen (Home) vs 100% (Searching).
     // Reduced from 0.55 to 0.50 to prevent covering the Tabs.
     var cardHeight: CGFloat {
-        isSearching ? UIScreen.main.bounds.height : UIScreen.main.bounds.height * 0.54
+        isSearching ? UIScreen.main.bounds.height : UIScreen.main.bounds.height * 0.52
     }
     
     // Bottom Padding: Lift card 100px up to clear pills (Home) vs 0 (Searching)
@@ -65,41 +66,69 @@ struct HomeView: View {
                     HStack{
                         Spacer()
                         
+                        // 🔥 UPDATED PROFILE BUTTON (Matches image_21.png)
                         Button(action: {
-                            // 1. Add haptic feedback for a premium feel
                             UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                            // 2. Trigger the state change
                             showProfile = true
                         }) {
-                            // This is your existing VS Circle UI
-                            Circle()
-                                .fill(Color.white)
-                                .frame(width: 48, height: 48)
-                                .overlay(
-                                    Text("VS")
-                                        .font(.system(size: 18, weight: .bold))
-                                        .foregroundColor(.black)
+                            Text("VS")
+                                .font(.system(size: 23, weight: .semibold, design: .rounded))
+                                // Use a soft black for a premium look
+                                .foregroundColor(Color(hex: "1C1C1E"))
+                                .frame(width: 56, height: 52)
+                                .background(
+                                    // 1. The Shape: RoundedRectangle with continuous corners ("Squircle")
+                                    RoundedRectangle(cornerRadius: 26, style: .continuous)
+                                        .fill(Color.white)
                                 )
-                                .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
+                                .overlay(
+                                    // 2. The Border: A diagonal gray gradient
+                                    RoundedRectangle(cornerRadius: 36, style: .continuous)
+                                        .stroke(
+                                            LinearGradient(
+                                                colors: [
+                                                    Color(hex: "#E3E3E3"), // Very light gray (Top Left)
+                                                    Color(hex: "CECECE")  // Medium gray (Bottom Right)
+                                                ],
+                                                startPoint: .top,
+                                                endPoint: .bottom
+                                            ),
+                                            lineWidth: 1
+                                        )
+                                )
+                                // 3. Soft outer shadow for depth
+                                .shadow(color: .black.opacity(0.08), radius: 12, y: 2)
                         }
+                
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 0)
                     
                     // B. Subtext
                     // FIX: Removed large Spacer(), used tight padding instead
-                    Text("350 Learners are practicing near you")
-                        .font(.subheadline)
-                        .foregroundColor(Color(hex: "110037"))
-                        .padding(.top, 20)
-                        .padding(.bottom, 25)
+                    HStack(alignment: .center, spacing: 6) {
+                        Image(systemName: "bolt.fill")
+                            .font(.subheadline)
+                            .foregroundColor(Color(hex: "3b3b3b"))
+                            .padding(.bottom, 2)
+                        
+                        Text("350 Learners are practicing near you")
+                            .font(.subheadline)
+                            .foregroundColor(Color(hex: "3B3B3B"))
+                            .opacity( 0.5)
+                            .padding(.top, 20)
+                            .padding(.bottom, 25)
+                    }
+                    
+
 
                     // C. Tabs
                     HStack(spacing: 40) {
                         TabButton(text: "Call", selectedTab: $selectedTab)
                         TabButton(text: "Message", selectedTab: $selectedTab)
                     }
-                    .padding(.bottom, 5) // Small buffer before the card starts
+                    .padding(.top, 14)
+                    .padding(.bottom, 4) // Small buffer before the card starts
                     
                     Spacer() // This pushes the header to the top
                 }
@@ -116,7 +145,7 @@ struct HomeView: View {
                     // A. White Background
                     RoundedRectangle(cornerRadius: cardCornerRadius)
                         .fill(Color.white)
-                        .shadow(color: .black.opacity(isSearching ? 0 : 0.25), radius: 45, y: -5)
+                        .shadow(color: .black.opacity(isSearching ? 0 : 0.05), radius: 45, y: -5)
                     
                     // B. AI Face
                     VStack {
@@ -164,22 +193,22 @@ struct HomeView: View {
                                 HStack(spacing: 12) {
                                     Text("Connect")
                                         .font(.title3)
-                                        .fontWeight(.bold)
+                                        .fontWeight(.regular)
                                     
                                     // Audio Bars Icon
                                     HStack(spacing: 3) {
-                                        RoundedRectangle(cornerRadius: 2).frame(width: 3, height: 10)
-                                        RoundedRectangle(cornerRadius: 2).frame(width: 3, height: 16)
-                                        RoundedRectangle(cornerRadius: 2).frame(width: 3, height: 8)
+                                        RoundedRectangle(cornerRadius: 2).frame(width: 2, height: 10)
+                                        RoundedRectangle(cornerRadius: 2).frame(width: 2, height: 16)
+                                        RoundedRectangle(cornerRadius: 2).frame(width: 2, height: 8)
                                     }
                                 }
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
-                                .padding(.vertical, 18)
+                                .padding(.vertical, 15)
                                 .background(Color(red: 0.25, green: 0.10, blue: 0.55))
                                 .cornerRadius(30)
                             }
-                            .padding(.horizontal, 30)
+                            .padding(.horizontal, 40)
                             .padding(.bottom, 30)
                             .transition(.move(edge: .bottom).combined(with: .opacity))
                         }
@@ -206,11 +235,20 @@ struct HomeView: View {
                         }
                         .buttonStyle(PlainButtonStyle())
                         
-                        SocialPillView(users: [
-                            EnglishJiUser(name: "A", imageURL: "https://i.pravatar.cc/150?img=1"),
-                            EnglishJiUser(name: "B", imageURL: "https://i.pravatar.cc/150?img=2"),
-                            EnglishJiUser(name: "C", imageURL: "https://i.pravatar.cc/150?img=3")
-                        ], totalCount: 45)
+                        // 🔥 UPDATED: Social Pill Button
+                        Button(action: {
+                            // 1. Premium Haptic Feedback
+                            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                            // 2. Trigger Navigation
+                            showMessages = true
+                        }) {
+                            SocialPillView(users: [
+                                EnglishJiUser(name: "A", imageURL: "https://i.pravatar.cc/150?img=1"),
+                                EnglishJiUser(name: "B", imageURL: "https://i.pravatar.cc/150?img=2"),
+                                EnglishJiUser(name: "C", imageURL: "https://i.pravatar.cc/150?img=3")
+                            ], totalCount: 45)
+                        }
+                        .buttonStyle(PlainButtonStyle()) // Prevents default fade effect
                     }
                     .padding(.horizontal, 30)
                     .padding(.bottom, 30)
@@ -233,6 +271,10 @@ struct HomeView: View {
         .fullScreenCover(isPresented: $showProfile) {
             ProfileView()
         }
+        
+        .fullScreenCover(isPresented: $showMessages) {
+            MessagesCardView()
+        }
     }
 }
 
@@ -246,10 +288,11 @@ struct TabButton: View {
         } label: {
             Text(text)
                 .font(.title2)
-                .fontWeight(selectedTab == text ? .bold : .medium)
+                .fontWeight(selectedTab == text ? .regular : .light)
                 .foregroundColor(Color(hex: "110037"))
                 .opacity(selectedTab == text ? 1.0 : 0.6)
                 .scaleEffect(selectedTab == text ? 1.05 : 1.0)
         }
     }
 }
+

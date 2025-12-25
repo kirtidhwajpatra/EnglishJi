@@ -11,6 +11,7 @@ struct ProfileView: View {
     
     // Using simple Dismiss action if needed
     @Environment(\.dismiss) var dismiss
+    @State private var showSettings = false
     
 
     
@@ -197,11 +198,20 @@ struct ProfileView: View {
                         dismiss() // 🔥 This closes the profile
                     }) {
                         Image(systemName: "arrow.left")
+                            .font(.system(size: 16, weight: .semibold))
+                            .padding()
+                            .clipShape(.circle)
+                            .background(Color(ej_hex: "F2F2F7"))
+                            
                     }
                     
                     Spacer()
                         // ... rest of your styling
-                    CapsulePill(text: "Setting")
+                    
+                    
+                    Button(action: { showSettings = true }) {
+                        CapsulePill(text: "Setting")
+                    }
                    
                     CapsulePill(text: "Online", color: "34C759", filled: true)
                 }
@@ -227,6 +237,10 @@ struct ProfileView: View {
                 .padding(.horizontal, 32)
                 .padding(.bottom, 0)
             }
+        }
+        .preferredColorScheme(.light)
+        .sheet(isPresented: $showSettings) {
+            SettingsView()
         }
     }
 
@@ -303,6 +317,9 @@ extension Color {
     }
 }
 
+    
+
 #Preview {
     ProfileView()
 }
+

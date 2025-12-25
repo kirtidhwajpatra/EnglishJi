@@ -29,7 +29,7 @@ struct SocialPillView: View {
                     } placeholder: {
                         Color.gray.opacity(0.3)
                     }
-                    .frame(width: 45, height: 45) // Matches reference size
+                    .frame(width: 45, height: 50) // Matches reference size
                     .clipShape(Circle())
                     .overlay(
                         Circle().stroke(Color.white, lineWidth: 3) // The "Cutout" effect
