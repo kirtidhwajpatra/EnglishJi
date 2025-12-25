@@ -12,6 +12,8 @@ import AudioToolbox
 class SensoryFeedbackManager {
     static let shared = SensoryFeedbackManager()
     private let hapticGenerator = UIImpactFeedbackGenerator(style: .light)
+    
+   
 
     init() {
         hapticGenerator.prepare()
@@ -43,6 +45,7 @@ struct MessagesCardView: View {
     
     @Environment(\.dismiss) var dismiss
     
+    
     // Sample Data
     let chats: [ChatModel] = [
         ChatModel(name: "Daniel Murphy", message: "Hey, I just wanted to check if we're still on for tomorrow...", time: "10:24 am", unreadCount: 2, image: "person1"),
@@ -68,7 +71,7 @@ struct MessagesCardView: View {
                     // --- HEADER ---
                     HStack(alignment: .bottom) {
                         Button(action: { dismiss() }) {
-                            Image(systemName: "arrow.left")
+                            Image(systemName: "chevron.left")
                                 .font(.system(size: 22, weight: .semibold))
                                 .foregroundColor(.black)
                                 .padding(10)
@@ -109,10 +112,11 @@ struct MessagesCardView: View {
 struct MessageCard: View {
     let chat: ChatModel
     @State private var hasAppeared = false
+    @State private var showChatDetail = false
     
     var body: some View {
         Button(action: {
-            // Action to open chat
+            showChatDetail = true
         }) {
             HStack(alignment: .top, spacing: 16) {
                 // Avatar
@@ -182,6 +186,10 @@ struct MessageCard: View {
         }
         .onDisappear {
             hasAppeared = false
+        }
+        
+        .fullScreenCover(isPresented: $showChatDetail) {
+            ChatDetailView(chatPartner: chat)
         }
     }
 }
