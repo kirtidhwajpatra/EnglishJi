@@ -12,7 +12,7 @@ struct AudioToggleView: View {
         ZStack {
             Circle()
                 .fill(Color.white)
-                .frame(width: 60, height: 64)
+                .frame(width: 64, height: 66)
                 .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
             
             HStack(spacing: 3) {
@@ -25,7 +25,7 @@ struct AudioToggleView: View {
             // The Green "Active" Dot
             Circle()
                 .fill(Color.green)
-                .frame(width: 8, height: 8)
+                .frame(width: 10, height: 10)
                 .offset(x: 12, y: 8)
         }
     }

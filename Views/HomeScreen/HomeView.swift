@@ -43,14 +43,14 @@ struct HomeView: View {
     // Height: 50% of screen (Home) vs 100% (Searching).
     // Reduced from 0.55 to 0.50 to prevent covering the Tabs.
     var cardHeight: CGFloat {
-        isSearching ? UIScreen.main.bounds.height : UIScreen.main.bounds.height * 0.52
+        isSearching ? UIScreen.main.bounds.height : UIScreen.main.bounds.height * 0.53
     }
     
     // Bottom Padding: Lift card 100px up to clear pills (Home) vs 0 (Searching)
-    var cardBottomPadding: CGFloat { isSearching ? 0 : 140 }
+    var cardBottomPadding: CGFloat { isSearching ? 0 : 125 }
     
-    var cardCornerRadius: CGFloat { isSearching ? 0 : 32 }
-    var cardHorizontalPadding: CGFloat { isSearching ? 0 : 20 }
+    var cardCornerRadius: CGFloat { isSearching ? 0 : 50 }
+    var cardHorizontalPadding: CGFloat { isSearching ? 0 : 25 }
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -103,24 +103,27 @@ struct HomeView: View {
                         }
                 
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 0)
+                    .padding(.horizontal, 25)
+                    .padding(.top, 10)
                     
                     // B. Subtext
                     // FIX: Removed large Spacer(), used tight padding instead
                     HStack(alignment: .center, spacing: 6) {
-                        Image(systemName: "bolt.fill")
-                            .font(.subheadline)
-                            .foregroundColor(Color(hex: "3b3b3b"))
-                            .padding(.bottom, 2)
+//                        Image(systemName: "bolt.fill")
+//                            .font(.subheadline)
+//                            .foregroundColor(Color(hex: "3b3b3b"))
+//                            .padding(.bottom, 2)
+//                        
+//                        Text("350 Learners are practicing near you")
+//                            .font(.subheadline)
+//                            .foregroundColor(Color(hex: "3B3B3B"))
+//                            .opacity( 0.5)
+//                            .padding(.top, 20)
+//                            .padding(.bottom, 25)
                         
-                        Text("350 Learners are practicing near you")
-                            .font(.subheadline)
-                            .foregroundColor(Color(hex: "3B3B3B"))
-                            .opacity( 0.5)
-                            .padding(.top, 20)
-                            .padding(.bottom, 25)
+                        MotivationalBannerView()
                     }
+                    .padding(.top, 20)
                     
 
 
@@ -129,8 +132,8 @@ struct HomeView: View {
                         TabButton(text: "Call", selectedTab: $selectedTab)
                         TabButton(text: "Message", selectedTab: $selectedTab)
                     }
-                    .padding(.top, 14)
-                    .padding(.bottom, 4) // Small buffer before the card starts
+                    .padding(.top, 40)
+                    .padding(.bottom, 10) // Small buffer before the card starts
                     
                     Spacer() // This pushes the header to the top
                 }
@@ -155,13 +158,13 @@ struct HomeView: View {
                         if isSearching { Spacer().frame(height: 140) }
                         
                         AICompanionFace(state: .constant(derivedFaceState))
-                            .scaleEffect(isSearching ? 1.6 : 2.4)
+                            .scaleEffect(isSearching ? 1.6 : 2.6)
                         
                         if isSearching { Spacer() }
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
                     // When Home: Padding 80 keeps face above Connect Button
-                    .padding(.bottom, isSearching ? 0 : 90)
+                    .padding(.bottom, isSearching ? 0 : 110)
                     
                     // C. Bottom Content (Connect / Cancel)
                     VStack {
@@ -209,6 +212,7 @@ struct HomeView: View {
                                 .padding(.vertical, 15)
                                 .background(Color(red: 0.25, green: 0.10, blue: 0.55))
                                 .cornerRadius(30)
+                                
                             }
                             .padding(.horizontal, 40)
                             .padding(.bottom, 30)
@@ -217,9 +221,14 @@ struct HomeView: View {
                     }
                 }
                 // 🔥 LAYOUT FIXES APPLIED HERE
+                .overlay(
+                    RoundedRectangle(cornerRadius: 50, style: .continuous)
+                        .stroke(Color.black.opacity(0.08), lineWidth: 1)
+                )
                 .frame(height: cardHeight)
                 .padding(.horizontal, cardHorizontalPadding)
                 .padding(.bottom, cardBottomPadding)
+                
                 .edgesIgnoringSafeArea(isSearching ? .all : [])
                 .zIndex(1) // Ensures Card is visually ON TOP of Header
             }
@@ -228,7 +237,7 @@ struct HomeView: View {
             if !isSearching {
                 VStack {
                     Spacer()
-                    HStack(alignment: .center, spacing: 16) {
+                    HStack(alignment: .center, spacing: 6) {
                         
                         Button(action: {
                                 UIImpactFeedbackGenerator(style: .medium).impactOccurred()
@@ -237,6 +246,8 @@ struct HomeView: View {
                                 GamePillButton()
                             }
                             .buttonStyle(PlainButtonStyle())
+                        
+//                        Spacer().frame(width: 16)
                         
                         Button(action: {
                             withAnimation(.spring()) { showLearnerMap = true }
@@ -256,12 +267,12 @@ struct HomeView: View {
                                 EnglishJiUser(name: "A", imageURL: "https://i.pravatar.cc/150?img=1"),
                                 EnglishJiUser(name: "B", imageURL: "https://i.pravatar.cc/150?img=2"),
                                 EnglishJiUser(name: "C", imageURL: "https://i.pravatar.cc/150?img=3")
-                            ], totalCount: 45)
+                            ])
                         }
-                        .buttonStyle(PlainButtonStyle()) // Prevents default fade effect
+                        .buttonStyle(PlainButtonStyle())// Prevents default fade effect
                     }
                     .padding(.horizontal, 30)
-                    .padding(.bottom, 30)
+                    .padding(.bottom, 20)
                 }
                 .transition(.opacity)
                 .zIndex(0)
