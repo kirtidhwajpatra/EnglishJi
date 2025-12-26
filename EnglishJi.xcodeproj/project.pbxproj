@@ -54,6 +54,18 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		784583EE2EFE4A5B00F98583 /* Exceptions for "TicTacToe" folder in "EnglishJi" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				CellView.swift,
+				ResultView.swift,
+				SketchGrid.swift,
+				SketchMark.swift,
+				TicTacToeGameScreen.swift,
+				TicTacToeView.swift,
+			);
+			target = 787109202EE411D30002AAD5 /* EnglishJi */;
+		};
 		787109672EE4386A0002AAD5 /* Exceptions for "EnglishJi" folder in "EnglishJi" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -67,6 +79,19 @@
 		78013F572EE901B200A024FB /* App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = App;
+			sourceTree = "<group>";
+		};
+		784583DE2EFD810900F98583 /* ViewModel */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = ViewModel;
+			sourceTree = "<group>";
+		};
+		784583EB2EFE4A4500F98583 /* TicTacToe */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				784583EE2EFE4A5B00F98583 /* Exceptions for "TicTacToe" folder in "EnglishJi" target */,
+			);
+			path = TicTacToe;
 			sourceTree = "<group>";
 		};
 		784D28B52EE84C5E003F70DF /* Fonts */ = {
@@ -131,9 +156,19 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		784583EA2EFE4A3E00F98583 /* Games */ = {
+			isa = PBXGroup;
+			children = (
+				784583EB2EFE4A4500F98583 /* TicTacToe */,
+			);
+			path = Games;
+			sourceTree = "<group>";
+		};
 		787109182EE411D30002AAD5 = {
 			isa = PBXGroup;
 			children = (
+				784583EA2EFE4A3E00F98583 /* Games */,
+				784583DE2EFD810900F98583 /* ViewModel */,
 				78013F572EE901B200A024FB /* App */,
 				784D28B52EE84C5E003F70DF /* Fonts */,
 				787109682EE43D270002AAD5 /* TextAnimation */,
@@ -175,6 +210,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				78013F572EE901B200A024FB /* App */,
+				784583DE2EFD810900F98583 /* ViewModel */,
 				784D28B52EE84C5E003F70DF /* Fonts */,
 				787109232EE411D30002AAD5 /* EnglishJi */,
 				7871092F2EE413F20002AAD5 /* Components */,

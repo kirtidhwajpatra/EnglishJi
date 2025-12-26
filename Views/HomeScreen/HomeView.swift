@@ -23,6 +23,8 @@ struct HomeView: View {
     @State private var selectedTab: String = "Call"
     @State private var showProfile = false
     @State private var showMessages = false
+    @State private var showGame = false
+
 
     // --- 3. COMPUTED HELPERS ---
     var isSearching: Bool { currentPhase == .searching }
@@ -229,6 +231,14 @@ struct HomeView: View {
                     HStack(alignment: .center, spacing: 16) {
                         
                         Button(action: {
+                                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                                showGame = true
+                            }) {
+                                GamePillButton()
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                        
+                        Button(action: {
                             withAnimation(.spring()) { showLearnerMap = true }
                         }) {
                             AudioToggleView()
@@ -275,6 +285,14 @@ struct HomeView: View {
         .fullScreenCover(isPresented: $showMessages) {
             MessagesCardView()
         }
+        
+        .fullScreenCover(isPresented: $showGame) {
+            TicTacToeGameScreen {
+                showGame = false
+            }
+        }
+
+
     }
 }
 
