@@ -10,6 +10,10 @@ final class WebRTCManager: ObservableObject {
     @Published var isInCall: Bool = false
     @Published var connectionState: String = "Idle"
     @Published var debugLog: String = ""
+    @Published var showCallSummary: Bool = false
+    
+    // Derived partner ID for the demo (in real app, simpler to store from signaling)
+    @Published var lastCallPartnerId: String = "" // 🔥 Actual Partner ID
 
     // MARK: - Core
     private var rtc: WebRTCClient?
@@ -20,6 +24,7 @@ final class WebRTCManager: ObservableObject {
     private var isRemoteDescriptionSet = false
     private var pendingICE: [RTCIceCandidate] = []
     private var canStartMatchmaking = true
+    var myUserId: String = "" // Store my ID (Public for CallSummaryView)
 
     // MARK: - Init
     init() {
@@ -36,6 +41,7 @@ final class WebRTCManager: ObservableObject {
 
         canStartMatchmaking = false
         isConnecting = true
+        myUserId = userId
         resetState()
 
         rtc = WebRTCClient()
@@ -44,7 +50,8 @@ final class WebRTCManager: ObservableObject {
         connectionState = "Searching"
         log("Connecting signaling...")
         signaling.connect()
-        signaling.join()
+        // 🔥 Send User ID in Join Payload
+        signaling.join(userId: userId)
     }
 
     /// Used by End button OR when screen is dismissed
@@ -85,6 +92,15 @@ final class WebRTCManager: ObservableObject {
             guard let rtc else { return }
 
             let role = json["role"] as? String ?? "callee"
+            // 🔥 Capture Partner ID
+            if let partnerId = json["partnerId"] as? String {
+                self.lastCallPartnerId = partnerId
+                log("Partner ID: \(partnerId)")
+                print("🤝 WebRTCManager: MATCHED with Partner: \(partnerId)")
+            } else {
+                print("❌ WebRTCManager: Matched but NO partnerId found in signal!")
+            }
+            
             log("Matched as \(role)")
             connectionState = "Connecting"
 
@@ -189,6 +205,8 @@ final class WebRTCManager: ObservableObject {
 
     // MARK: - FINAL CLEANUP (NO SIGNALING HERE)
 
+    // MARK: - FINAL CLEANUP (NO SIGNALING HERE)
+
     private func endCallAndResetUI() {
         log("Cleaning up call state")
 
@@ -202,6 +220,13 @@ final class WebRTCManager: ObservableObject {
         isInCall = false                   // 🔥 UI CLOSES
         connectionState = "Idle"
         canStartMatchmaking = true
+        
+        // 🔥 Trigger Call Summary ONLY if we had a partner
+        if !lastCallPartnerId.isEmpty {
+            showCallSummary = true
+        } else {
+             showCallSummary = false
+        }
     }
 
     // MARK: - RTC Callbacks

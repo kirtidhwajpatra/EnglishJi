@@ -50,9 +50,17 @@ struct AICompanionFace: View {
             
             // 2. THE FACE BASE (Head)
             Circle()
-                .fill(faceColor)
+                // 🔥 GRADIENT FACE
+                .fill(
+                    LinearGradient(
+                        colors: [Color(hex: "E43251"), Color(hex: "F4457F")],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
                 .frame(width: 110, height: 110)
-                .shadow(color: faceColor.opacity(0.4), radius: 10, y: 5)
+                // Use the first color for shadow
+                .shadow(color: Color(hex: "E43251").opacity(0.4), radius: 10, y: 5)
                 // 🔥 THE MAGIC: Head follows eyes, but only 30% of the distance
                 .offset(x: lookOffset.width * 0.3, y: lookOffset.height * 0.3)
                 // 🔥 EXTRA COOL: Slight tilt in the direction of look

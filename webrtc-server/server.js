@@ -54,16 +54,28 @@ wss.on("connection", (ws) => {
 
     // ---- JOIN MATCHMAKING ----
     if (data.type === "join") {
+      ws.userId = data.userId; // Save the user ID
+
       if (!waitingClient) {
         waitingClient = ws;
-        console.log("⏳ Client waiting");
+        console.log(`⏳ Client waiting (ID: ${ws.userId})`);
       } else {
         ws.partner = waitingClient;
         waitingClient.partner = ws;
 
-        ws.send(JSON.stringify({ type: "matched", role: "caller" }));
+        // Send 'matched' with the *OTHER* person's ID
+        ws.send(JSON.stringify({
+          type: "matched",
+          role: "caller",
+          partnerId: waitingClient.userId
+        }));
+
         waitingClient.send(
-          JSON.stringify({ type: "matched", role: "callee" })
+          JSON.stringify({
+            type: "matched",
+            role: "callee",
+            partnerId: ws.userId
+          })
         );
 
         waitingClient = null;

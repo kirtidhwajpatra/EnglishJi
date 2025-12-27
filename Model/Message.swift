@@ -20,12 +20,13 @@ struct Message: Identifiable, Codable, Equatable {
     let senderId: String
     @ServerTimestamp var timestamp: Date?
     
-    // 🔥 FIX: Use the same dynamic logic as the ViewModel
-    var isCurrentUser: Bool {
-        #if targetEnvironment(simulator)
-        return senderId == "user_simulator"
-        #else
-        return senderId == "user_iphone"
-        #endif
+    // Explicit Init for creating local messages
+    init(id: String? = nil, text: String, senderId: String, timestamp: Date? = nil) {
+        self.id = id
+        self.text = text
+        self.senderId = senderId
+        self.timestamp = timestamp
     }
+    
+
 }

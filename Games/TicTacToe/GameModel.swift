@@ -1,0 +1,31 @@
+import Foundation
+
+enum GameMode {
+    case vsHuman
+    case vsMachine
+}
+
+enum Player: Equatable {
+    case p1, p2
+    
+    var icon: String {
+        switch self {
+        case .p1: return TicTacToeTheme.player1Icon
+        case .p2: return TicTacToeTheme.player2Icon
+        }
+    }
+    
+    // For the UI logic
+    var next: Player { self == .p1 ? .p2 : .p1 }
+}
+
+struct Move {
+    let player: Player
+    let boardIndex: Int
+}
+
+enum GameState: Equatable {
+    case active
+    case draw
+    case won(Player)
+}

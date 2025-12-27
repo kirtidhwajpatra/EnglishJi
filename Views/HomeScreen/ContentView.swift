@@ -57,6 +57,13 @@ struct ContentView: View {
                 )
             }
             
+            // 3. Call Summary Overlay
+            if webRTCManager.showCallSummary {
+                CallSummaryView(webRTCManager: webRTCManager)
+                    .transition(.move(edge: .bottom))
+                    .zIndex(2) // Ensure it sits on top
+            }
+            
             // REMOVED: Sign Out Button block deleted.
         }
         // 🔥 SINGLE SOURCE OF TRUTH FOR CALL UI
@@ -87,7 +94,9 @@ struct ContentView: View {
         }
         
         // 2. Trigger Logic
-        let userId = Auth.auth().currentUser?.uid ?? UUID().uuidString
+        // 🔥 FIX: Use Consistent User ID (UserManager) instead of random UUID
+        // This ensures the Chat Room created matches the one in Chat List
+        let userId = UserManager.shared.currentUserId
         webRTCManager.startMatchmaking(userId: userId)
     }
     

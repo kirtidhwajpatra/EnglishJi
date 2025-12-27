@@ -11,6 +11,7 @@
 		78013F562EE8856800A024FB /* WebRTC.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 78013F532EE884A800A024FB /* WebRTC.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		78013F5B2EE9027300A024FB /* WebRTCManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78013F5A2EE9027300A024FB /* WebRTCManager.swift */; };
 		78013F5D2EE903AE00A024FB /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 78013F5C2EE903AE00A024FB /* FirebaseFirestore */; };
+		7829DEC42F003DBD001E7160 /* GamesCardsGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7829DEC32F003DBD001E7160 /* GamesCardsGrid.swift */; };
 		784D28B42EE84C4D003F70DF /* FuturaCondensedExtraBoldNormal.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 784D28B32EE84C4D003F70DF /* FuturaCondensedExtraBoldNormal.ttf */; };
 		785E5A772EE8642300720C40 /* WebRTCConfig.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 785E5A762EE8640300720C40 /* WebRTCConfig.xcconfig */; };
 		787109252EE411D30002AAD5 /* EnglishJiApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 787109242EE411D30002AAD5 /* EnglishJiApp.swift */; };
@@ -43,6 +44,7 @@
 		78013F532EE884A800A024FB /* WebRTC.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = WebRTC.xcframework; sourceTree = "<group>"; };
 		78013F582EE9023D00A024FB /* SignalingClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalingClient.swift; sourceTree = "<group>"; };
 		78013F5A2EE9027300A024FB /* WebRTCManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRTCManager.swift; sourceTree = "<group>"; };
+		7829DEC32F003DBD001E7160 /* GamesCardsGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamesCardsGrid.swift; sourceTree = "<group>"; };
 		784D28B32EE84C4D003F70DF /* FuturaCondensedExtraBoldNormal.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = FuturaCondensedExtraBoldNormal.ttf; sourceTree = "<group>"; };
 		785E5A762EE8640300720C40 /* WebRTCConfig.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = WebRTCConfig.xcconfig; sourceTree = "<group>"; };
 		787109242EE411D30002AAD5 /* EnglishJiApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnglishJiApp.swift; sourceTree = "<group>"; };
@@ -54,15 +56,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		784583EE2EFE4A5B00F98583 /* Exceptions for "TicTacToe" folder in "EnglishJi" target */ = {
+		7829DECA2F004A6A001E7160 /* Exceptions for "TicTacToe" folder in "EnglishJi" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				CellView.swift,
-				ResultView.swift,
-				SketchGrid.swift,
-				SketchMark.swift,
-				TicTacToeGameScreen.swift,
+				GameModel.swift,
+				TicTacToeTheme.swift,
 				TicTacToeView.swift,
+				TicTacToeViewModel.swift,
 			);
 			target = 787109202EE411D30002AAD5 /* EnglishJi */;
 		};
@@ -89,7 +89,7 @@
 		784583EB2EFE4A4500F98583 /* TicTacToe */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				784583EE2EFE4A5B00F98583 /* Exceptions for "TicTacToe" folder in "EnglishJi" target */,
+				7829DECA2F004A6A001E7160 /* Exceptions for "TicTacToe" folder in "EnglishJi" target */,
 			);
 			path = TicTacToe;
 			sourceTree = "<group>";
@@ -160,6 +160,7 @@
 			isa = PBXGroup;
 			children = (
 				784583EB2EFE4A4500F98583 /* TicTacToe */,
+				7829DEC32F003DBD001E7160 /* GamesCardsGrid.swift */,
 			);
 			path = Games;
 			sourceTree = "<group>";
@@ -292,6 +293,7 @@
 				78C85DB02EF2669F002BE743 /* AudioSessionManager.swift in Sources */,
 				78C85DB12EF2684D002BE743 /* SignalingClient.swift in Sources */,
 				78013F5B2EE9027300A024FB /* WebRTCManager.swift in Sources */,
+				7829DEC42F003DBD001E7160 /* GamesCardsGrid.swift in Sources */,
 				787109252EE411D30002AAD5 /* EnglishJiApp.swift in Sources */,
 				78B3164F2EE9ED70002DCA00 /* WebRTCClient.swift in Sources */,
 			);

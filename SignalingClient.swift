@@ -28,9 +28,12 @@ final class SignalingClient {
     }
 
     // MARK: - Join matchmaking
-    func join() {
-        send(["type": "join"])
-        print("📨 Sent join")
+    func join(userId: String) {
+        send([
+            "type": "join",
+            "userId": userId
+        ])
+        print("📨 Sent join for user: \(userId)")
     }
 
     // MARK: - Send message

@@ -45,21 +45,8 @@ struct MessagesCardView: View {
     
     @Environment(\.dismiss) var dismiss
     
-    
     // Sample Data
-    let chats: [ChatModel] = [
-        ChatModel(name: "Daniel Murphy", message: "Hey, I just wanted to check if we're still on for tomorrow...", time: "10:24 am", unreadCount: 2, image: "person1"),
-        ChatModel(name: "Sophia Bennett", message: "It was so nice catching up the other day! ❤️", time: "10:24 am", unreadCount: 12, image: "person2"),
-        ChatModel(name: "Michael Torres", message: "I've been thinking about the project updates...", time: "10:24 am", unreadCount: 4, image: "person3"),
-        ChatModel(name: "Ava Mitchell", message: "Yess 🤞", time: "10:24 am", unreadCount: 1, image: "person4"),
-        ChatModel(name: "Liam Robinson", message: "Can you send the files?", time: "Yesterday", unreadCount: 0, image: "person5"),
-        ChatModel(name: "Emma Watson", message: "Dinner tonight?", time: "Yesterday", unreadCount: 0, image: "person6"),
-        ChatModel(name: "Noah Carter", message: "Sounds good to me.", time: "Mon", unreadCount: 0, image: "person7"),
-        ChatModel(name: "Olivia Davis", message: "See you there!", time: "Mon", unreadCount: 0, image: "person8"),
-        ChatModel(name: "James Rodriguez", message: "Got it, thanks.", time: "Sun", unreadCount: 0, image: "person9"),
-        ChatModel(name: "Isabella Garcia", message: "Heading out now.", time: "Sun", unreadCount: 0, image: "person10"),
-        ChatModel(name: "William Martinez", message: "Call me when you can.", time: "Sat", unreadCount: 0, image: "person11")
-    ]
+    @StateObject private var viewModel = ChatListViewModel()
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -70,18 +57,26 @@ struct MessagesCardView: View {
                     
                     // --- HEADER ---
                     HStack(alignment: .bottom) {
-                        Button(action: { dismiss() }) {
-                            Image(systemName: "chevron.left")
-                                .font(.system(size: 22, weight: .semibold))
-                                .foregroundColor(.black)
-                                .padding(10)
-                                .background(Color.white)
-                                .clipShape(Circle())
-                                .shadow(color: .black.opacity(0.05), radius: 5, y: 2)
+                        // Left Side: Back Button + ID Debug
+                        VStack(alignment: .leading, spacing: 4) {
+                             Button(action: { dismiss() }) {
+                                 Image(systemName: "chevron.left")
+                                     .font(.system(size: 22, weight: .semibold))
+                                     .foregroundColor(.black)
+                                     .padding(10)
+                                     .background(Color.white)
+                                     .clipShape(Circle())
+                                     .shadow(color: .black.opacity(0.05), radius: 5, y: 2)
+                             }
+                             // 🔥 DEBUG ID
+                             Text("ID: \(viewModel.currentUserId.prefix(15))...")
+                                 .font(.caption2)
+                                 .foregroundColor(.gray)
                         }
                         
                         Spacer()
                         
+                        // Right Side: Icons
                         HStack(spacing: 16) {
                             CircleIconButton(icon: "camera.fill")
                             CircleIconButton(icon: "square.and.pencil")
@@ -95,8 +90,8 @@ struct MessagesCardView: View {
                     // --- LAZY LIST ---
                     // DECREASED SPACING from 16 to 10
                     LazyVStack(spacing: 10) {
-                        ForEach(chats) { chat in
-                            MessageCard(chat: chat)
+                        ForEach(viewModel.conversations) { chat in
+                            MessageCard(chat: chat, currentUserId: viewModel.currentUserId)
                         }
                     }
                     .padding(.horizontal, 20)
@@ -108,19 +103,25 @@ struct MessagesCardView: View {
     }
 }
 
+
 // MARK: - 4. Message Card Component (THE MAGIC HAPPENS HERE)
 struct MessageCard: View {
     let chat: ChatModel
+    let currentUserId: String
     @State private var hasAppeared = false
     @State private var showChatDetail = false
     
     var body: some View {
         Button(action: {
             showChatDetail = true
+            // 🔥 Mark as Read when tapping
+            if let chatId = chat.id {
+                ChatService.shared.markAsRead(chatRoomId: chatId, userId: currentUserId)
+            }
         }) {
             HStack(alignment: .top, spacing: 16) {
                 // Avatar
-                AsyncImage(url: URL(string: "https://i.pravatar.cc/150?u=\(chat.name)")) { phase in
+                AsyncImage(url: URL(string: chat.profileImage)) { phase in
                     if let image = phase.image {
                         image.resizable().aspectRatio(contentMode: .fill)
                     } else {
@@ -139,24 +140,24 @@ struct MessageCard: View {
                             .font(.system(size: 18, weight: .semibold, design: .rounded))
                             .foregroundColor(.black)
                         
-                        if chat.unreadCount > 0 {
-                            Text("\(chat.unreadCount)")
-                                .font(.system(size: 11, weight: .bold))
+                        if chat.unreadCount(for: currentUserId) > 0 {
+                            Text("\(chat.unreadCount(for: currentUserId))")
+                                .font(.system(size: 13, weight: .bold)) // Slightly larger
                                 .foregroundColor(.white)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 3)
-                                .background(Color.red)
+                                .padding(.horizontal, 10) // Wider pill
+                                .padding(.vertical, 4)
+                                .background(Color(ej_hex: "D64692")) // Pink color from reference
                                 .clipShape(Capsule())
                         }
                         
                         Spacer() // Spacer now pushes time to the right
                         
-                        Text(chat.time)
+                        Text(chat.timeAgo)
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(Color(ej_hex: "8E8E93"))
                     }
                     
-                    Text(chat.message)
+                    Text(chat.lastMessage)
                         .font(.system(size: 15))
                         .foregroundColor(Color(ej_hex: "636366"))
                         .lineLimit(2)
@@ -189,7 +190,11 @@ struct MessageCard: View {
         }
         
         .fullScreenCover(isPresented: $showChatDetail) {
-            ChatDetailView(chatPartner: chat)
+            if let roomId = chat.id {
+                ChatDetailView(chatPartner: chat, roomId: roomId)
+            } else {
+                 ChatDetailView(chatPartner: chat, roomId: "error_room")
+            }
         }
     }
 }
@@ -210,14 +215,7 @@ struct CircleIconButton: View {
     }
 }
 
-struct ChatModel: Identifiable {
-    let id = UUID()
-    let name: String
-    let message: String
-    let time: String
-    let unreadCount: Int
-    let image: String
-}
+
 
 
 #Preview {

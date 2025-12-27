@@ -24,6 +24,7 @@ struct HomeView: View {
     @State private var showProfile = false
     @State private var showMessages = false
     @State private var showGame = false
+    @State private var showGameCenter = false
 
 
     // --- 3. COMPUTED HELPERS ---
@@ -47,7 +48,7 @@ struct HomeView: View {
     }
     
     // Bottom Padding: Lift card 100px up to clear pills (Home) vs 0 (Searching)
-    var cardBottomPadding: CGFloat { isSearching ? 0 : 125 }
+    var cardBottomPadding: CGFloat { isSearching ? 0 : 160 }
     
     var cardCornerRadius: CGFloat { isSearching ? 0 : 50 }
     var cardHorizontalPadding: CGFloat { isSearching ? 0 : 25 }
@@ -64,78 +65,55 @@ struct HomeView: View {
             if !isSearching {
                 VStack(spacing: 0) {
                     // A. Header Row
-                    // Replace your existing Circle() block with this Button:
-                    HStack{
+                    HStack {
+                        // 🔥 TITLE
+                        Text("EnglishJi")
+                             .font(.system(size: 28, weight: .bold, design: .rounded))
+                             .foregroundColor(.black)
+                        
                         Spacer()
                         
-                        // 🔥 UPDATED PROFILE BUTTON (Matches image_21.png)
+                        // 🔥 SEARCH ICON
+                        Button(action: {
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        }) {
+                            Image("SearchIcon")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 22, height: 22)
+                                .padding(15)
+                        }
+
+                        // 🔥 UPDATED PROFILE BUTTON
                         Button(action: {
                             UIImpactFeedbackGenerator(style: .light).impactOccurred()
                             showProfile = true
                         }) {
                             Text("VS")
-                                .font(.system(size: 23, weight: .semibold, design: .rounded))
-                                // Use a soft black for a premium look
-                                .foregroundColor(Color(hex: "1C1C1E"))
-                                .frame(width: 56, height: 52)
-                                .background(
-                                    // 1. The Shape: RoundedRectangle with continuous corners ("Squircle")
-                                    RoundedRectangle(cornerRadius: 26, style: .continuous)
-                                        .fill(Color.white)
-                                )
-                                .overlay(
-                                    // 2. The Border: A diagonal gray gradient
-                                    RoundedRectangle(cornerRadius: 36, style: .continuous)
-                                        .stroke(
-                                            LinearGradient(
-                                                colors: [
-                                                    Color(hex: "#E3E3E3"), // Very light gray (Top Left)
-                                                    Color(hex: "CECECE")  // Medium gray (Bottom Right)
-                                                ],
-                                                startPoint: .top,
-                                                endPoint: .bottom
-                                            ),
-                                            lineWidth: 1
-                                        )
-                                )
-                                // 3. Soft outer shadow for depth
-                                .shadow(color: .black.opacity(0.08), radius: 12, y: 2)
+                                .font(.system(size: 18, weight: .bold, design: .rounded))
+                                .foregroundColor(.white)
+                                .frame(width: 50, height: 50)
+                                .background(Color.black)
+                                .clipShape(Circle())
+                                .shadow(color: .black.opacity(0.1), radius: 10, y: 2)
                         }
-                
                     }
                     .padding(.horizontal, 25)
                     .padding(.top, 10)
                     
-                    // B. Subtext
-                    // FIX: Removed large Spacer(), used tight padding instead
-                    HStack(alignment: .center, spacing: 6) {
-//                        Image(systemName: "bolt.fill")
-//                            .font(.subheadline)
-//                            .foregroundColor(Color(hex: "3b3b3b"))
-//                            .padding(.bottom, 2)
-//                        
-//                        Text("350 Learners are practicing near you")
-//                            .font(.subheadline)
-//                            .foregroundColor(Color(hex: "3B3B3B"))
-//                            .opacity( 0.5)
-//                            .padding(.top, 20)
-//                            .padding(.bottom, 25)
-                        
-                        MotivationalBannerView()
-                    }
-                    .padding(.top, 20)
-                    
+                    // B. Subtext (Spacer) - REDUCED for tighter layout
+                    Spacer().frame(height: 10)
 
 
-                    // C. Tabs
+                    // C. Tabs (Black Text)
                     HStack(spacing: 40) {
                         TabButton(text: "Call", selectedTab: $selectedTab)
                         TabButton(text: "Message", selectedTab: $selectedTab)
                     }
-                    .padding(.top, 40)
-                    .padding(.bottom, 10) // Small buffer before the card starts
+                    .padding(.top, 30) // Reduced from 20
+                    .padding(.bottom, 10) // Reduced from 10 to pull card closer
                     
-                    Spacer() // This pushes the header to the top
+                    Spacer()
                 }
                 .transition(.move(edge: .top).combined(with: .opacity))
                 .zIndex(0)
@@ -152,19 +130,55 @@ struct HomeView: View {
                         .fill(Color.white)
                         .shadow(color: .black.opacity(isSearching ? 0 : 0.05), radius: 45, y: -5)
                     
-                    // B. AI Face
-                    VStack {
+                    // B. AI Face & SELECTORS
+                    VStack(spacing: 20) {
                         // Move face up slightly when full screen to avoid overlap with debug text
                         if isSearching { Spacer().frame(height: 140) }
                         
                         AICompanionFace(state: .constant(derivedFaceState))
-                            .scaleEffect(isSearching ? 1.6 : 2.6)
+                            .scaleEffect(isSearching ? 1.6 : 2.1) // Reduced from 2.6 to 2.1
+                            // 🔥 FIX CLUTTER: Push content down to account for scale
+                            .padding(.bottom, isSearching ? 0 : 50)
+                        
+                        // 🔥 GENDER & OPTION SELECTORS (Home Only)
+                        if !isSearching {
+                            HStack(spacing: 4) {
+                                // Gender Selector
+                                Button(action: {}) {
+                                    HStack(spacing: 6) {
+                                        Text("Female")
+                                            .font(.system(size: 15, weight: .medium))
+                                            .foregroundColor(.black.opacity(0.8))
+                                        Image(systemName: "chevron.down")
+                                            .font(.system(size: 12, weight: .bold))
+                                            .foregroundColor(.gray)
+                                    }
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 10)
+                                    .background(Color(hex: "F1f1f1")) // Light gray
+                                    .cornerRadius(12)
+                                }
+                                
+                                // Second Selector (Icon)
+                                Button(action: {}) {
+                                    Image(systemName: "chevron.down") // Or "slider.horizontal.3" if it was settings? Reference shows simple 'v'
+                                        .font(.system(size: 12, weight: .bold))
+                                        .foregroundColor(.gray)
+                                        .frame(width: 44, height: 40) // Square-ish
+                                        .background(Color(hex: "F1f1f1"))
+                                        .cornerRadius(12)
+                                }
+                            }
+                            .padding(.top, 40) // Space between Face and Selectors
+                        }
+                        
                         
                         if isSearching { Spacer() }
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-                    // When Home: Padding 80 keeps face above Connect Button
-                    .padding(.bottom, isSearching ? 0 : 110)
+                    // When Home: Padding pushes face UP from the Connect button area
+                    // Reduced slightly to fit Selectors
+                    .padding(.bottom, isSearching ? 0 : 10)
                     
                     // C. Bottom Content (Connect / Cancel)
                     VStack {
@@ -210,7 +224,8 @@ struct HomeView: View {
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 15)
-                                .background(Color(red: 0.25, green: 0.10, blue: 0.55))
+                                // 🔥 BLACK BACKGROUND
+                                .background(Color.black)
                                 .cornerRadius(30)
                                 
                             }
@@ -241,7 +256,7 @@ struct HomeView: View {
                         
                         Button(action: {
                                 UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                                showGame = true
+                                showGameCenter = true
                             }) {
                                 GamePillButton()
                             }
@@ -272,7 +287,7 @@ struct HomeView: View {
                         .buttonStyle(PlainButtonStyle())// Prevents default fade effect
                     }
                     .padding(.horizontal, 30)
-                    .padding(.bottom, 20)
+                    .padding(.bottom, 60)
                 }
                 .transition(.opacity)
                 .zIndex(0)
@@ -297,16 +312,14 @@ struct HomeView: View {
             MessagesCardView()
         }
         
-        .fullScreenCover(isPresented: $showGame) {
-            TicTacToeGameScreen {
-                showGame = false
-            }
-        }
-
+        .fullScreenCover(isPresented: $showGameCenter) {
+                    GameSelectionView()
+                }
 
     }
 }
 
+// Helper for cleaner Tab Code
 // Helper for cleaner Tab Code
 struct TabButton: View {
     let text: String
@@ -315,12 +328,28 @@ struct TabButton: View {
         Button {
             withAnimation(.easeInOut(duration: 0.2)) { selectedTab = text }
         } label: {
-            Text(text)
-                .font(.title2)
-                .fontWeight(selectedTab == text ? .regular : .light)
-                .foregroundColor(Color(hex: "110037"))
-                .opacity(selectedTab == text ? 1.0 : 0.6)
-                .scaleEffect(selectedTab == text ? 1.05 : 1.0)
+            VStack(spacing: 4) {
+                Text(text)
+                    .font(.title2)
+                    .fontWeight(selectedTab == text ? .medium : .regular) // Slightly bolder when active
+                    // 🔥 BLACK TEXT
+                    .foregroundColor(.black)
+                    .opacity(selectedTab == text ? 1.0 : 0.6)
+                    
+                // 🔥 DOT INDICATOR
+                if selectedTab == text {
+                    Circle()
+                        .fill(Color.black)
+                        .frame(width: 4, height: 4)
+                        .transition(.scale) // Nice pop-in effect
+                } else {
+                    // Invisible spacer to keep height constant (prevents jumping)
+                    Circle()
+                        .fill(Color.clear)
+                        .frame(width: 4, height: 4)
+                }
+            }
+            .scaleEffect(selectedTab == text ? 1.05 : 1.0)
         }
     }
 }

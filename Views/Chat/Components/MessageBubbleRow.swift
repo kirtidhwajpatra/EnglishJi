@@ -10,13 +10,14 @@ import SwiftUI
 // MARK: - Message Bubble Row
 struct MessageBubbleRow: View {
     let message: Message
+    let isCurrentUser: Bool // 🔥 Passed from Parent
     let isLastFromSender: Bool
     let partnerName: String
     
     var body: some View {
         HStack(alignment: .bottom, spacing: 8) {
             
-            if message.isCurrentUser {
+            if isCurrentUser {
                 // --- CURRENT USER ---
                 
                 // 🔥 FIX 2: Use Spacer(minLength: 60) to prevent touching left edge
