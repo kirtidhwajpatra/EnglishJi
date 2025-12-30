@@ -49,25 +49,22 @@ struct MessagesCardView: View {
     @StateObject private var viewModel = ChatListViewModel()
     
     var body: some View {
-        ZStack(alignment: .top) {
-            Color(ej_hex: "F2F2F7").ignoresSafeArea()
+        NavigationStack {
+            ZStack(alignment: .top) {
+                Color(hex: "F2F2F7").ignoresSafeArea()
             
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 0) {
                     
                     // --- HEADER ---
                     HStack(alignment: .bottom) {
-                        // Left Side: Back Button + ID Debug
+                        // Left Side: Title + ID Debug
                         VStack(alignment: .leading, spacing: 4) {
-                             Button(action: { dismiss() }) {
-                                 Image(systemName: "chevron.left")
-                                     .font(.system(size: 22, weight: .semibold))
-                                     .foregroundColor(.black)
-                                     .padding(10)
-                                     .background(Color.white)
-                                     .clipShape(Circle())
-                                     .shadow(color: .black.opacity(0.05), radius: 5, y: 2)
-                             }
+                             Text("Messages")
+                                 .font(.largeTitle)
+                                 .fontWeight(.bold)
+                                 .foregroundColor(.black)
+                             
                              // 🔥 DEBUG ID
                              Text("ID: \(viewModel.currentUserId.prefix(15))...")
                                  .font(.caption2)
@@ -95,11 +92,13 @@ struct MessagesCardView: View {
                         }
                     }
                     .padding(.horizontal, 20)
-                    .padding(.bottom, 40)
+                    .padding(.bottom, 100) // Increased for Tab Bar
                 }
             }
         }
+        }
         .preferredColorScheme(.light)
+        
     }
 }
 
@@ -125,7 +124,7 @@ struct MessageCard: View {
                     if let image = phase.image {
                         image.resizable().aspectRatio(contentMode: .fill)
                     } else {
-                        Color(ej_hex: "E5E5EA")
+                        Color(hex: "E5E5EA")
                     }
                 }
                 .frame(width: 56, height: 56)
@@ -146,7 +145,7 @@ struct MessageCard: View {
                                 .foregroundColor(.white)
                                 .padding(.horizontal, 10) // Wider pill
                                 .padding(.vertical, 4)
-                                .background(Color(ej_hex: "D64692")) // Pink color from reference
+                                .background(Color(hex: "D64692")) // Pink color from reference
                                 .clipShape(Capsule())
                         }
                         
@@ -154,12 +153,12 @@ struct MessageCard: View {
                         
                         Text(chat.timeAgo)
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(Color(ej_hex: "8E8E93"))
+                            .foregroundColor(Color(hex: "8E8E93"))
                     }
                     
                     Text(chat.lastMessage)
                         .font(.system(size: 15))
-                        .foregroundColor(Color(ej_hex: "636366"))
+                        .foregroundColor(Color(hex: "636366"))
                         .lineLimit(2)
                         .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
@@ -189,13 +188,19 @@ struct MessageCard: View {
             hasAppeared = false
         }
         
-        .fullScreenCover(isPresented: $showChatDetail) {
-            if let roomId = chat.id {
-                ChatDetailView(chatPartner: chat, roomId: roomId)
-            } else {
-                 ChatDetailView(chatPartner: chat, roomId: "error_room")
+        // 🔥 NAVIGATION (Keeps Tab Bar Visible)
+        .background(
+            NavigationLink(isActive: $showChatDetail) {
+                if let roomId = chat.id {
+                    ChatDetailView(chatPartner: chat, roomId: roomId)
+                } else {
+                     ChatDetailView(chatPartner: chat, roomId: "error_room")
+                }
+            } label: {
+                EmptyView()
             }
-        }
+            .hidden()
+        )
     }
 }
 
@@ -214,6 +219,9 @@ struct CircleIconButton: View {
         }
     }
 }
+
+
+
 
 
 

@@ -25,7 +25,7 @@ struct ChatDetailView: View {
     var body: some View {
         // ... (Keep the rest of your Body code exactly the same) ...
         ZStack(alignment: .top) {
-            Color(ej_hex: "F2F2F7").ignoresSafeArea()
+            Color(hex: "F2F2F7").ignoresSafeArea()
             
             VStack(spacing: 0) {
                 headerView
@@ -185,7 +185,7 @@ struct ChatDetailView: View {
         var body: some View {
             Text(formatDate(date))
                 .font(.system(size: 11, weight: .medium)) // Small, subtle
-                .foregroundColor(Color(ej_hex: "8E8E93"))
+                .foregroundColor(Color(hex: "8E8E93"))
                 .padding(.horizontal, 10)
                 .padding(.vertical, 4)
                 .background(Color.black.opacity(0.05)) // Very light pill bg
@@ -213,7 +213,7 @@ struct ChatDetailView: View {
                 ForEach(0..<3) { i in
                     Circle()
                         .frame(width: 6, height: 6)
-                        .foregroundColor(Color(ej_hex: "8E8E93"))
+                        .foregroundColor(Color(hex: "8E8E93"))
                         .offset(y: offset)
                         .animation(
                             Animation.easeInOut(duration: 0.5)
@@ -224,7 +224,7 @@ struct ChatDetailView: View {
                 }
             }
             .padding(12)
-            .background(Color(ej_hex: "E5E5EA"))
+            .background(Color(hex: "E5E5EA"))
             .clipShape(ChatBubbleShape(isCurrentUser: false))
             .onAppear {
                 offset = -5
@@ -264,7 +264,7 @@ struct ChatDetailView: View {
         }
         .padding(.horizontal, 16)
         .padding(.bottom, 12)
-        .background(Color(ej_hex: "F2F2F7").opacity(0.95))
+        .background(Color(hex: "F2F2F7").opacity(0.95))
     }
     
     var inputBarView: some View {
@@ -272,9 +272,9 @@ struct ChatDetailView: View {
             Button(action: {}) {
                 Image(systemName: "plus")
                     .font(.system(size: 20, weight: .medium))
-                    .foregroundColor(Color(ej_hex: "8E8E93"))
+                    .foregroundColor(Color(hex: "8E8E93"))
                     .frame(width: 36, height: 36)
-                    .background(Color(ej_hex: "E5E5EA"))
+                    .background(Color(hex: "E5E5EA"))
                     .clipShape(Circle())
             }
             .padding(.bottom, 4)
@@ -299,13 +299,13 @@ struct ChatDetailView: View {
             .padding(.horizontal, 16)
             .background(Color.white)
             .clipShape(Capsule())
-            .overlay(Capsule().stroke(Color(ej_hex: "E5E5EA"), lineWidth: 1))
+            .overlay(Capsule().stroke(Color(hex: "E5E5EA"), lineWidth: 1))
             
             if messageText.isEmpty {
                 Button(action: {}) {
                     Image(systemName: "mic.fill")
                         .font(.system(size: 20))
-                        .foregroundColor(Color(ej_hex: "8E8E93"))
+                        .foregroundColor(Color(hex: "8E8E93"))
                 }
                 .padding(.bottom, 10)
                 .transition(.scale)
@@ -313,6 +313,6 @@ struct ChatDetailView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
-        .background(Color(ej_hex: "F2F2F7"))
+        .background(Color(hex: "F2F2F7"))
     }
 }

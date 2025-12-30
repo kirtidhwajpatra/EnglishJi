@@ -17,7 +17,7 @@ struct CallSummaryView: View {
 
     var body: some View {
         ZStack {
-            Color(ej_hex: "F2F2F7").ignoresSafeArea()
+            Color(hex: "F2F2F7").ignoresSafeArea()
             
             VStack(spacing: 24) {
                 Spacer()

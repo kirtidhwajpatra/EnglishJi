@@ -34,6 +34,12 @@ final class WebRTCManager: ObservableObject {
         signaling.onMessage = handleSignal
     }
 
+    private func onConnected() {
+        // 🔥 Connection established. 
+        // We rely on AudioSessionManager's ".defaultToSpeaker" config now.
+        // No manual override to avoid breaking Mic.
+    }
+
     // MARK: - Public API (UI)
 
     func startMatchmaking(userId: String) {
@@ -92,13 +98,15 @@ final class WebRTCManager: ObservableObject {
             guard let rtc else { return }
 
             let role = json["role"] as? String ?? "callee"
-            // 🔥 Capture Partner ID
-            if let partnerId = json["partnerId"] as? String {
+            
+            // 🔥 Capture Partner ID (Check multiple keys)
+            if let partnerId = json["partnerId"] as? String ?? json["partner_id"] as? String ?? json["from"] as? String {
                 self.lastCallPartnerId = partnerId
                 log("Partner ID: \(partnerId)")
                 print("🤝 WebRTCManager: MATCHED with Partner: \(partnerId)")
             } else {
-                print("❌ WebRTCManager: Matched but NO partnerId found in signal!")
+                // It's okay if missing, server handles routing
+                print("⚠️ WebRTCManager: Matched (No explicit partnerId in payload)")
             }
             
             log("Matched as \(role)")
@@ -134,8 +142,10 @@ final class WebRTCManager: ObservableObject {
                 ])
                 self.log("Sent answer")
 
-                self.isInCall = true          // 🔥 UI OPENS HERE
-                self.connectionState = "Connected"
+                DispatchQueue.main.async {
+                    self.isInCall = true          // 🔥 UI OPENS HERE
+                    self.connectionState = "Connected"
+                }
             }
 
         case "answer":
@@ -151,8 +161,10 @@ final class WebRTCManager: ObservableObject {
             isRemoteDescriptionSet = true
             flushICE()
 
-            isInCall = true                 // 🔥 UI OPENS HERE
-            connectionState = "Connected"
+            DispatchQueue.main.async {
+                self.isInCall = true                 // 🔥 UI OPENS HERE
+                self.connectionState = "Connected"
+            }
 
         case "candidate":
             guard let rtc,
@@ -247,7 +259,9 @@ final class WebRTCManager: ObservableObject {
     // MARK: - Logging
 
     private func log(_ msg: String) {
-        debugLog += "• \(msg)\n"
-        print("[WebRTC]", msg)
+        DispatchQueue.main.async {
+            self.debugLog += "• \(msg)\n"
+            print("[WebRTC]", msg)
+        }
     }
 }

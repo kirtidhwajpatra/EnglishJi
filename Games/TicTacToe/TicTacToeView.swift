@@ -7,28 +7,26 @@ struct TicTacToeView: View {
     @State private var showingGame = false
     
     var body: some View {
-        NavigationStack {
-            ZStack {
-                TicTacToeTheme.background.ignoresSafeArea()
-                
-                if showingGame {
-                    GameScreen(viewModel: viewModel, onBack: {
-                        showingGame = false
-                        viewModel.resetGame()
-                        viewModel.p1Score = 0
-                        viewModel.p2Score = 0
-                    })
-                    .transition(.move(edge: .trailing))
-                } else {
-                    MenuScreen(onStart: { mode in
-                        viewModel.gameMode = mode
-                        viewModel.resetGame()
-                        withAnimation(.spring()) {
-                            showingGame = true
-                        }
-                    })
-                    .transition(.move(edge: .leading))
-                }
+        ZStack {
+            TicTacToeTheme.background.ignoresSafeArea()
+            
+            if showingGame {
+                GameScreen(viewModel: viewModel, onBack: {
+                    showingGame = false
+                    viewModel.resetGame()
+                    viewModel.p1Score = 0
+                    viewModel.p2Score = 0
+                })
+                .transition(.move(edge: .trailing))
+            } else {
+                MenuScreen(onStart: { mode in
+                    viewModel.gameMode = mode
+                    viewModel.resetGame()
+                    withAnimation(.spring()) {
+                        showingGame = true
+                    }
+                }, onDismiss: { dismiss() })
+                .transition(.move(edge: .leading))
             }
         }
     }
@@ -37,9 +35,24 @@ struct TicTacToeView: View {
 // MARK: - 1. Menu Screen
 struct MenuScreen: View {
     let onStart: (GameMode) -> Void
+    let onDismiss: () -> Void
     
     var body: some View {
         VStack(spacing: 40) {
+            // Header with Back Button
+            HStack {
+                Button(action: onDismiss) {
+                    Image(systemName: "chevron.left")
+                        .font(.title2)
+                        .foregroundColor(.white)
+                        .padding(12)
+                        .background(Circle().fill(Color.white.opacity(0.1)))
+                }
+                Spacer()
+            }
+            .padding(.horizontal)
+            .padding(.top, 10)
+            
             Spacer()
             
             Text("TicTacToe")

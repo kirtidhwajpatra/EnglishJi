@@ -30,8 +30,8 @@ struct MessageBubbleRow: View {
                     .background(
                         LinearGradient(
                             colors: [
-                                Color(ej_hex: "3F1A94"), // Deep Indigo
-                                Color(ej_hex: "633CBE")  // Lighter Violet
+                                Color(hex: "3F1A94"), // Deep Indigo
+                                Color(hex: "633CBE")  // Lighter Violet
                             ],
                             startPoint: .top,
                             endPoint: .bottom
@@ -60,7 +60,7 @@ struct MessageBubbleRow: View {
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
                     .foregroundColor(.black)
-                    .background(Color(ej_hex: "E5E5EA"))
+                    .background(Color(hex: "E5E5EA"))
                     .clipShape(ChatBubbleShape(isCurrentUser: false))
                 
                 // 🔥 FIX 2: Prevent partner message from touching right edge

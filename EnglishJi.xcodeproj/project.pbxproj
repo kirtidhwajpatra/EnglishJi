@@ -66,6 +66,13 @@
 			);
 			target = 787109202EE411D30002AAD5 /* EnglishJi */;
 		};
+		784D4F692F02FD0400A5C954 /* Exceptions for "Components" folder in "EnglishJi" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				.swift,
+			);
+			target = 787109202EE411D30002AAD5 /* EnglishJi */;
+		};
 		787109672EE4386A0002AAD5 /* Exceptions for "EnglishJi" folder in "EnglishJi" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -74,6 +81,16 @@
 			target = 787109202EE411D30002AAD5 /* EnglishJi */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+		784D4F6A2F02FD0400A5C954 /* Exceptions for "Components" folder in "Compile Sources" phase from "EnglishJi" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			buildPhase = 7871091D2EE411D30002AAD5 /* Sources */;
+			membershipExceptions = (
+				.swift,
+			);
+		};
+/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		78013F572EE901B200A024FB /* App */ = {
@@ -109,6 +126,10 @@
 		};
 		7871092F2EE413F20002AAD5 /* Components */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				784D4F692F02FD0400A5C954 /* Exceptions for "Components" folder in "EnglishJi" target */,
+				784D4F6A2F02FD0400A5C954 /* Exceptions for "Components" folder in "Compile Sources" phase from "EnglishJi" target */,
+			);
 			path = Components;
 			sourceTree = "<group>";
 		};

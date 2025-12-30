@@ -58,7 +58,18 @@ final class WebRTCClient: NSObject {
         let source = factory.audioSource(with: constraints)
         let track = factory.audioTrack(with: source, trackId: "audio0")
         self.audioTrack = track
-        peer.add(track, streamIds: ["stream0"])
+        
+        // 🔥 Use Transceiver for robust bidirectional audio
+        let initConfig = RTCRtpTransceiverInit()
+        initConfig.direction = .sendRecv
+        initConfig.streamIds = ["stream0"]
+        
+        if let transceiver = peer.addTransceiver(with: track, init: initConfig) {
+            transceiver.setDirection(.sendRecv, error: nil)
+            print("[WebRTCClient] Added Audio Transceiver with direction: sendRecv")
+        } else {
+            print("[WebRTCClient] ❌ FAILED to add Audio Transceiver")
+        }
     }
 
     func setMuted(_ muted: Bool) {
@@ -70,6 +81,7 @@ final class WebRTCClient: NSObject {
         let constraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: nil)
         peer.offer(for: constraints) { sdp, _ in
             guard let sdp else { return }
+            print("[WebRTCClient] Generated Offer SDP: \n\(sdp.sdp)") // 🔥 DEBUG SDP
             self.peer.setLocalDescription(sdp, completionHandler: { _ in })
             completion(sdp)
         }
@@ -79,6 +91,7 @@ final class WebRTCClient: NSObject {
         let constraints = RTCMediaConstraints(mandatoryConstraints: nil, optionalConstraints: nil)
         peer.answer(for: constraints) { sdp, _ in
             guard let sdp else { return }
+            print("[WebRTCClient] Generated Answer SDP: \n\(sdp.sdp)") // 🔥 DEBUG SDP
             self.peer.setLocalDescription(sdp, completionHandler: { _ in })
             completion(sdp)
         }
@@ -122,14 +135,20 @@ extension WebRTCClient: RTCPeerConnectionDelegate {
 
     func peerConnection(_ peerConnection: RTCPeerConnection,
                         didChange newState: RTCIceConnectionState) {
-        // print("ICE Connection State: \(newState.rawValue)")
+         print("[WebRTCClient] ICE Connection State: \(newState.rawValue)")
     }
 
     func peerConnection(_ peerConnection: RTCPeerConnection,
                         didChange newState: RTCIceGatheringState) {}
 
     func peerConnection(_ peerConnection: RTCPeerConnection,
-                        didAdd stream: RTCMediaStream) {}
+                        didAdd stream: RTCMediaStream) {
+        print("[WebRTCClient] Received Remote Stream: \(stream.streamId) with \(stream.audioTracks.count) audio tracks")
+        stream.audioTracks.forEach { track in
+            track.isEnabled = true
+            print("[WebRTCClient] Forced Audio Track enabled: \(track.trackId)")
+        }
+    }
 
     func peerConnection(_ peerConnection: RTCPeerConnection,
                         didRemove stream: RTCMediaStream) {}

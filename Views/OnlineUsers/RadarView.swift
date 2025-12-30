@@ -3,6 +3,8 @@ import Combine
 
 struct LearnerRadarView: View {
     var onClose: () -> Void
+    var onMessageTap: () -> Void
+    var showCloseButton: Bool = true // Added control
     
     // MARK: - State
     @State private var users: [LearnerNode] = []
@@ -41,13 +43,17 @@ struct LearnerRadarView: View {
             // 4. Header (Back Button & Title)
             VStack {
                 HStack {
-                    Button(action: onClose) {
-                        Image(systemName: "arrow.left")
-                            .font(.title2)
-                            .foregroundColor(.white) // White icon
-                            .padding()
-                            .background(Color.white.opacity(0.1)) // Glassy bg
-                            .clipShape(Circle())
+                    if showCloseButton {
+                        Button(action: onClose) {
+                            Image(systemName: "arrow.left")
+                                .font(.title2)
+                                .foregroundColor(.white) // White icon
+                                .padding()
+                                .background(Color.white.opacity(0.1)) // Glassy bg
+                                .clipShape(Circle())
+                        }
+                    } else {
+                        Spacer().frame(width: 48) // Maintain Balance
                     }
                     
                     Spacer()
@@ -77,11 +83,11 @@ struct LearnerRadarView: View {
             if let user = selectedUser {
                 VStack {
                     Spacer()
-                    UserProfileCard(user: user) {
+                    UserProfileCard(user: user, onDismiss: {
                         withAnimation(.spring()) {
                             selectedUser = nil
                         }
-                    }
+                    }, onMessage: onMessageTap)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                     .zIndex(100)
                 }
@@ -131,6 +137,6 @@ struct LearnerRadarView: View {
         
         LearnerRadarView(onClose: {
             print("Close Action Tapped")
-        })
+        }, onMessageTap: { print("Message") })
     }
 }

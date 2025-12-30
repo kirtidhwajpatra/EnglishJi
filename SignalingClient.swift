@@ -65,12 +65,16 @@ final class SignalingClient {
                     if let data = text.data(using: .utf8),
                        let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
                         print("⬇️ Received:", json)
-                        self.onMessage?(json)
+                        DispatchQueue.main.async {
+                            self.onMessage?(json)
+                        }
                     }
                 case .data(let data):
                     if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
                         print("⬇️ Received:", json)
-                        self.onMessage?(json)
+                        DispatchQueue.main.async {
+                            self.onMessage?(json)
+                        }
                     }
                 @unknown default:
                     break

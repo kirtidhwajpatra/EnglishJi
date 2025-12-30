@@ -11,9 +11,10 @@ import FirebaseAuth
 
 
 // MARK: - Root Content View
-struct ContentView: View {
+struct HomeContainerView: View {
 
-    @StateObject private var webRTCManager = WebRTCManager()
+    @ObservedObject var webRTCManager: WebRTCManager
+    @Binding var selection: Tab
     @State private var currentPhase: AppPhase = .home
 
     // Shared Background for seamless feel
@@ -33,6 +34,7 @@ struct ContentView: View {
                 endPoint: .bottom
             )
             .ignoresSafeArea()
+            .allowsHitTesting(false) // 🔥 FIX: Prevent background from blocking touches
         )
     }
 
@@ -43,9 +45,8 @@ struct ContentView: View {
 
             // 2. View Switching Logic
             if currentPhase == .inCall {
-                // When in a call, we switch to the dedicated Call Screen
-                CallInProgressView(webRTCManager: webRTCManager)
-                    .transition(.opacity)
+                // Call View Logic Hoisted to Parent
+                Color.clear
             } else {
                 // For Home AND Searching, we stay on HomeView.
                 // HomeView handles the expansion animation internally.
@@ -53,7 +54,9 @@ struct ContentView: View {
                     webRTCManager: webRTCManager,
                     currentPhase: currentPhase,
                     onConnectTap: startMatchmaking,
-                    onCancelTap: cancelSearch
+                    onCancelTap: cancelSearch,
+                    onMessageTap: { selection = .message },
+                    onGameTap: { selection = .play }
                 )
             }
             
@@ -111,5 +114,7 @@ struct ContentView: View {
 
 
 #Preview {
-    ContentView()
+    CustomTabBarContainer(selection: .constant(.home)) {
+        HomeContainerView(webRTCManager: WebRTCManager(), selection: .constant(.home))
+    }
 }

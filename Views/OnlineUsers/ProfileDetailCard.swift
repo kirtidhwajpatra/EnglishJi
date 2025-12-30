@@ -11,6 +11,7 @@ import SwiftUI
 struct UserProfileCard: View {
     let user: LearnerNode
     var onDismiss: () -> Void
+    var onMessage: () -> Void
     
     var body: some View {
         VStack(spacing: 20) {
@@ -63,7 +64,7 @@ struct UserProfileCard: View {
                         .cornerRadius(12)
                 }
                 
-                Button(action: {}) {
+                Button(action: onMessage) {
                     Text("Message")
                         .fontWeight(.semibold)
                         .frame(maxWidth: .infinity)
@@ -79,6 +80,6 @@ struct UserProfileCard: View {
         .cornerRadius(30)
         .shadow(color: .black.opacity(0.15), radius: 30, y: -5)
         .padding(.horizontal)
-        .padding(.bottom, 40)
+        .padding(.bottom, 100)
     }
 }

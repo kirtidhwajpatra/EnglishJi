@@ -25,6 +25,7 @@ struct GameItem: Identifiable, Hashable {
 // MARK: - 2. The Main Screen
 struct GameSelectionView: View {
     @Environment(\.dismiss) var dismiss
+    var showBackButton: Bool = true // Added control
     
     // Data with "TicTacToe" (Exact String Match)
     // 🔥 FIXED: Made static to ensure IDs don't change on View re-init
@@ -73,15 +74,17 @@ struct GameSelectionView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     
                     // Back Button
-                    Button(action: { dismiss() }) {
-                        HStack {
-                            Image(systemName: "chevron.left")
-                            Text("Back")
+                    if showBackButton {
+                        Button(action: { dismiss() }) {
+                            HStack {
+                                Image(systemName: "chevron.left")
+                                Text("Back")
+                            }
+                            .foregroundColor(.white)
                         }
-                        .foregroundColor(.white)
+                        .padding(.horizontal)
+                        .padding(.top)
                     }
-                    .padding(.horizontal)
-                    .padding(.top)
                     
                     // Header
                     VStack(alignment: .leading, spacing: 4) {

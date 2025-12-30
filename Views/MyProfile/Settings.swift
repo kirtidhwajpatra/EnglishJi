@@ -19,13 +19,13 @@ struct SettingsView: View {
     @Environment(\.dismiss) var dismiss
     
     // Theme Color (Emerald Green)
-    let themeGreen = Color(ej_hex: "110037")
+    let themeGreen = Color(hex: "110037")
     
     var body: some View {
         ZStack(alignment: .top) {
             
             // MARK: - 1. BACKGROUND
-            Color(ej_hex: "F2F2F7").ignoresSafeArea()
+            Color(hex: "F2F2F7").ignoresSafeArea()
             
             // MARK: - 2. CONTENT
             ScrollView(.vertical, showsIndicators: false) {
@@ -112,7 +112,7 @@ struct SettingsView: View {
                         .padding(24)
                         .background(
                             LinearGradient(
-                                colors: [Color(ej_hex: "110037"), Color(ej_hex: "110048")], // Rich Green Gradient
+                                colors: [Color(hex: "110037"), Color(hex: "110048")], // Rich Green Gradient
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
@@ -134,7 +134,9 @@ struct SettingsView: View {
                             Divider().padding(.leading, 52)
                             
                             // Logout
-                            SettingsRow(icon: "rectangle.portrait.and.arrow.right", title: "Logout", color: themeGreen)
+                            SettingsRow(icon: "rectangle.portrait.and.arrow.right", title: "Logout", color: themeGreen) {
+                                AuthManager.shared.signOut()
+                            }
                         }
                         .background(Color.white)
                         .clipShape(RoundedRectangle(cornerRadius: 16))
@@ -157,9 +159,10 @@ struct SettingsRow: View {
     let title: String
     var value: String? = nil
     let color: Color
+    var action: () -> Void = {}
     
     var body: some View {
-        Button(action: {}) {
+        Button(action: action) {
             HStack(spacing: 16) {
                 // Icon
                 Image(systemName: icon)
@@ -184,7 +187,7 @@ struct SettingsRow: View {
                 // Chevron
                 Image(systemName: "chevron.right")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(Color(ej_hex: "C7C7CC"))
+                    .foregroundColor(Color(hex: "C7C7CC"))
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 18) // Comfortable touch area

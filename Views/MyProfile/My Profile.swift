@@ -1,325 +1,430 @@
-//
-//  ProfileView.swift
-//  EnglishJi
-//
-//  Created by Mr SwiftUI on 25/12/25.
-//
-
 import SwiftUI
 
 struct ProfileView: View {
-    
-    // Using simple Dismiss action if needed
+    // MARK: - Dependencies
     @Environment(\.dismiss) var dismiss
+    
+
+    var body: some View {
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: 24) {
+                
+                // 1. Custom Navigation Bar
+                ProfileNavBar(onBack: { dismiss() })
+                
+                // 2. Upgrade Banner
+                UpgradeBanner()
+                
+                // 3. Avatar & Name
+                ProfileHeader()
+                
+                // 4. Stats Row (Friends, Mins, Visitors)
+                StatsRow()
+                
+                // 5. Interests Section
+                InterestsSection()
+                
+                // 6. Location Placeholder
+                LocationSection()
+                
+                // 7. Contact Info
+                ContactInfoSection()
+                
+                // 8. Demographics
+                DemographicsSection()
+                
+                // 9. Edit Button
+                Button {
+                    // Action
+                } label: {
+                    HStack {
+                        Image(systemName: "stars") // Or "sparkles"
+                        Text("Edit Profile")
+                    }
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 56)
+                    .background(Color(hex: "1C1C1E")) // Dark Black/Gray
+                    .cornerRadius(28)
+        
+                }
+                .padding(.top, 10)
+                .padding(.bottom, 40)
+                .padding(.horizontal, 10)
+            }
+            .padding(.horizontal, 20)
+        }
+        .background(Color.white.ignoresSafeArea())
+    }
+}
+
+// MARK: - 1. Navigation Bar
+struct ProfileNavBar: View {
+    var onBack: () -> Void
     @State private var showSettings = false
     
-
-    
-   var body: some View {
-        ZStack(alignment: .top) {
-
-            Color(ej_hex: "F2F2F7").ignoresSafeArea()
-
-            ScrollView(.vertical, showsIndicators: false) {
-                VStack(spacing: 0) {
-
-                    // MARK: - Top clearance
-                    Spacer().frame(height: 96)
-
-                    // MARK: - A. Profile Section
-                    VStack(spacing: 18) {
-
-                        ZStack(alignment: .topTrailing) {
-                            Circle()
-                                .fill(Color.white)
-                                .frame(width: 110, height: 110)
-
-                            Image("veena")
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                                .frame(width: 100, height: 100)
-                                .clipShape(Circle())
-                                .shadow(color: .black.opacity(0.08), radius: 10, y: 5)
-
-                            Text("🇺🇸")
-                                .font(.system(size: 20))
-                                .padding(5)
-                                .background(Color.white)
-                                .clipShape(Circle())
-                                .shadow(color: .black.opacity(0.1), radius: 3, y: 1)
-                                .offset(x: 0, y: 82)
-                        }
-
-                        VStack(spacing: 6) {
-                            Text("Veena Singh")
-                                .font(.system(size: 24, weight: .bold))
-
-                            Text("Focus: Casual Conversation")
-                                .font(.system(size: 15, weight: .medium))
-                                .foregroundColor(Color(ej_hex: "8E8E93"))
-                        }
-                    }
-
-                    // 🔥 separation from progress
-                    Spacer().frame(height: 40)
-
-                    // MARK: - B. Progress Section
-                    VStack(spacing: 12) {
-
-                        HStack {
-                            HStack(spacing: 4) {
-                                Text("09:17")
-                                    .fontWeight(.semibold)
-                                Image(systemName: "sun.max.fill")
-                                    .font(.caption2)
-                            }
-                            .font(.caption)
-
-                            Spacer()
-
-                            HStack(spacing: 4) {
-                                Image(systemName: "chart.bar.fill")
-                                    .font(.caption2)
-                                Text("B2 Intermediate")
-                                    .fontWeight(.semibold)
-                            }
-                            .font(.caption)
-                        }
-
-                        GeometryReader { geo in
-                            ZStack(alignment: .leading) {
-                                Capsule()
-                                    .fill(Color(ej_hex: "E5E5EA"))
-                                    .frame(height: 6)
-
-                                Capsule()
-                                    .fill(Color(ej_hex: "34C759"))
-                                    .frame(width: geo.size.width * 0.55, height: 6)
-
-                                Image(systemName: "airplane")
-                                    .font(.system(size: 13, weight: .bold))
-                                    .foregroundColor(.black)
-                                    .background(Color(ej_hex: "F2F2F7"))
-                                    .clipShape(Circle())
-                                    .padding(2)
-                                    .offset(x: geo.size.width * 0.55 - 10)
-                            }
-                        }
-                        .frame(height: 14)
-
-                        Text("Next level in 14 days")
-                            .font(.caption2)
-                            .fontWeight(.medium)
-                            .foregroundColor(Color(ej_hex: "34C759"))
-                    }
-                    .padding(.horizontal, 10)
-
-                    // 🔥 separation from achievements
-                    Spacer().frame(height: 46)
-
-                    // MARK: - C. Achievements
-                    VStack(spacing: 14) {
-
-                        HStack(spacing: 12) {
-                            StatsPill(
-                                icon: "wind",
-                                text: "12 Day Streak",
-                                bgColor: "#E1E1E1",
-                                iconColor: "007AFF"
-                            )
-
-                            StatsPill(
-                                icon: "bolt.fill",
-                                text: "No turbulence",
-                                bgColor: "#E1E1E1",
-                                iconColor: "FF9500"
-                            )
-                        }
-
-                        StatsPill(
-                            icon: "clock.fill",
-                            text: "No delay",
-                            bgColor: "#E1E1E1",
-                            iconColor: "AF52DE"
-                        )
-                    }
-
-                    // 🔥 separation before map
-                    Spacer().frame(height: 46)
-
-                    // MARK: - D. Map Section
-                    ZStack(alignment: .topLeading) {
-                        AsyncImage(
-                            url: URL(string: "https://images.unsplash.com/photo-1524661135-423995f22d0b")
-                        ) { phase in
-                            if let image = phase.image {
-                                image.resizable().aspectRatio(contentMode: .fill)
-                            } else {
-                                Color(ej_hex: "E5E5EA")
-                            }
-                        }
-                        .frame(height: 240)
-                        .clipShape(RoundedRectangle(cornerRadius: 28))
-
-                        HStack(spacing: 6) {
-                            Circle().fill(Color.red).frame(width: 6, height: 6)
-                            Text("Live discovery view")
-                                .font(.caption2)
-                                .fontWeight(.bold)
-                                .foregroundColor(.white)
-                        }
-                        .padding(20)
-
-                        VStack {
-                            Spacer()
-                            HStack {
-                                Spacer()
-                                Image(systemName: "viewfinder")
-                                    .font(.system(size: 20, weight: .semibold))
-                                    .foregroundColor(.black)
-                                    .frame(width: 44, height: 44)
-                                    .background(Color.white)
-                                    .clipShape(Circle())
-                            }
-                        }
-                        .padding(16)
-                    }
-
-                    // MARK: - Bottom clearance for CTA
-                    Spacer().frame(height: 140)
-                }
-                .padding(.horizontal, 24)
+    var body: some View {
+        HStack(alignment: .center) {
+            Button(action: onBack) {
+                Image("returnkey")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 30, height: 30)
+                    .foregroundColor(.black)
             }
-
-            // MARK: - Sticky Top Pills
-            VStack {
-                HStack {
-                    Button(action: {
-                        dismiss() // 🔥 This closes the profile
-                    }) {
-                        Image(systemName: "arrow.left")
-                            .font(.system(size: 16, weight: .semibold))
-                            .padding()
-                            .clipShape(.circle)
-                            .background(Color(ej_hex: "F2F2F7"))
-                            
-                    }
-                    
-                    Spacer()
-                        // ... rest of your styling
-                    
-                    
-                    Button(action: { showSettings = true }) {
-                        CapsulePill(text: "Setting")
-                    }
-                   
-                    CapsulePill(text: "Online", color: "34C759", filled: true)
-                }
-                .padding(.horizontal, 24)
-                .padding(.top, 10)
-
-                Spacer()
-            }
-
-            // MARK: - Sticky Bottom CTA
-            VStack {
-                Spacer()
+            
+            Spacer()
+            
+            HStack(spacing: 20) {
                 Button(action: {}) {
-                    Text("Edit Profile")
-                        .font(.headline.weight(.semibold))
-                        .foregroundColor(.black)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 18)
-                        .background(Color.white)
-                        .clipShape(Capsule())
-                        .shadow(color: .black.opacity(0.1), radius: 10, y: 5)
+                    Image(systemName: "bell")
+                        .font(.title3)
+                        .foregroundColor(.gray)
                 }
-                .padding(.horizontal, 32)
-                .padding(.bottom, 0)
+                
+                Button(action: {
+                    showSettings = true
+                }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "gearshape")
+                        Text("Settings")
+                    }
+                    .font(.subheadline)
+                    .foregroundColor(.black)
+                    
+                    .sheet(isPresented: $showSettings) {
+                                SettingsView() // The view you want to show
+                            }
+                }
+                .padding(.trailing, 10)
             }
         }
-        .preferredColorScheme(.light)
-        .sheet(isPresented: $showSettings) {
-            SettingsView()
-        }
+        .padding(.top, 10)
+        .padding(.horizontal, 14)
     }
-
+       
 }
 
-// MARK: - Helper: Stats Pill (Icon + Color Support)
-struct StatsPill: View {
+// MARK: - 2. Upgrade Banner
+struct UpgradeBanner: View {
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: -2) {
+                Text("Unlock all")
+                    .foregroundColor(Color(hex: "FF4D67"))
+                Text("exclusive features.")
+                    .foregroundColor(Color(hex: "FF4D67"))
+            }
+            .font(.system(size: 18, weight: .regular, design: .rounded))
+            
+            Spacer()
+            
+            Button("Upgrade") { }
+                .font(.system(size: 14, weight: .regular, design: .rounded))
+                .kerning(CGFloat(-0.4))
+                .foregroundColor(.white)
+                .padding(.vertical, 8)
+                .padding(.horizontal, 16)
+                .background(Color(hex: "FF4D67")) // Hot Pink
+                .cornerRadius(20)
+        }
+        .padding(.vertical, 12)
+        .padding(.horizontal, 16)
+        .background(Color(hex: "F1f1f1")) // Light Pink
+        .cornerRadius(16)
+    }
+}
+
+// MARK: - 3. Header
+struct ProfileHeader: View {
+    var body: some View {
+        VStack(spacing: 12) {
+            ZStack {
+                // Gradient Border
+                Circle()
+                    .stroke(
+                        LinearGradient(
+                            colors: [.blue, .purple, .pink],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 3
+                    )
+                    .frame(width: 88, height: 88)
+                
+                // Image
+                AsyncImage(url: URL(string: "https://i.pravatar.cc/300?img=5")) { img in
+                    img.resizable().aspectRatio(contentMode: .fill)
+                } placeholder: {
+                    Color.gray.opacity(0.1)
+                }
+                .frame(width: 80, height: 80)
+                .clipShape(Circle())
+            }
+            
+            VStack(spacing: 6) {
+                Text("Veena Singh")
+                    .font(.system(size: 28, weight: .regular, design: .rounded))
+                    .kerning(CGFloat(-0.4))
+                    .foregroundColor(.black)
+                
+                Text("Just making a balanced diet\nfor a better lifestyle🍊")
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(2)
+            }
+        }
+    }
+}
+
+// MARK: - 4. Stats Row
+struct StatsRow: View {
+    var body: some View {
+        HStack(spacing: 6) {
+            StatCard(value: "72", label: "Friends")
+            StatCard(value: "340", label: "Min", valueColor: .purple)
+            StatCard(value: "45", label: "Visitors", isNew: true)
+        }
+        .padding(.horizontal, 6)
+    }
+}
+
+struct StatCard: View {
+    let value: String
+    let label: String
+    var valueColor: Color = .black
+    var isNew: Bool = false
+    
+    var body: some View {
+        VStack(spacing: 2) {
+            Text(value)
+                .font(.system(size: 34, weight: .regular, design: .rounded))
+                .kerning(CGFloat(-0.4))
+                .foregroundColor(valueColor)
+            
+            Text(label)
+                .font(.footnote)
+                .foregroundColor(.gray)
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 100)
+        .background(Color(hex: "f1f1f1")) // Very Light Gray
+        .cornerRadius(16)
+        .overlay(alignment: .topTrailing) {
+            if isNew {
+                Text("New")
+                    .font(.system(size: 12, weight: .regular))
+                    .foregroundColor(.red)
+                    .padding(14)
+            }
+        }
+    }
+}
+
+// MARK: - 5. Interests
+struct InterestsSection: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            SectionHeader(title: "Interest")
+            
+      
+            VStack {
+                HStack{
+                    TagView(text: "Reader", icon: "book.fill", color: Color(hex: "E5FAF1"), textColor: Color(hex: "00CB74"))
+                    TagView(text: "Foodie", icon: "cup.and.saucer.fill", color: Color(hex: "FFF5E5"), textColor: .orange)
+                }
+                
+                // Row 2
+                HStack {
+                    TagView(text: "Sports", icon: "figure.run", color: Color(hex: "F0EAF9"), textColor: .purple)
+                    TagView(text: "Explorer", icon: "map.fill", color: Color(hex: "F2F2F7"), textColor: .black)
+                    TagView(text: "Sports", icon: "figure.run", color: Color(hex: "FFF0F3"), textColor: .pink)
+                }
+            }
+            .padding()
+            
+            
+            
+        }
+    }
+}
+
+struct TagView: View {
+    let text: String
     let icon: String
-    let text: String
-    let bgColor: String
-    let iconColor: String
-
+    let color: Color
+    let textColor: Color
+    
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 4) {
             Image(systemName: icon)
-                .font(.system(size: 15))
-                .foregroundColor(Color(ej_hex: iconColor))
-
+                .font(.caption)
             Text(text)
-                .font(.system(size: 14, weight: .medium))
-                .foregroundColor(.black.opacity(0.8))
+                .font(.system(size: 18, weight: .medium, design: .default))
+                .kerning(CGFloat(-0.2))
         }
-        .padding(.horizontal, 14)   // 👈 controls width
-        .padding(.vertical, 9)      // 👈 controls height
-        .background(Color(ej_hex: bgColor))
-        .clipShape(Capsule())
+        .foregroundColor(textColor)
+        .padding(.vertical, 8)
+        .padding(.horizontal, 12)
+        .background(color)
+        .cornerRadius(8)
     }
 }
 
+// MARK: - 6. Location
+struct LocationSection: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            SectionHeader(title: "Location")
+            
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color(hex: "F2F2F7"))
+                .frame(height: 240) // Placeholder for Map
+                .overlay(
+                    Image(systemName: "map")
+                        .font(.largeTitle)
+                        .foregroundColor(.gray.opacity(0.3))
+                )
+            
+                .padding(.vertical)
+            
+        }
+        
+    }
+}
 
-// MARK: - Helper: Top Capsule Pill
-struct CapsulePill: View {
-    let text: String
-    var color: String = "FFFFFF"
-    var filled: Bool = false
+// MARK: - 7. Contact Info
+struct ContactInfoSection: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            SectionHeader(title: "Personal Details")
+            
+            VStack(spacing: 0) {
+                // Phone
+                VStack(spacing: 8) {
+                    HStack {
+                        Image(systemName: "phone")
+                            .font(.callout)
+                            .foregroundColor(.gray)
+                        Text("Phone")
+                            .font(.callout)
+                            .foregroundColor(.gray)
+                    }
+                    Text("760-9963-811")
+                        .font(.system(size: 22, weight: .regular, design: .rounded))
+                }
+                .padding(.bottom, 16)
+                
+                // Divider
+                Rectangle()
+                    .fill(Color.gray.opacity(0.1))
+                    .frame(height: 1)
+                    .padding(.horizontal, 40)
+                    .padding(.bottom, 16)
+                
+                // Email
+                VStack(spacing: 8) {
+                    HStack {
+                        Image(systemName: "envelope")
+                            .font(.callout)
+                            .foregroundColor(.gray)
+                        Text("Email")
+                            .font(.callout)
+                            .foregroundColor(.gray)
+                    }
+                    Text("veenasingh@gmail.com")
+                        .font(.system(size: 22, weight: .regular, design: .rounded))
+            
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .padding()
+        }
+    }
+}
+
+// MARK: - 8. Demographics
+struct DemographicsSection: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            SectionHeader(title: "Personal Details")
+            
+            HStack(alignment: .top) {
+                DemographicItem(label: "Country", value: "India")
+                Spacer()
+                DemographicItem(label: "Gender", value: "Male")
+                Spacer()
+                DemographicItem(label: "Date of Birth", value: "02/09/1995")
+            }
+            .padding(.horizontal, 10)
+            .padding()
+        }
+    }
+}
+
+struct DemographicItem: View {
+    let label: String
+    let value: String
     
     var body: some View {
-        Text(text)
-            .font(.system(size: 14, weight: .medium))
-            .foregroundColor(.black)
-            .padding(.horizontal, 18)
-            .padding(.vertical, 10)
-            .background(filled ? Color(ej_hex: "D0F8CE") : Color.white) // Light green bg if filled
-            .clipShape(Capsule())
-            .shadow(color: .black.opacity(0.05), radius: 5, y: 2)
-    }
-}
-
-// MARK: - Color Extension
-extension Color {
-    init(ej_hex: String) {
-        let hex = ej_hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
-        var int: UInt64 = 0
-        Scanner(string: hex).scanHexInt64(&int)
-        let a, r, g, b: UInt64
-        switch hex.count {
-        case 3: // RGB (12-bit)
-            (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
-        case 6: // RGB (24-bit)
-            (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
-        case 8: // ARGB (32-bit)
-            (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
-        default:
-            (a, r, g, b) = (1, 1, 1, 0)
+        VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .center, spacing: 6) {
+                Text(label)
+                    .font(.callout)
+                    .foregroundColor(.gray)
+                
+                Text(value)
+                    .font(.system(size: 22, weight: .regular, design: .rounded))
+            }
+           
         }
-
-        self.init(
-            .sRGB,
-            red: Double(r) / 255,
-            green: Double(g) / 255,
-            blue:  Double(b) / 255,
-            opacity: Double(a) / 255
-        )
     }
 }
 
-    
+// MARK: - Helpers
+struct SectionHeader: View {
+    let title: String
+    var body: some View {
+        HStack {
+            Text(title)
+                .font(.system(size: 22, weight: .regular, design: .default))
+            Image(systemName: "chevron.right")
+                .font(.callout)
+                .foregroundColor(.gray)
+        }
+        .padding(.horizontal, 8)
+    }
+}
 
-#Preview {
+#Preview{
     ProfileView()
 }
 
+//// Color Extension for Hex
+//extension Color {
+//    init(hex: String) {
+//        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+//        var int: UInt64 = 0
+//        Scanner(string: hex).scanHexInt64(&int)
+//        let a, r, g, b: UInt64
+//        switch hex.count {
+//        case 3: // RGB (12-bit)
+//            (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
+//        case 6: // RGB (24-bit)
+//            (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
+//        case 8: // ARGB (32-bit)
+//            (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
+//        default:
+//            (a, r, g, b) = (1, 1, 1, 0)
+//        }
+//        self.init(
+//            .sRGB,
+//            red: Double(r) / 255,
+//            green: Double(g) / 255,
+//            blue: Double(b) / 255,
+//            opacity: Double(a) / 255
+//        )
+//    }
+//}
