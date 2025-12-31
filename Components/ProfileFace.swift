@@ -106,10 +106,7 @@ struct HandDrawnFaceIcon: View {
         ZStack {
             // ... (Your existing Circle & Gradient code stays here) ...
             Circle()
-                .fill(LinearGradient(stops: [
-                    Gradient.Stop(color: Color(red: 0.89, green: 0.20, blue: 0.33).opacity(0.4), location: 0.0),
-                    Gradient.Stop(color: Color(red: 0.96, green: 0.44, blue: 0.54).opacity(0.4), location: 1.0)
-                ], startPoint: .top, endPoint: .bottom))
+                .fill(Color(hex: "DED3F8"))
                 .opacity(0.51)
             
             // ... (Your existing Mouth & Hair code stays here) ...

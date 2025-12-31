@@ -12,7 +12,7 @@ struct DebugAudioView: View {
         }
         .font(.caption2)
         .padding(6)
-        .background(Color.black.opacity(0.8))
+        .background(Color.black.opacity(0))
         .foregroundColor(.green)
         .cornerRadius(8)
         .allowsHitTesting(false) // Don't block touches

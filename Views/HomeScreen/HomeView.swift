@@ -45,7 +45,7 @@ struct HomeView: View {
     }
     
     var cardCornerRadius: CGFloat { isSearching ? 0 : 40 }
-    var cardHorizontalPadding: CGFloat { isSearching ? 0 : 20 }
+    var cardHorizontalPadding: CGFloat { isSearching ? 0 : 24 }
 
     var body: some View {
         GeometryReader { geometry in
@@ -94,7 +94,7 @@ struct HomeView: View {
                         // A. Card Background
                         RoundedRectangle(cornerRadius: cardCornerRadius)
                             .fill(Color.white)
-                            .shadow(color: .black.opacity(0.04), radius: 25, y: 10)
+//                            .shadow(color: .black.opacity(0.04), radius: 25, y: 10)
                         
                         // B. CONTENT STACK
                         VStack(spacing: 0) {
@@ -102,7 +102,7 @@ struct HomeView: View {
                             // 1. AI FACE
                             Spacer()
                             AICompanionFace(state: .constant(derivedFaceState))
-                                .scaleEffect(isSearching ? 1.6 : 2.2)
+                                .scaleEffect(isSearching ? 1.6 : 2)
                             Spacer()
                             
                             // 2. HOME CONTENT (Hidden when searching)
@@ -195,7 +195,7 @@ struct HomeView: View {
                     .padding(.horizontal, cardHorizontalPadding)
                     // 🔥 FIX 2: Increased Bottom Padding to 110
                     // This pushes the whole card UP, clearing the Tab Bar area.
-                    .padding(.bottom, isSearching ? 80 : 0)
+                    .padding(.bottom, isSearching ? 80 : -80)
                     .edgesIgnoringSafeArea(isSearching ? .all : [])
                 }
                 .frame(width: geometry.size.width, height: geometry.size.height, alignment: .center)

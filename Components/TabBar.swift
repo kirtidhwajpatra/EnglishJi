@@ -70,7 +70,7 @@ struct CustomTabBar: View {
         }
         .padding(.horizontal, 55)
         .padding(.top, 10)
-        .padding(.vertical, 6) // Vertical padding for the bar itself
+        .padding(.bottom, -4) // Vertical padding for the bar itself
 //        .background(
 //            Color.white
 //                .shadow(color: Color.black.opacity(0.3), radius: 1, x: 0, y: -2)
