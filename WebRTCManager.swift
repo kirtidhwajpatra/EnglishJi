@@ -4,13 +4,26 @@ import AVFoundation
 import Combine
 
 @MainActor
-final class WebRTCManager: ObservableObject {
+final class WebRTCManager: NSObject, ObservableObject {
 
     // MARK: - UI State (THIS DRIVES SCREENS)
     @Published var isInCall: Bool = false
     @Published var connectionState: String = "Idle"
     @Published var debugLog: String = ""
     @Published var showCallSummary: Bool = false
+    
+    // 🔥 DEBUG AUDIO STATS
+    @Published var currentMicVolume: Double = 0.0
+    
+    // Public Accessor for Debug View (Refactored to primitives to avoid Import issues in View)
+    var isLocalAudioTrackEnabled: Bool {
+        return rtc?.localAudioTrack?.isEnabled ?? false
+    }
+    
+    var localAudioSourceState: Int {
+        // 0=Live, 1=Ended, 2=Muted
+        return rtc?.localAudioTrack?.source.state.rawValue ?? -1
+    }
     
     // Derived partner ID for the demo (in real app, simpler to store from signaling)
     @Published var lastCallPartnerId: String = "" // 🔥 Actual Partner ID
@@ -27,37 +40,86 @@ final class WebRTCManager: ObservableObject {
     var myUserId: String = "" // Store my ID (Public for CallSummaryView)
 
     // MARK: - Init
-    init() {
-        AudioSessionManager.configure()
-        log("Manager initialized")
-
+    override init() {
+        super.init()
+        log("Manager init start (Global Init Mode)")
+        
+        // 🔥 USER REQUEST: HARDWARE-ALIGNED MODE
+        // WebRTCClient now handles all audio setup with specific 48kHz config.
+        // We do nothing here to avoid conflicts.
+        // let session = RTCAudioSession.sharedInstance()
+        // session.useManualAudio = false // Default
+        
         signaling.onMessage = handleSignal
+        
+        // Monitor for interruptions
+        RTCAudioSession.sharedInstance().add(self)
+        
+        log("Manager init complete (Waiting for Signaling)")
     }
 
     private func onConnected() {
         // 🔥 Connection established. 
         // We rely on AudioSessionManager's ".defaultToSpeaker" config now.
-        // No manual override to avoid breaking Mic.
+        log("WebRTC Connected - Flushing any final ICE")
+        flushICE()
     }
 
     // MARK: - Public API (UI)
 
     func startMatchmaking(userId: String) {
-        guard !isConnecting, canStartMatchmaking else { return }
+        // 🔥 FIX: Check State Synchronously to prevent Double-Tap Race Condition
+        guard !isConnecting, canStartMatchmaking else {
+            print("⚠️ WebRTCManager: Matchmaking ignored (Already connecting)")
+            return
+        }
+        
+        // Lock immediately
+        self.canStartMatchmaking = false
+        self.isConnecting = true
+        self.myUserId = userId
 
-        canStartMatchmaking = false
-        isConnecting = true
-        myUserId = userId
-        resetState()
+        // 🔥 USER REQUEST: Explicit Recursive Permission Check
+        let permission = AVAudioSession.sharedInstance().recordPermission
+        if permission != .granted {
+            print("⚠️ WebRTCManager: Permission not granted yet. Requesting...")
+            AVAudioSession.sharedInstance().requestRecordPermission { granted in
+                DispatchQueue.main.async {
+                    if granted {
+                         // Recursive call? No, just continue logic or reset and recall.
+                         // Better: Just continue setup since we are on Main Thread now.
+                         self.continueMatchmaking(userId: userId)
+                    } else {
+                        print("❌ WebRTCManager: Microphone permission DENIED.")
+                        // Unlock state
+                        self.isConnecting = false
+                        self.canStartMatchmaking = true
+                    }
+                }
+            }
+            return
+        }
+        
+        // Proceed if granted
+        DispatchQueue.main.async {
+            self.continueMatchmaking(userId: userId)
+        }
+    }
+    
+    private func continueMatchmaking(userId: String) {
+        self.resetState()
 
-        rtc = WebRTCClient()
-        setupRTCCallbacks()
+        // 🔥 2. Ensure Audio is Configured & Active
+        // Self.activateAudioSession() // Already active from Init, but good to ensure
+        
+        self.rtc = WebRTCClient()
+        self.setupRTCCallbacks()
 
-        connectionState = "Searching"
-        log("Connecting signaling...")
-        signaling.connect()
+        self.connectionState = "Searching"
+        self.log("Connecting signaling...")
+        self.signaling.connect()
         // 🔥 Send User ID in Join Payload
-        signaling.join(userId: userId)
+        self.signaling.join(userId: userId)
     }
 
     /// Used by End button OR when screen is dismissed
@@ -140,11 +202,16 @@ final class WebRTCManager: ObservableObject {
                     "type": "answer",
                     "sdp": answer.sdp
                 ])
+                
+                // 🔥 FIX: Flush any pending ICE candidates NOW that we have a local description
+                self.flushICE()
+                
                 self.log("Sent answer")
 
                 DispatchQueue.main.async {
                     self.isInCall = true          // 🔥 UI OPENS HERE
                     self.connectionState = "Connected"
+                    self.rtc?.startAudioMonitoring() // 🔥 Start Stats
                 }
             }
 
@@ -164,6 +231,7 @@ final class WebRTCManager: ObservableObject {
             DispatchQueue.main.async {
                 self.isInCall = true                 // 🔥 UI OPENS HERE
                 self.connectionState = "Connected"
+                self.rtc?.startAudioMonitoring() // 🔥 Start Stats
             }
 
         case "candidate":
@@ -224,10 +292,15 @@ final class WebRTCManager: ObservableObject {
 
         rtc?.close()
         rtc = nil
+        
+        // 🔥 Clean up socket
+        signaling.close()
 
         isConnecting = false
         isRemoteDescriptionSet = false
         pendingICE.removeAll()
+        
+
 
         isInCall = false                   // 🔥 UI CLOSES
         connectionState = "Idle"
@@ -254,6 +327,10 @@ final class WebRTCManager: ObservableObject {
                 self.log("Queued ICE")
             }
         }
+        
+        rtc?.onLocalAudioLevel = { [weak self] level in
+            self?.currentMicVolume = level
+        }
     }
 
     // MARK: - Logging
@@ -263,5 +340,22 @@ final class WebRTCManager: ObservableObject {
             self.debugLog += "• \(msg)\n"
             print("[WebRTC]", msg)
         }
+    }
+}
+
+// MARK: - Audio Session Delegate
+// MARK: - Audio Session Delegate
+extension WebRTCManager: RTCAudioSessionDelegate {
+    
+    func audioSessionDidStartPlayOrRecord(_ session: RTCAudioSession) {
+        log("RTCAudioSession DidStartPlayOrRecord - Re-applying Config")
+        // 🔥 FIX: Dispatch async to avoid deadlocking with WebRTC's internal lock
+        // DispatchQueue.main.async {
+        //     AudioSessionManager.configure() // DELETED: Global Init handles this now
+        // }
+    }
+    
+    func audioSessionDidStopPlayOrRecord(_ session: RTCAudioSession) {
+        log("RTCAudioSession DidStop")
     }
 }

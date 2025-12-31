@@ -461,7 +461,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = EnglishJi/Info.plist;
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "We need access to your microphone to connect you with other learners.";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "We need access to local network to connect to other devices.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "We need access to your microphone for calls.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -500,7 +501,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = EnglishJi/Info.plist;
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "We need access to your microphone to connect you with other learners.";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "We need access to local network to connect to other devices.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "We need access to your microphone for calls.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

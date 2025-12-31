@@ -17,6 +17,11 @@
 	</array>
 	<key>GIDClientID</key>
 	<string>1013892999740-l6jqtjf7eeopjq0aa965blrq4sdq43di.apps.googleusercontent.com</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
 	<key>UIAppFonts</key>
 	<array>
 		<string>FuturaDemiCTT</string>
@@ -25,15 +30,9 @@
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>audio</string>
+		<string>voip</string>
 	</array>
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSAllowsArbitraryLoads</key>
-		<true/>
-	</dict>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>We need access to your microphone for calls.</string>
-	<key>NSLocalNetworkUsageDescription</key>
-	<string>We need access to local network to connect to other devices.</string>
+	<string>We need access to your microphone to let you speak with other users.</string>
 </dict>
 </plist>

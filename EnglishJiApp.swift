@@ -8,9 +8,15 @@
 import SwiftUI
 import FirebaseCore
 import GoogleSignIn
+import WebRTC
+import AVFoundation
 
 @main
 struct EnglishJiApp: App {
+    
+    // 🔥 USER REQUEST: GLOBAL INIT REVERTED
+    // We are moving to a specific "Hardware-Aligned" config in WebRTCClient
+    
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
 
     var body: some Scene {

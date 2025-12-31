@@ -55,6 +55,11 @@ struct HomeView: View {
                 Color(red: 241/255, green: 241/255, blue: 241/255)
                     .ignoresSafeArea()
                     .allowsHitTesting(false)
+                
+                // 🔥 DEBUG OVERLAY (User Request)
+                DebugAudioView(webRTC: webRTCManager)
+                    .position(x: 80, y: 60)
+                    .zIndex(999)
 
                 // MARK: - 2. HEADER
                 if !isSearching {
