@@ -58,7 +58,7 @@ Prerequisites
 
 Server
 1. Clone the repo:
-   - git clone https://github.com/kirtidhwajpatra/EnglishCallingApp.git
+   - git clone https://github.com/kirtidhwajpatra/EnglishJi
 2. Start the signaling server:
    - cd EnglishCallingApp/server
    - npm install
