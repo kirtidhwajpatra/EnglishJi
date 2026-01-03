@@ -1,9 +1,9 @@
-# EnglishCallingApp
+# English ji iOS App
 
 A real-time iOS app for practicing English through live audio calls. The project provides a mobile client that establishes peer-to-peer audio sessions using WebRTC and a lightweight Node.js signaling server to coordinate session setup. Implementations prioritize correctness, low-latency audio, and a clear MVVM-based code organization.
 
 ## Overview
-EnglishCallingApp enables two users to connect over audio calls for language practice. It handles microphone capture, real-time transport with WebRTC, and session signaling while keeping presentation and business logic separated for maintainability and testability.
+English Ji App enables two users to connect over audio calls for language practice. It handles microphone capture, real-time transport with WebRTC, and session signaling while keeping presentation and business logic separated for maintainability and testability.
 
 ## Key features
 - Peer-to-peer real-time audio calls using WebRTC
@@ -47,13 +47,11 @@ EnglishCallingApp enables two users to connect over audio calls for language pra
 - /Tests                — unit / integration tests (when present)
 - README.md             — this document
 
-(Adjust paths to match repository layout.)
-
 ## How to run (basic)
 Prerequisites
 - macOS with Xcode (recommended)
 - Node.js (14+)
-- CocoaPods or Swift Package Manager (as used by the project)
+- Swift Package Manager (as used by the project)
 - Physical iOS device for full audio testing (simulator has limited audio I/O)
 
 Server
