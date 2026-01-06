@@ -14,7 +14,21 @@ enum Tab: String, CaseIterable {
         case .play: return "Play"
         case .discover: return "Discover"
         case .message: return "Message"
-        }
+    }
+}
+}
+
+// MARK: - 1.5 Visibility Preference Key
+struct TabBarHiddenPreferenceKey: PreferenceKey {
+    static var defaultValue: Bool = false
+    static func reduce(value: inout Bool, nextValue: () -> Bool) {
+        value = nextValue() || value
+    }
+}
+
+extension View {
+    func customTabBarHidden(_ hidden: Bool) -> some View {
+        preference(key: TabBarHiddenPreferenceKey.self, value: hidden)
     }
 }
 
@@ -22,6 +36,7 @@ enum Tab: String, CaseIterable {
 struct CustomTabBarContainer<Content: View>: View {
     @Binding var selection: Tab
     @State private var tabs: [Tab] = Tab.allCases
+    @State private var isTabBarHidden = false // Local state for visibility
     let content: Content
     
     init(selection: Binding<Tab>, @ViewBuilder content: () -> Content) {
@@ -41,9 +56,14 @@ struct CustomTabBarContainer<Content: View>: View {
             
             // Floating/Fixed Footer
             CustomTabBar(selection: $selection, tabs: tabs)
+                .offset(y: isTabBarHidden ? 150 : 0) // Slide down to hide
+                .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isTabBarHidden)
                 .zIndex(999)
         }
         .ignoresSafeArea(.keyboard)
+        .onPreferenceChange(TabBarHiddenPreferenceKey.self) { hidden in
+            isTabBarHidden = hidden
+        }
     }
 }
 
