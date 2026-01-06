@@ -88,15 +88,20 @@ struct CustomTabBar: View {
                 )
             }
         }
-        .padding(.horizontal, 55)
-        .padding(.top, 10)
-        .padding(.bottom, -4) // Vertical padding for the bar itself
-//        .background(
-//            Color.white
-//                .shadow(color: Color.black.opacity(0.3), radius: 1, x: 0, y: -2)
-//        )
-        // Extend background into safe area
-        .background(Color.white.edgesIgnoringSafeArea(.bottom))
+        .padding(.horizontal, 20) // Internal icon padding
+        .padding(.vertical, 14)   // Internal vertical padding
+        .background(
+            ZStack {
+                Rectangle()
+                    .fill(.thickMaterial) // "Milky" glass effect
+                Rectangle()
+                    .fill(Color.gray.opacity(0.1)) // Subtle gray tint
+            }
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous)) // Squircle Pill
+        .shadow(color: Color.black.opacity(0.12), radius: 15, x: 0, y: 8) // Ambient shadow
+        .padding(.horizontal, 22) // Detached from edges (approx 20-25pt)
+        .padding(.bottom, 0) // Anchored near bottom (safe area handles spacing)
     }
     
     private func triggerHaptic() {
