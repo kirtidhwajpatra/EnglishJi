@@ -1,18 +1,14 @@
 import SwiftUI
 
-// MARK: - 1. Safe Data Model
+// MARK: - Safe Data Model
 struct GameItem: Identifiable, Hashable {
     let id = UUID()
-    let rank: String
     let title: String
-    let subtitle: String
-    let iconName: String
-    let buttonText: String
-    // We exclude colors from Hashable to prevent bugs
-    let startColor: Color
-    let endColor: Color
+    let bgColor: Color
+    let circleColor: Color
+    let isNew: Bool? // Optional badge
     
-    // Manual Hashable: Only hashes ID to ensure stability
+    // Manual Hashable
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
     }
@@ -22,109 +18,127 @@ struct GameItem: Identifiable, Hashable {
     }
 }
 
-// MARK: - 2. The Main Screen
+// MARK: - Main Screen
 struct GameSelectionView: View {
     @Environment(\.dismiss) var dismiss
-    var showBackButton: Bool = true // Added control
+    var showBackButton: Bool = true
     
-    // Data with "TicTacToe" (Exact String Match)
-    // 🔥 FIXED: Made static to ensure IDs don't change on View re-init
+    // Theme Colors
+    let darkText = Color(hex: "1F3B34") // Dark Green text
+    
+    // Static Data matching the screenshot
     private static let games: [GameItem] = [
         GameItem(
-            rank: "1",
-            title: "TicTacToe", // ⚠️ MUST MATCH logic below
-            subtitle: "Epic PvP Card Battle",
-            iconName: "shield.swords.fill",
-            buttonText: "Play",
-            startColor: Color(red: 0.6, green: 0.4, blue: 0.2),
-            endColor: Color(red: 0.4, green: 0.25, blue: 0.1)
+            title: "TicTacToe",
+            bgColor: Color(hex: "EF553B"), // Red-ish
+            circleColor: Color(hex: "952B1E"), // Dark Red circle
+            isNew: true
         ),
         GameItem(
-            rank: "2",
-            title: "MONOPOLY GO!",
-            subtitle: "Roll, Build, Dream",
-            iconName: "building.2.fill",
-            buttonText: "View",
-            startColor: Color(red: 0.9, green: 0.3, blue: 0.3),
-            endColor: Color(red: 0.7, green: 0.1, blue: 0.1)
+            title: "Ludo",
+            bgColor: Color(hex: "5B3D93"), // Purple
+            circleColor: Color(hex: "8B5CF6"), // Lighter Purple circle
+            isNew: false
         ),
         GameItem(
-            rank: "3",
-            title: "Hay Day",
-            subtitle: "Farming simulation",
-            iconName: "leaf.fill",
-            buttonText: "Play",
-            startColor: Color(red: 0.6, green: 0.3, blue: 0.8),
-            endColor: Color(red: 0.4, green: 0.1, blue: 0.6)
+            title: "Bagh Chal",
+            bgColor: Color(hex: "F4C236"), // Yellow/Gold
+            circleColor: Color(hex: "D99023"), // Darker Gold circle
+            isNew: false
         ),
         GameItem(
-            rank: "4",
-            title: "Among Us",
-            subtitle: "Space betrayal",
-            iconName: "figure.stand",
-            buttonText: "View",
-            startColor: Color(red: 1.0, green: 0.8, blue: 0.2),
-            endColor: Color(red: 0.8, green: 0.6, blue: 0.0)
+            title: "Reunite",
+            bgColor: Color(hex: "25528A"), // Dark Blue
+            circleColor: Color(hex: "89CFF0"), // Light Blue circle
+            isNew: true
+        ),
+        GameItem(
+            title: "Chess",
+            bgColor: Color(hex: "EA4C9D"), // Pink
+            circleColor: Color(hex: "9D2660"), // Dark Pink circle
+            isNew: false
+        ),
+        GameItem(
+            title: "TicTacToe", // Green Variant
+            bgColor: Color(hex: "27634C"), // Dark Green
+            circleColor: Color(hex: "4ADE80"), // Light Green circle
+            isNew: false
         )
     ]
     
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    
-                    // Back Button
+            VStack(spacing: 0) {
+                
+                // 1. Header
+                HStack {
+                    // Back Button (Circular Grey)
                     if showBackButton {
                         Button(action: { dismiss() }) {
-                            HStack {
-                                Image(systemName: "chevron.left")
-                                Text("Back")
-                            }
+                            Image(systemName: "arrow.turn.up.left")
+                                .font(.system(size: 18, weight: .regular))
+                                .padding(14)
+                                .background(Color(hex: "F2F2F7"))
+                                .clipShape(Circle())
+                                .foregroundColor(.black)
+                        }
+                    } else {
+                        Spacer().frame(width: 46) // Balance spacing if hidden
+                    }
+                    
+                    Spacer()
+                    
+                    // Avatars on Right (Overlapping)
+                    ZStack {
+                        // Left Avatar (Pink)
+                         Image(systemName: "person.crop.circle.fill")
+                            .resizable()
+                            .frame(width: 40, height: 40)
                             .foregroundColor(.white)
-                        }
-                        .padding(.horizontal)
-                        .padding(.top)
-                    }
-                    
-                    // Header
-                    VStack(alignment: .leading, spacing: 4) {
-                       
+                            .background(Color.pink.opacity(0.3))
+                            .clipShape(Circle())
+                            .offset(x: -12)
                         
-                        HStack {
-                           
-                            
-                            Image(systemName: "gamecontroller.fill")
-                                .foregroundStyle(.blue)
-                                .font(.title2)
-                            
-                            Text("Top Played Games")
-                                .font(.title)
-                                .fontWeight(.bold)
-                                .foregroundStyle(.white)
-                            
-//                            Image(systemName: "chevron.right")
-//                                .font(.title3)
-//                                .fontWeight(.bold)
-//                                .foregroundStyle(.gray)
-                        }
+                        // Right Avatar (Green)
+                        Image(systemName: "person.crop.circle.fill")
+                            .resizable()
+                            .frame(width: 40, height: 40)
+                            .foregroundColor(.black)
+                            .background(Color.green.opacity(0.3))
+                            .clipShape(Circle())
+                            .offset(x: 12)
+                            .overlay(
+                                Circle()
+                                    .stroke(Color.white, lineWidth: 2)
+                                    .offset(x: 12)
+                            )
                     }
-                    .padding(.horizontal)
-                    .padding(.top, 10)
-                    
-                    // Grid
-                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
+                }
+                .padding(.horizontal, 24)
+                .padding(.top, 10)
+                
+                // 2. Title
+                Text("Chose your game")
+                    .font(.system(size: 24, weight: .regular))
+                    .foregroundColor(darkText)
+                    .padding(.top, 24)
+                    .padding(.bottom, 30) // Space before grid
+                
+                // 3. Grid
+                ScrollView(showsIndicators: false) {
+                    LazyVGrid(columns: [GridItem(.flexible(), spacing: 16), GridItem(.flexible(), spacing: 16)], spacing: 16) {
                         ForEach(Self.games) { game in
-                            // 🔥 FIXED: Using direct destination to guarantee navigation works
                             NavigationLink(destination: destinationView(for: game)) {
                                 GameCard(game: game)
                             }
-                            .buttonStyle(PlainButtonStyle())
                         }
                     }
-                    .padding(.horizontal)
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 40)
                 }
             }
-            .background(Color.black.ignoresSafeArea())
+            .navigationBarHidden(true)
+            .background(Color.white.ignoresSafeArea())
         }
     }
     
@@ -140,79 +154,57 @@ struct GameSelectionView: View {
                     .preferredColorScheme(.dark)
             } else {
                 Text("Coming Soon")
-                    .foregroundColor(.white)
+                    .foregroundColor(.black) // Change to black for white bg
             }
         }
     }
 }
 
-// MARK: - 3. The Card Component (NO BUTTONS inside)
+// MARK: - Card Component
 struct GameCard: View {
     let game: GameItem
     
     var body: some View {
-        ZStack(alignment: .topLeading) {
+        ZStack {
             // Background
-            LinearGradient(
-                colors: [game.startColor, game.endColor],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
+            RoundedRectangle(cornerRadius: 32)
+                .fill(game.bgColor)
             
-            // Rank
-            Text(game.rank)
-                .font(.system(size: 100, weight: .black, design: .rounded))
-                .foregroundStyle(.white.opacity(0.15))
-                .offset(x: -10, y: -25)
+            // Center Circle
+            Circle()
+                .fill(game.circleColor)
+                .frame(width: 80, height: 80)
+                .offset(y: -15) // Slightly above center
             
-            // Content
-            VStack(alignment: .leading) {
-                // Icon
-                HStack {
-                    Spacer()
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 18, style: .continuous)
-                            .fill(.ultraThinMaterial)
-                            .frame(width: 70, height: 70)
-                            .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
-                        
-                        Image(systemName: game.iconName)
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 35, height: 35)
-                            .foregroundStyle(.white)
+            // Title at Bottom
+            VStack {
+                Spacer()
+                Text(game.title)
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundColor(.white)
+                    .padding(.bottom, 24)
+            }
+            
+            // "New" Badge
+            if let isNew = game.isNew, isNew {
+                VStack {
+                    HStack {
+                        Spacer()
+                        Text("New")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundColor(Color(hex: "1F3B34")) // Dark Text
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color(hex: "DDEE88")) // Lime Green
+                            .cornerRadius(12)
+                            .padding([.top, .trailing], 16)
                     }
                     Spacer()
                 }
-                .padding(.top, 40)
-                .padding(.bottom, 30)
-                
-                // Titles
-                Text(game.title)
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundStyle(.white)
-                    .lineLimit(1)
-                
-                Text(game.subtitle)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(.white.opacity(0.7))
-                    .lineLimit(1)
-                    .padding(.bottom, 12)
-                
-                // FAKE Button (Visual Only)
-                Text(game.buttonText)
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundStyle(.white)
-                    .padding(.vertical, 8)
-                    .padding(.horizontal, 24)
-                    .background(Capsule().fill(.white.opacity(0.25)))
-                    .padding(.top, 6)
             }
-            .padding(16)
         }
-        .frame(height: 280)
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .contentShape(Rectangle()) // Ensures tap works everywhere
+        .frame(height: 180) // Square-ish aspect ratio
+        .shadow(color: game.bgColor.opacity(0.3), radius: 10, x: 0, y: 5)
     }
 }
 

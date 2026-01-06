@@ -31,15 +31,13 @@ struct RootView: View {
                             
                         case .play:
                             NavigationStack {
-                                GameSelectionView(showBackButton: false)
+                                PlayHubView()
                             }
                             
                         case .discover:
-                             LearnerRadarView(onClose: {}, onMessageTap: {
-                                withAnimation {
-                                    currentTab = .message
-                                }
-                            }, showCloseButton: false)
+                            NavigationStack {
+                                DiscoverPeopleView()
+                            }
                             
                         case .message:
                             NavigationStack {

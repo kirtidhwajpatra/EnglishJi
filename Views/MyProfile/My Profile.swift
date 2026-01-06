@@ -38,7 +38,7 @@ struct ProfileView: View {
                     // Action
                 } label: {
                     HStack {
-                        Image(systemName: "stars") // Or "sparkles"
+                        Image(systemName: "sparkles") // Fixed symbol
                         Text("Edit Profile")
                     }
                     .font(.headline)
@@ -112,9 +112,9 @@ struct UpgradeBanner: View {
         HStack {
             VStack(alignment: .leading, spacing: -2) {
                 Text("Unlock all")
-                    .foregroundColor(Color(hex: "FF4D67"))
+                    .foregroundColor(Color.black)
                 Text("exclusive features.")
-                    .foregroundColor(Color(hex: "FF4D67"))
+                    .foregroundColor(Color.black)
             }
             .font(.system(size: 18, weight: .regular, design: .rounded))
             
@@ -123,10 +123,10 @@ struct UpgradeBanner: View {
             Button("Upgrade") { }
                 .font(.system(size: 14, weight: .regular, design: .rounded))
                 .kerning(CGFloat(-0.4))
-                .foregroundColor(.white)
-                .padding(.vertical, 8)
                 .padding(.horizontal, 16)
-                .background(Color(hex: "FF4D67")) // Hot Pink
+                .padding(.vertical, 8)
+                .background(Color(hex: "DDEE88")) // Lime Green
+                .foregroundColor(Color(hex: "1F3B34")) // Dark Text
                 .cornerRadius(20)
         }
         .padding(.vertical, 12)
@@ -170,7 +170,7 @@ struct ProfileHeader: View {
                     .foregroundColor(.black)
                 
                 Text("Just making a balanced diet\nfor a better lifestyle🍊")
-                    .font(.subheadline)
+                    .font(.system(size: 14))
                     .foregroundColor(.gray)
                     .multilineTextAlignment(.center)
                     .lineSpacing(2)
@@ -389,12 +389,13 @@ struct SectionHeader: View {
     var body: some View {
         HStack {
             Text(title)
-                .font(.system(size: 22, weight: .regular, design: .default))
+                .font(.system(size: 20, weight: .regular, design: .default)) // Reduced size slightly
+                .foregroundColor(Color.black.opacity(0.8))
             Image(systemName: "chevron.right")
-                .font(.callout)
+                .font(.system(size: 14))
                 .foregroundColor(.gray)
         }
-        .padding(.horizontal, 8)
+        .padding(.horizontal, 4)
     }
 }
 

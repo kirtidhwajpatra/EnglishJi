@@ -5,195 +5,297 @@
 //  Created by Mr SwiftUI on 25/12/25.
 //
 
-//
-//  SettingsView.swift
-//  EnglishJi
-//
-//  Created by Mr SwiftUI on 25/12/25.
-//
-
 import SwiftUI
 
 struct SettingsView: View {
     
     @Environment(\.dismiss) var dismiss
     
-    // Theme Color (Emerald Green)
-    let themeGreen = Color(hex: "110037")
+    // Theme Colors
+    let limeGreen = Color(hex: "DDEE88")
+    let darkText = Color(hex: "1F3B34")
+    
+    @State private var isCallExperienceExpanded = true // Expanded by default
+    
+    // Call Experience Models
+    @State private var callLength = "Unlimited" // Example state
+    @State private var conversationStyle = "Casual"
     
     var body: some View {
         ZStack(alignment: .top) {
             
             // MARK: - 1. BACKGROUND
-            Color(hex: "F2F2F7").ignoresSafeArea()
+            Color.white.ignoresSafeArea() // White background based on design
             
             // MARK: - 2. CONTENT
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 24) {
                     
-                    // --- HEADER (Back Button + Premium Pill) ---
+                    // --- HEADER ---
                     HStack(alignment: .center) {
-                        // Back Button (Replaces "Profile" Text)
+                        // Back Button
                         Button(action: { dismiss() }) {
                             Image(systemName: "arrow.left")
-                                .font(.system(size: 18, weight: .semibold))
+                                .font(.system(size: 18, weight: .light))
                                 .foregroundColor(.black)
                                 .padding(12)
-                                .background(Color.white)
+                                .background(Color(hex: "F2F2F7")) // Grey circle
                                 .clipShape(Circle())
-                                .shadow(color: .black.opacity(0.05), radius: 5, y: 2)
                         }
                         
                         Spacer()
                         
-                        // Top "Get Premium" Pill
-                        
+                        // Share/Action Button
+                        Button(action: { }) {
+                            Image(systemName: "square.and.arrow.up")
+                                .font(.system(size: 18, weight: .light))
+                                .foregroundColor(.black)
+                                .padding(12)
+                        }
                     }
                     .padding(.top, 20)
+                    .padding(.horizontal, 4)
                     
-                    // --- SECTION 1: GENERAL ---
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("General")
-                            .font(.footnote)
-                            .foregroundColor(Color.gray)
-                            .padding(.leading, 8)
+                    // --- SETTINGS LIST ---
+                    VStack(alignment: .leading, spacing: 16) {
                         
+                        // GROUP 1: Main Settings (Combined Card)
                         VStack(spacing: 0) {
-                            // Personal Details
-                            SettingsRow(icon: "person.fill", title: "Personal details", color: themeGreen)
-                            Divider().padding(.leading, 52)
                             
-                            // Language
-                            SettingsRow(icon: "globe", title: "Language", value: "English", color: themeGreen)
-                            Divider().padding(.leading, 52)
+                            // 1. Profile
+                            SettingsRowItem(icon: "person", title: "Profile", isFirst: true)
+                            Divider().padding(.leading, 52).opacity(0.5)
                             
-                            // Rate Us
-                            SettingsRow(icon: "star.fill", title: "Rate us", color: themeGreen)
-                            Divider().padding(.leading, 52)
-                            
-                            // Privacy Policy
-                            SettingsRow(icon: "shield.fill", title: "Privacy Policy", color: themeGreen)
-                            Divider().padding(.leading, 52)
-                            
-                            // Terms
-                            SettingsRow(icon: "doc.text.fill", title: "Terms Of Use", color: themeGreen)
-                            Divider().padding(.leading, 52)
-                            
-                            // Feedback
-                            SettingsRow(icon: "envelope.fill", title: "Feedback", color: themeGreen)
-                        }
-                        .background(Color.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
-                    }
-                    
-                    // --- PREMIUM BANNER ---
-                    Button(action: {}) {
-                        HStack(alignment: .center) {
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text("Get Premium")
-                                    .font(.title3)
-                                    .fontWeight(.bold)
-                                    .foregroundColor(.white)
+                            // 2. Call experience (Expandable)
+                            VStack(spacing: 0) {
+                                Button(action: {
+                                    withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                                        isCallExperienceExpanded.toggle()
+                                    }
+                                }) {
+                                    HStack(spacing: 12) {
+                                        Image(systemName: "phone")
+                                            .font(.system(size: 20, weight: .light))
+                                            .foregroundColor(.black)
+                                            .frame(width: 24)
+                                        
+                                        HStack(alignment: .top, spacing: 4) {
+                                            Text("Call experience")
+                                                .font(.system(size: 17, weight: .regular))
+                                                .foregroundColor(.black)
+                                            
+                                            // Pro Badge
+                                            Text("Pro")
+                                                .font(.system(size: 9, weight: .bold)) // Smaller font
+                                                .foregroundColor(darkText)
+                                                .padding(.horizontal, 4)
+                                                .padding(.vertical, 2)
+                                                .background(limeGreen) // Lime Green
+                                                .cornerRadius(4)
+                                                .offset(y: -5)
+                                        }
+                                        
+                                        Spacer()
+                                    }
+                                    .padding(.vertical, 16)
+                                    .padding(.horizontal, 16)
+                                    .background(Color(hex: "F2F2F7"))
+                                }
                                 
-                                Text("Enjoy all the benefits of the app")
-                                    .font(.footnote)
-                                    .foregroundColor(.white.opacity(0.9))
+                                if isCallExperienceExpanded {
+                                    VStack(spacing: 0) {
+                                        Divider().padding(.leading, 52).opacity(0.5)
+                                        SettingsSubRow(label: "Preferred call length")
+                                        Divider().padding(.leading, 52).opacity(0.5)
+                                        SettingsSubRow(label: "Conversation Style")
+                                        Divider().padding(.leading, 52).opacity(0.5)
+                                        SettingsSubRow(label: "Audio Quality")
+                                        Divider().padding(.leading, 52).opacity(0.5)
+                                        SettingsSubRow(label: "Auto Reconnect")
+                                    }
+                                    .background(Color(hex: "F2F2F7"))
+                                }
                             }
                             
-                            Spacer()
+                            Divider().padding(.leading, 52).opacity(0.5)
                             
-                            Image(systemName: "sparkles")
-                                .font(.system(size: 32))
-                                .foregroundColor(.white)
-                                .padding(12)
-                                .background(Color.white.opacity(0.2))
-                                .clipShape(Circle())
+                            // 3. Match & Discovery
+                            SettingsRowItem(icon: "person.2", title: "Match & Discovery")
+                            Divider().padding(.leading, 52).opacity(0.5)
+                            
+                            // 4. Notifications
+                            SettingsRowItem(icon: "bell", title: "Notifications")
+                            Divider().padding(.leading, 52).opacity(0.5)
+                            
+                            // 5. Premium
+                            SettingsRowItem(icon: "checkmark.seal", title: "Premium", isLast: true)
                         }
-                        .padding(24)
-                        .background(
-                            LinearGradient(
-                                colors: [Color(hex: "110037"), Color(hex: "110048")], // Rich Green Gradient
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .clipShape(RoundedRectangle(cornerRadius: 24))
-                        .shadow(color: themeGreen.opacity(0.4), radius: 12, y: 6)
-                    }
+                        .background(Color(hex: "F2F2F7"))
+                        .clipShape(RoundedRectangle(cornerRadius: 24)) // Combined Card Shape
                     
-                    // --- SECTION 2: ACCOUNT ---
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Account")
-                            .font(.footnote)
-                            .foregroundColor(Color.gray)
-                            .padding(.leading, 8)
-                        
+                    // --- GROUP 2 ---
+                    // Design Middle Screen: Privacy separate
+                    SettingsLinkRow(icon: "lock.shield", title: "Privacy & Safety", isStandalone: true)
+                    
+                    // --- GROUP 3 ---
+                    VStack(alignment: .leading, spacing: 16) {
                         VStack(spacing: 0) {
-                            // Delete Account
-                            SettingsRow(icon: "trash.fill", title: "Delete account", color: themeGreen)
-                            Divider().padding(.leading, 52)
-                            
-                            // Logout
-                            SettingsRow(icon: "rectangle.portrait.and.arrow.right", title: "Logout", color: themeGreen) {
-                                AuthManager.shared.signOut()
-                            }
+                             SettingsRowItem(icon: "textformat", title: "Language & Accessibility", isFirst: true)
+                             Divider().padding(.leading, 52).opacity(0.5)
+                             SettingsRowItem(icon: "chart.bar", title: "Usage & Progress", isLast: true)
                         }
-                        .background(Color.white)
+                        .background(Color(hex: "F2F2F7"))
                         .clipShape(RoundedRectangle(cornerRadius: 16))
                     }
                     
-                    // Version / Footer Space
-                    Spacer().frame(height: 50)
+                    // --- GROUP 4 ---
+                    VStack(alignment: .leading, spacing: 16) {
+                        VStack(spacing: 0) {
+                             SettingsRowItem(icon: "message", title: "Support", isFirst: true)
+                             Divider().padding(.leading, 52).opacity(0.5)
+                             SettingsRowItem(icon: "person.circle", title: "Account", isLast: true)
+                        }
+                        .background(Color(hex: "F2F2F7"))
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                    }
                     
+                    // --- SIGN OUT BUTTON ---
+                    Button(action: {
+                        AuthManager.shared.signOut()
+                    }) {
+                        HStack {
+                            Text("Sign out")
+                                .font(.system(size: 17, weight: .medium))
+                            Image(systemName: "rectangle.portrait.and.arrow.right") // Or similar
+                                .font(.system(size: 14))
+                        }
+                        .foregroundColor(darkText)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(limeGreen)
+                        .cornerRadius(30)
+                    }
+                    .padding(.top, 20)
+                    .padding(.bottom, 40)
+                    
+                    
+                    // Footer Text
+                    VStack(spacing: 4) {
+                        HStack(spacing: 4) {
+                            Text("Privacy policy")
+                            Text("Terms of use")
+                        }
+                        .font(.caption2)
+                        .foregroundColor(.blue)
+                        
+                        Text("@MrSwiftUI\nVersion: 13.4")
+                            .font(.caption2)
+                            .foregroundColor(.gray)
+                            .multilineTextAlignment(.center)
+                    }
+                }
                 }
                 .padding(.horizontal, 20)
             }
         }
-        .preferredColorScheme(.light)
+}
+}
+
+// MARK: - Helper Components
+
+// A standalone row wrapped in a rounded rect (like "Privacy & Safety")
+struct SettingsLinkRow: View {
+    let icon: String
+    let title: String
+    var badge: String? = nil
+    var isStandalone: Bool = false
+    
+    // Theme Colors
+    let limeGreen = Color(hex: "DDEE88")
+    let darkText = Color(hex: "1F3B34")
+    
+    var body: some View {
+        Button(action: {}) {
+            HStack(spacing: 12) {
+                Image(systemName: icon)
+                    .font(.system(size: 20, weight: .light))
+                    .foregroundColor(.black)
+                    .frame(width: 24)
+                
+                HStack(alignment: .top, spacing: 4) {
+                    Text(title)
+                        .font(.system(size: 17, weight: .regular))
+                        .foregroundColor(.black)
+                    
+                    if let badge = badge {
+                        Text(badge)
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundColor(darkText)
+                            .padding(.horizontal, 4)
+                            .padding(.vertical, 2)
+                            .background(limeGreen)
+                            .cornerRadius(4)
+                            .offset(y: -4)
+                    }
+                }
+                
+                Spacer()
+            }
+            .padding(.vertical, 16) // Taller row
+            .padding(.horizontal, 16)
+            .background(Color(hex: "F2F2F7"))
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+        }
     }
 }
 
-// MARK: - Reusable Settings Row
-struct SettingsRow: View {
+// An item inside a grouped list (VStack)
+struct SettingsRowItem: View {
     let icon: String
     let title: String
-    var value: String? = nil
-    let color: Color
-    var action: () -> Void = {}
+    var isFirst: Bool = false
+    var isLast: Bool = false
     
     var body: some View {
-        Button(action: action) {
-            HStack(spacing: 16) {
-                // Icon
+        Button(action: {}) {
+            HStack(spacing: 12) {
                 Image(systemName: icon)
-                    .font(.system(size: 18))
-                    .foregroundColor(color)
-                    .frame(width: 24, height: 24)
+                    .font(.system(size: 20, weight: .light))
+                    .foregroundColor(.black)
+                    .frame(width: 24)
                 
-                // Title
                 Text(title)
-                    .font(.system(size: 16, weight: .medium))
+                    .font(.system(size: 17, weight: .regular))
                     .foregroundColor(.black)
                 
                 Spacer()
-                
-                // Optional Value Text
-                if let val = value {
-                    Text(val)
-                        .font(.system(size: 15))
-                        .foregroundColor(.gray)
-                }
-                
-                // Chevron
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(Color(hex: "C7C7CC"))
             }
+            .padding(.vertical, 16)
             .padding(.horizontal, 16)
-            .padding(.vertical, 18) // Comfortable touch area
-            .contentShape(Rectangle())
+            .background(Color(hex: "F2F2F7")) // Matches group bg
         }
-        .buttonStyle(PlainButtonStyle())
+    }
+}
+
+// Sub-row for expanded "Call experience"
+struct SettingsSubRow: View {
+    let label: String
+    
+    var body: some View {
+        HStack {
+            Text(label)
+                .font(.system(size: 16, weight: .regular))
+                .foregroundColor(.gray)
+                .padding(.leading, 52) // Indent to align with text above
+            
+            Spacer()
+            
+            Image(systemName: "chevron.up.chevron.down")
+                .font(.system(size: 12))
+                .foregroundColor(.gray)
+        }
+        .padding(.vertical, 14)
+        .padding(.trailing, 16)
     }
 }
 

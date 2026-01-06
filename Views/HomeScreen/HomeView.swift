@@ -41,7 +41,8 @@ struct HomeView: View {
     // 🔥 FIX 1: Reduced Height from 0.55 to 0.50
     // This prevents the card from being too tall and hitting the tab bar.
     var cardHeight: CGFloat {
-        isSearching ? UIScreen.main.bounds.height : UIScreen.main.bounds.height * 0.66
+        // Increased to 0.72 to match the taller look in the design
+        isSearching ? UIScreen.main.bounds.height : UIScreen.main.bounds.height * 0.58
     }
     
     var cardCornerRadius: CGFloat { isSearching ? 0 : 40 }
@@ -52,7 +53,7 @@ struct HomeView: View {
             ZStack(alignment: .top) {
                 
                 // MARK: - 1. BACKGROUND LAYER
-                Color(red: 241/255, green: 241/255, blue: 241/255)
+                Color(red: 255/255, green: 255/255, blue: 255/255)
                     .ignoresSafeArea()
                     .allowsHitTesting(false)
                 
@@ -88,12 +89,21 @@ struct HomeView: View {
                 }
 
                 // MARK: - 3. THE MAIN CARD (Layer 1)
-                VStack {
+                VStack(spacing: 0) {
                     
+                    // MOVED TITLE HERE
+                    if !isSearching {
+                        Text("Find a partner to\npractice your English")
+                            .font(.system(size: 22, weight: .regular)) // Reduced to 22 for better balance
+                            .multilineTextAlignment(.center)
+                            .foregroundColor(Color(hex: "1F3B34"))
+                            .padding(.bottom, 25)
+                            .padding(.top, 50)
+                    }
                     ZStack(alignment: .bottom) {
                         // A. Card Background
                         RoundedRectangle(cornerRadius: cardCornerRadius)
-                            .fill(Color.white)
+                            .fill(Color(hex: "D6E978")) // Light Green
 //                            .shadow(color: .black.opacity(0.04), radius: 25, y: 10)
                         
                         // B. CONTENT STACK
@@ -102,7 +112,8 @@ struct HomeView: View {
                             // 1. AI FACE
                             Spacer()
                             AICompanionFace(state: .constant(derivedFaceState))
-                                .scaleEffect(isSearching ? 1.6 : 2)
+                                .scaleEffect(isSearching ? 1.6 : 1.9) // Adjusted scale
+                                .padding(.bottom, 20)
                             Spacer()
                             
                             // 2. HOME CONTENT (Hidden when searching)
@@ -110,37 +121,92 @@ struct HomeView: View {
                                 VStack(spacing: 14) {
                                     
                                     // Connection Icon
-                                    VStack(spacing: 4) {
-                                        Image("PenSignature")
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fit)
-                                            .frame(width: 32, height: 32)
-                                            .foregroundColor(.gray.opacity(0.6))
-                                        //                                        .padding(.bottom, )
-                                            .padding(.top, 20)
+//                                    VStack(spacing: 4) {
+//                                        Image("PenSignature")
+//                                            .resizable()
+//                                            .aspectRatio(contentMode: .fit)
+//                                            .frame(width: 32, height: 32)
+//                                            .foregroundColor(.gray.opacity(0.6))
+//                                        //                                        .padding(.bottom, )
+//                                            .padding(.top, 20)
                                         
-                                        // Subtitle Text
-                                        Text("Find a user to practice\nyour English")
-                                            .font(.system(size: 18, weight: .regular))
-                                            .multilineTextAlignment(.center)
-                                            .foregroundColor(.gray)
-                                            .padding(.bottom, 20)
+                                        // Subtitle Text Removed (Moved to top)
+//                                        Text("Find a partner to\npractice your English")
+//                                            .font(.system(size: 20, weight: .regular))
+//                                            .multilineTextAlignment(.center)
+//                                            .foregroundColor(Color(hex: "1F3B34")) // Dark Green Text
+//                                            .padding(.bottom, 20)
                                         
+//                                    }
+                                    
+                                    // Custom Filters
+                                    HStack(spacing: 0) {
+                                        // 1. Gender
+                                        Button(action: {
+                                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                        }) {
+                                            HStack(spacing: 4) {
+                                                Text("Gender")
+                                                Image(systemName: "chevron.up.chevron.down")
+                                                    .font(.system(size: 10))
+                                            }
+                                            .font(.system(size: 16, weight: .light))
+                                            .foregroundColor(Color(hex: "1F3B34"))
+                                        }
+                                        .frame(maxWidth: .infinity)
+                                        
+                                        Divider()
+                                            .frame(height: 20)
+                                            .overlay(Color(hex: "1F3B34").opacity(0.2))
+                                        
+                                        // 2. Level
+                                        Button(action: {
+                                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                        }) {
+                                            HStack(spacing: 4) {
+                                                Text("Level")
+                                                Image(systemName: "chevron.up.chevron.down")
+                                                    .font(.system(size: 10))
+                                            }
+                                            .font(.system(size: 16, weight: .light))
+                                            .foregroundColor(Color(hex: "1F3B34"))
+                                        }
+                                        .frame(maxWidth: .infinity)
+                                        
+                                        Divider()
+                                            .frame(height: 20)
+                                            .overlay(Color(hex: "1F3B34").opacity(0.2))
+                                        
+                                        // 3. Country
+                                        Button(action: {
+                                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                        }) {
+                                            HStack(spacing: 4) {
+                                                Text("Country")
+                                                Image(systemName: "chevron.up.chevron.down")
+                                                    .font(.system(size: 10))
+                                            }
+                                            .font(.system(size: 16, weight: .light))
+                                            .foregroundColor(Color(hex: "1F3B34"))
+                                        }
+                                        .frame(maxWidth: .infinity)
                                     }
+                                    .padding(.horizontal, 30) // Increased padding
+                                    .padding(.bottom, 25) // More space above button
                                     
                                     
-                                    // "Find a match" Button
+                                    // "Search" Button
                                     Button(action: onConnectTap) {
                                         HStack(spacing: 10) {
-                                            Text("Find a match")
-                                                .font(.system(size: 18, weight: .regular, design: .default))
-                                                .foregroundStyle(Color(red: 241/255, green: 241/255, blue: 241/255))
-                                            
                                             Image("MagicSearch") // Make sure the filename in Assets matches this
                                                         .renderingMode(.template) // This turns the dark SVG white
                                                         .resizable()
                                                         .aspectRatio(contentMode: .fit)
                                                         .frame(width: 22, height: 20)
+                                            
+                                            Text("Search")
+                                                .font(.system(size: 20, weight: .regular, design: .default))
+                                                .foregroundStyle(Color(red: 241/255, green: 241/255, blue: 241/255))
                                         }
                                         .foregroundColor(.white)
                                         .frame(maxWidth: .infinity)
@@ -150,22 +216,22 @@ struct HomeView: View {
                                     }
                                     .padding(.horizontal, 40)
                                     
-                                    // Filter Button
-                                    Button(action: {
-                                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                                    }) {
-                                        HStack(spacing: 4) {
-                                            Image("Filter")
-                                            Text("Filter")
-                                                .font(.system(size: 16, weight: .regular) )
-                                                
-                                        }
-                                        .font(.system(size: 14, weight: .medium))
-                                        .foregroundColor(.gray)
-                                        .padding(.vertical, 10)
-                                    }
+                                    // Old Filter Button Removed
+//                                    Button(action: {
+//                                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+//                                    }) {
+//                                        HStack(spacing: 4) {
+//                                            Image("Filter")
+//                                            Text("Filter")
+//                                                .font(.system(size: 16, weight: .regular) )
+//                                                
+//                                        }
+//                                        .font(.system(size: 14, weight: .medium))
+//                                        .foregroundColor(.gray)
+//                                        .padding(.vertical, 10)
+//                                    }
                                 }
-                                .padding(.bottom, 20) // Internal padding inside the card
+                                .padding(.bottom, 40) // More bottom padding inside card for the button
                             }
                             
                             // 3. SEARCHING CONTENT
@@ -195,7 +261,7 @@ struct HomeView: View {
                     .padding(.horizontal, cardHorizontalPadding)
                     // 🔥 FIX 2: Increased Bottom Padding to 110
                     // This pushes the whole card UP, clearing the Tab Bar area.
-                    .padding(.bottom, isSearching ? 80 : -80)
+                    .padding(.bottom, isSearching ? 80 : -28)
                     .edgesIgnoringSafeArea(isSearching ? .all : [])
                 }
                 .frame(width: geometry.size.width, height: geometry.size.height, alignment: .center)

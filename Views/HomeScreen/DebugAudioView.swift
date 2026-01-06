@@ -16,5 +16,6 @@ struct DebugAudioView: View {
         .foregroundColor(.green)
         .cornerRadius(8)
         .allowsHitTesting(false) // Don't block touches
+        .opacity(0)
     }
 }

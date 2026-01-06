@@ -49,7 +49,7 @@ struct AICompanionFace: View {
             SVGStarShape()
                 // 🔥 GRADIENT FACE
                 .fill(
-                    Color(hex: "8958BD")
+                    Color(hex: "2C564C")
                 )
                 // Slightly larger frame than the circle to accommodate the shape's indentations
                 .frame(width: 140, height: 140)
