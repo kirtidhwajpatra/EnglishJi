@@ -21,7 +21,7 @@ struct PaperPlaneIcon: View {
                 path.addCurve(to: CGPoint(x: 0.79, y: 4.58), control1: CGPoint(x: 0.31, y: 5.16), control2: CGPoint(x: 0.42, y: 4.70))
                 path.closeSubpath()
             }
-            .fill(Color(hex: "265C4C")) // Dark Green Fill
+            .fill(Color(hex: "D6E978")) // Dark Green Fill 
            
             
             
@@ -30,7 +30,7 @@ struct PaperPlaneIcon: View {
                 path.move(to: CGPoint(x: 3.03, y: 9.53))
                 path.addLine(to: CGPoint(x: 8.99, y: 4.75))
             }
-            .stroke(Color(hex: "D6E978"), style: StrokeStyle(lineWidth: 0.87, lineCap: .round)) // Lime stroke
+            .stroke(Color(hex: "265C4C"), style: StrokeStyle(lineWidth: 0.87, lineCap: .round)) // Lime stroke
         }
         .frame(width: 18, height: 18)
         
