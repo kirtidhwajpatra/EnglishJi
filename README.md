@@ -11,6 +11,7 @@ Built with a focus on **engineering excellence**, this project demonstrates adva
 <p float="left">
   <img src="screenshots/HomeScreen.jpg" width="200" style="border-radius: 12px; margin-right: 10px;" />
   <img src="screenshots/SearchingScreen.jpg" width="200" style="border-radius: 12px; margin-right: 10px;" />
+  <img src="screenshots/ConnectionPhases.jpg" width="200" style="border-radius: 12px; margin-right: 10px;" />
   <img src="screenshots/CallInProgress.jpg" width="200" style="border-radius: 12px;" />
 </p>
 
