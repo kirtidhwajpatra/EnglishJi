@@ -18,8 +18,8 @@ struct RootView: View {
     
     var body: some View {
         Group {
-            if authManager.user != nil {
-                // User is logged in
+            if authManager.user != nil || authManager.isOnboardingCompleted {
+                // User is logged in or completed onboarding
                 ZStack {
                     // 1. THE MAIN TAB NAVIGATION (Bottom Layer)
                     CustomTabBarContainer(selection: $currentTab) {

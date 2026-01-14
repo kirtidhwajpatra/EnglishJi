@@ -1,361 +1,321 @@
+
 import Foundation
 import WebRTC
 import AVFoundation
 import Combine
 
+/// Manages the WebRTC connection lifecycle, signaling, and call state.
+/// Acts as the central coordinator for the calling feature.
 @MainActor
 final class WebRTCManager: NSObject, ObservableObject {
 
-    // MARK: - UI State (THIS DRIVES SCREENS)
+    // MARK: - UI State
+    
     @Published var isInCall: Bool = false
-    @Published var connectionState: String = "Idle"
+    
+    // 🔥 COMPATIBILITY FIX: Views expect 'connectionState' to be a String.
+    // We keep the internal enum for logic, but expose the String property.
+    @Published private var _connectionState: ConnectionState = .idle
+    
+    var connectionState: String {
+        return _connectionState.rawValue
+    }
+    
     @Published var debugLog: String = ""
     @Published var showCallSummary: Bool = false
     
-    // 🔥 DEBUG AUDIO STATS
+    // Audio Stats
     @Published var currentMicVolume: Double = 0.0
     
-    // Public Accessor for Debug View (Refactored to primitives to avoid Import issues in View)
     var isLocalAudioTrackEnabled: Bool {
-        return rtc?.localAudioTrack?.isEnabled ?? false
+        return webRTCClient?.localAudioTrack?.isEnabled ?? false
     }
     
+    // 🔥 COMPATIBILITY FIX: Views expect Int (0=Live, 1=Ended, 2=Muted)
     var localAudioSourceState: Int {
-        // 0=Live, 1=Ended, 2=Muted
-        return rtc?.localAudioTrack?.source.state.rawValue ?? -1
+        return webRTCClient?.localAudioTrack?.source.state.rawValue ?? 1
     }
     
-    // Derived partner ID for the demo (in real app, simpler to store from signaling)
-    @Published var lastCallPartnerId: String = "" // 🔥 Actual Partner ID
-
-    // MARK: - Core
-    private var rtc: WebRTCClient?
-    private let signaling = SignalingClient()
-
-    // MARK: - State
+    @Published var lastCallPartnerId: String = ""
+    
+    // 🔥 COMPATIBILITY FIX: Views expect 'myUserId' to be available for CallSummary
+    var myUserId: String = ""
+    
+    // MARK: - Core Components
+    
+    private var webRTCClient: WebRTCClient?
+    private let signalingClient = SignalingClient()
+    private let audioSessionManager = AudioSessionManager.shared
+    
+    // MARK: - Internal State
+    
     private var isConnecting = false
     private var isRemoteDescriptionSet = false
-    private var pendingICE: [RTCIceCandidate] = []
-    private var canStartMatchmaking = true
-    var myUserId: String = "" // Store my ID (Public for CallSummaryView)
-
-    // MARK: - Init
+    private var pendingICECandidates: [RTCIceCandidate] = []
+    
+    // Determines if we can start a new matchmaking request
+    private var canStartMatchmaking: Bool {
+        return !isConnecting && _connectionState == .idle
+    }
+    
+    private var cancellables = Set<AnyCancellable>()
+    
+    // MARK: - Initialization
+    
     override init() {
         super.init()
-        log("Manager init start (Global Init Mode)")
+        log("WebRTCManager initialized")
         
-        // 🔥 USER REQUEST: HARDWARE-ALIGNED MODE
-        // WebRTCClient now handles all audio setup with specific 48kHz config.
-        // We do nothing here to avoid conflicts.
-        // let session = RTCAudioSession.sharedInstance()
-        // session.useManualAudio = false // Default
-        
-        signaling.onMessage = handleSignal
-        
-        // Monitor for interruptions
-        RTCAudioSession.sharedInstance().add(self)
-        
-        log("Manager init complete (Waiting for Signaling)")
+        setupSignalingBindings()
+    }
+    
+    private func setupSignalingBindings() {
+        signalingClient.onMessageReceived = { [weak self] result in
+            guard let self = self else { return }
+            
+            switch result {
+            case .success(let payload):
+                self.handleSignalingMessage(payload)
+            case .failure(let error):
+                self.log("Signaling error: \(error)")
+                // Optionally handle disconnection or retry logic here
+            }
+        }
     }
 
-    private func onConnected() {
-        // 🔥 Connection established. 
-        // We rely on AudioSessionManager's ".defaultToSpeaker" config now.
-        log("WebRTC Connected - Flushing any final ICE")
-        flushICE()
-    }
-
-    // MARK: - Public API (UI)
+    // MARK: - Public API
 
     func startMatchmaking(userId: String) {
-        // 🔥 FIX: Check State Synchronously to prevent Double-Tap Race Condition
-        guard !isConnecting, canStartMatchmaking else {
-            print("⚠️ WebRTCManager: Matchmaking ignored (Already connecting)")
+        // Compatibility: Store userId
+        self.myUserId = userId
+        
+        guard canStartMatchmaking else {
+            log("Matchmaking ignored: Already active or connecting.")
             return
         }
         
-        // Lock immediately
-        self.canStartMatchmaking = false
-        self.isConnecting = true
-        self.myUserId = userId
-
-        // 🔥 USER REQUEST: Explicit Recursive Permission Check
-        let permission = AVAudioSession.sharedInstance().recordPermission
-        if permission != .granted {
-            print("⚠️ WebRTCManager: Permission not granted yet. Requesting...")
-            AVAudioSession.sharedInstance().requestRecordPermission { granted in
-                DispatchQueue.main.async {
-                    if granted {
-                         // Recursive call? No, just continue logic or reset and recall.
-                         // Better: Just continue setup since we are on Main Thread now.
-                         self.continueMatchmaking(userId: userId)
-                    } else {
-                        print("❌ WebRTCManager: Microphone permission DENIED.")
-                        // Unlock state
-                        self.isConnecting = false
-                        self.canStartMatchmaking = true
-                    }
+        isConnecting = true
+        _connectionState = .searching
+        objectWillChange.send() // Force UI update since _connectionState is wrapped
+        
+        // Ensure permissions before proceeding
+        AVAudioSession.sharedInstance().requestRecordPermission { [weak self] granted in
+            guard let self = self else { return }
+            
+            Task { @MainActor in
+                if granted {
+                    self.beginConnectionSequence(userId: userId)
+                } else {
+                    self.log("Microphone permission denied.")
+                    self.resetState()
                 }
             }
-            return
-        }
-        
-        // Proceed if granted
-        DispatchQueue.main.async {
-            self.continueMatchmaking(userId: userId)
         }
     }
     
-    private func continueMatchmaking(userId: String) {
-        self.resetState()
-
-        // 🔥 2. Ensure Audio is Configured & Active
-        // Self.activateAudioSession() // Already active from Init, but good to ensure
-        
-        self.rtc = WebRTCClient()
-        self.setupRTCCallbacks()
-
-        self.connectionState = "Searching"
-        self.log("Connecting signaling...")
-        self.signaling.connect()
-        // 🔥 Send User ID in Join Payload
-        self.signaling.join(userId: userId)
-    }
-
-    /// Used by End button OR when screen is dismissed
     func disconnect() {
-        guard isConnecting else { return }
-        endCall()
+        log("Disconnect requested by user.")
+        endCall(reason: "User hangup")
+    }
+    
+    func toggleMute(isMuted: Bool) {
+        webRTCClient?.setMuted(isMuted)
+        log("Microphone muted: \(isMuted)")
+    }
+    
+    // MARK: - Connection Logic
+    
+    private func beginConnectionSequence(userId: String) {
+        // 1. Reset any previous state
+        resetState(keepUI: true)
+        
+        // 2. Prepare Audio
+        audioSessionManager.configureAudioSession()
+        audioSessionManager.activateSession()
+        
+        // 3. Initialize WebRTC
+        webRTCClient = WebRTCClient()
+        setupWebRTCCallbacks()
+        
+        // 4. Connect Signaling
+        log("Connecting to signaling server...")
+        signalingClient.connect()
+        signalingClient.sendJoinRequest(userId: userId)
     }
 
-    /// LOCAL hang-up
-    func endCall() {
-        guard isConnecting else { return }
+    private func endCall(reason: String) {
+        log("Ending call. Reason: \(reason)")
+        
+        // Notify remote peer
+        signalingClient.send(["type": "leave"])
+        
+        // Cleanup resources
+        cleanup()
+    }
 
-        log("Local user ended call")
-
-        // 1️⃣ Notify remote
-        signaling.send(["type": "leave"])
-
-        // 2️⃣ Allow async WebSocket send to flush
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-            self.endCallAndResetUI()
+    private func cleanup() {
+        webRTCClient?.close()
+        webRTCClient = nil
+        
+        signalingClient.disconnect()
+        audioSessionManager.deactivateSession()
+        
+        isConnecting = false
+        isRemoteDescriptionSet = false
+        pendingICECandidates.removeAll()
+        
+        isInCall = false
+        _connectionState = .idle
+        objectWillChange.send() // Force UI update
+        
+        // Trigger summary if we actually had a conversation
+        if !lastCallPartnerId.isEmpty {
+            showCallSummary = true
         }
     }
-
-    func toggleMute(isMuted: Bool) {
-        guard let rtc else { return }
-        rtc.setMuted(isMuted)
-        log(isMuted ? "Mic muted" : "Mic unmuted")
+    
+    private func resetState(keepUI: Bool = false) {
+        if !keepUI {
+            isInCall = false
+            _connectionState = .idle
+            showCallSummary = false
+            objectWillChange.send() // Force UI update
+        }
+        isRemoteDescriptionSet = false
+        pendingICECandidates.removeAll()
+        isConnecting = false
     }
 
-    // MARK: - Signaling
+    // MARK: - Signaling Handling
 
-    private func handleSignal(_ json: [String: Any]) {
+    private func handleSignalingMessage(_ json: [String: Any]) {
         guard let type = json["type"] as? String else { return }
 
         switch type {
-
         case "matched":
-            guard let rtc else { return }
-
-            let role = json["role"] as? String ?? "callee"
-            
-            // 🔥 Capture Partner ID (Check multiple keys)
-            if let partnerId = json["partnerId"] as? String ?? json["partner_id"] as? String ?? json["from"] as? String {
-                self.lastCallPartnerId = partnerId
-                log("Partner ID: \(partnerId)")
-                print("🤝 WebRTCManager: MATCHED with Partner: \(partnerId)")
-            } else {
-                // It's okay if missing, server handles routing
-                print("⚠️ WebRTCManager: Matched (No explicit partnerId in payload)")
-            }
-            
-            log("Matched as \(role)")
-            connectionState = "Connecting"
-
-            if role == "caller" {
-                rtc.createOffer { offer in
-                    self.signaling.send([
-                        "type": "offer",
-                        "sdp": offer.sdp
-                    ])
-                    self.log("Sent offer")
-                }
-            }
-
+            handleMatched(json)
         case "offer":
-            guard let rtc,
-                  let sdpString = json["sdp"] as? String else { return }
-
-            log("Received offer")
-
-            rtc.setRemote(
-                RTCSessionDescription(type: .offer, sdp: sdpString)
-            )
-
-            isRemoteDescriptionSet = true
-            flushICE()
-
-            rtc.createAnswer { answer in
-                self.signaling.send([
-                    "type": "answer",
-                    "sdp": answer.sdp
-                ])
-                
-                // 🔥 FIX: Flush any pending ICE candidates NOW that we have a local description
-                self.flushICE()
-                
-                self.log("Sent answer")
-
-                DispatchQueue.main.async {
-                    self.isInCall = true          // 🔥 UI OPENS HERE
-                    self.connectionState = "Connected"
-                    self.rtc?.startAudioMonitoring() // 🔥 Start Stats
-                }
-            }
-
+            handleOffer(json)
         case "answer":
-            guard let rtc,
-                  let sdpString = json["sdp"] as? String else { return }
-
-            log("Received answer")
-
-            rtc.setRemote(
-                RTCSessionDescription(type: .answer, sdp: sdpString)
-            )
-
-            isRemoteDescriptionSet = true
-            flushICE()
-
-            DispatchQueue.main.async {
-                self.isInCall = true                 // 🔥 UI OPENS HERE
-                self.connectionState = "Connected"
-                self.rtc?.startAudioMonitoring() // 🔥 Start Stats
-            }
-
+            handleAnswer(json)
         case "candidate":
-            guard let rtc,
-                  let sdp = json["candidate"] as? String,
-                  let index = json["sdpMLineIndex"] as? Int32 else { return }
-
-            let candidate = RTCIceCandidate(
-                sdp: sdp,
-                sdpMLineIndex: index,
-                sdpMid: json["sdpMid"] as? String
-            )
-
-            rtc.addCandidate(candidate)
-            log("Added ICE")
-
+            handleRemoteCandidate(json)
         case "leave":
-            log("Remote ended call")
-            endCallAndResetUI()              // 🔥 UI CLOSES HERE
-
+            log("Remote peer disconnected.")
+            cleanup()
         default:
             break
         }
     }
-
-    // MARK: - ICE
-
-    private func sendICE(_ candidate: RTCIceCandidate) {
-        signaling.send([
-            "type": "candidate",
-            "candidate": candidate.sdp,
-            "sdpMid": candidate.sdpMid ?? "",
-            "sdpMLineIndex": candidate.sdpMLineIndex
-        ])
-        log("Sent ICE")
-    }
-
-    private func flushICE() {
-        guard !pendingICE.isEmpty else { return }
-        pendingICE.forEach { sendICE($0) }
-        pendingICE.removeAll()
-        log("Flushed ICE")
-    }
-
-    // MARK: - Reset
-
-    private func resetState() {
-        isRemoteDescriptionSet = false
-        pendingICE.removeAll()
-    }
-
-    // MARK: - FINAL CLEANUP (NO SIGNALING HERE)
-
-    // MARK: - FINAL CLEANUP (NO SIGNALING HERE)
-
-    private func endCallAndResetUI() {
-        log("Cleaning up call state")
-
-        rtc?.close()
-        rtc = nil
+    
+    private func handleMatched(_ json: [String: Any]) {
+        log("Match found.")
+        guard let role = json["role"] as? String else { return }
         
-        // 🔥 Clean up socket
-        signaling.close()
+        // Extract partner ID
+        if let partnerId = json["partnerId"] as? String ?? json["partner_id"] as? String ?? json["from"] as? String {
+            self.lastCallPartnerId = partnerId
+            log("Partner ID: \(partnerId)")
+        }
 
-        isConnecting = false
-        isRemoteDescriptionSet = false
-        pendingICE.removeAll()
+        _connectionState = .connecting
+        objectWillChange.send() // Force UI update
+
+        if role == "caller" {
+            webRTCClient?.createOffer { [weak self] offer in
+                self?.signalingClient.sendSDP(type: "offer", sdp: offer.sdp)
+                self?.log("Sent Offer")
+            }
+        }
+    }
+    
+    private func handleOffer(_ json: [String: Any]) {
+        guard let sdp = json["sdp"] as? String else { return }
+        log("Received Offer")
         
-
-
-        isInCall = false                   // 🔥 UI CLOSES
-        connectionState = "Idle"
-        canStartMatchmaking = true
+        webRTCClient?.setRemote(RTCSessionDescription(type: .offer, sdp: sdp))
+        isRemoteDescriptionSet = true
+        flushICECandidates()
         
-        // 🔥 Trigger Call Summary ONLY if we had a partner
-        if !lastCallPartnerId.isEmpty {
-            showCallSummary = true
-        } else {
-             showCallSummary = false
+        webRTCClient?.createAnswer { [weak self] answer in
+            self?.signalingClient.sendSDP(type: "answer", sdp: answer.sdp)
+            self?.flushICECandidates() // Important: flush after local desc is ready
+            self?.log("Sent Answer")
+            self?.transitionToConnected()
+        }
+    }
+    
+    private func handleAnswer(_ json: [String: Any]) {
+        guard let sdp = json["sdp"] as? String else { return }
+        log("Received Answer")
+        
+        webRTCClient?.setRemote(RTCSessionDescription(type: .answer, sdp: sdp))
+        isRemoteDescriptionSet = true
+        flushICECandidates()
+        transitionToConnected()
+    }
+    
+    private func handleRemoteCandidate(_ json: [String: Any]) {
+        guard let sdp = json["candidate"] as? String,
+              let sdpMLineIndex = json["sdpMLineIndex"] as? Int32 else { return }
+        
+        let candidate = RTCIceCandidate(sdp: sdp, sdpMLineIndex: sdpMLineIndex, sdpMid: json["sdpMid"] as? String)
+        webRTCClient?.addCandidate(candidate)
+        log("Added Remote ICE Candidate")
+    }
+    
+    private func transitionToConnected() {
+        Task { @MainActor in
+            self.isInCall = true
+            self._connectionState = .connected
+            self.objectWillChange.send() // Force UI update
+            self.webRTCClient?.startAudioMonitoring()
         }
     }
 
-    // MARK: - RTC Callbacks
-
-    private func setupRTCCallbacks() {
-        rtc?.onIceCandidate = { [weak self] candidate in
-            guard let self else { return }
-
+    // MARK: - ICE Handling
+    
+    private func setupWebRTCCallbacks() {
+        webRTCClient?.onIceCandidate = { [weak self] candidate in
+            guard let self = self else { return }
+            
             if self.isRemoteDescriptionSet {
-                self.sendICE(candidate)
+                self.signalingClient.sendCandidate(sdp: candidate.sdp, sdpMid: candidate.sdpMid, sdpMLineIndex: candidate.sdpMLineIndex)
             } else {
-                self.pendingICE.append(candidate)
-                self.log("Queued ICE")
+                self.pendingICECandidates.append(candidate)
             }
         }
         
-        rtc?.onLocalAudioLevel = { [weak self] level in
-            self?.currentMicVolume = level
+        webRTCClient?.onLocalAudioLevel = { [weak self] level in
+            // Must be on main thread
+            Task { @MainActor in
+                self?.currentMicVolume = level
+            }
         }
     }
-
-    // MARK: - Logging
-
-    private func log(_ msg: String) {
-        DispatchQueue.main.async {
-            self.debugLog += "• \(msg)\n"
-            print("[WebRTC]", msg)
+    
+    private func flushICECandidates() {
+        guard !pendingICECandidates.isEmpty else { return }
+        for candidate in pendingICECandidates {
+            signalingClient.sendCandidate(sdp: candidate.sdp, sdpMid: candidate.sdpMid, sdpMLineIndex: candidate.sdpMLineIndex)
         }
+        pendingICECandidates.removeAll()
+    }
+    
+    // MARK: - Helpers
+    
+    private func log(_ message: String) {
+        print("[WebRTCManager] \(message)")
+        debugLog += "• \(message)\n"
     }
 }
 
-// MARK: - Audio Session Delegate
-// MARK: - Audio Session Delegate
-extension WebRTCManager: RTCAudioSessionDelegate {
-    
-    func audioSessionDidStartPlayOrRecord(_ session: RTCAudioSession) {
-        log("RTCAudioSession DidStartPlayOrRecord - Re-applying Config")
-        // 🔥 FIX: Dispatch async to avoid deadlocking with WebRTC's internal lock
-        // DispatchQueue.main.async {
-        //     AudioSessionManager.configure() // DELETED: Global Init handles this now
-        // }
-    }
-    
-    func audioSessionDidStopPlayOrRecord(_ session: RTCAudioSession) {
-        log("RTCAudioSession DidStop")
-    }
+// MARK: - UI Enums
+
+enum ConnectionState: String {
+    case idle = "Idle"
+    case searching = "Searching"
+    case connecting = "Connecting"
+    case connected = "Connected"
+    case disconnected = "Disconnected"
 }

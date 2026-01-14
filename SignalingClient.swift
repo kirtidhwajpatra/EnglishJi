@@ -2,96 +2,163 @@
 //  SignalingClient.swift
 //  EnglishJi
 //
-
-//final change code date: dec 17, 10am
+//  Maintained by Senior iOS Engineer
+//
 
 import Foundation
+import Combine
 
-final class SignalingClient {
+/// Dedicated client for handling WebSocket signaling with the matchmaking server.
+final class SignalingClient: ObservableObject {
+
+    // MARK: - Types
+    
+    enum SignalingError: Error {
+        case connectionFailed
+        case invalidData
+        case encodingFailed
+        case disconnected
+    }
 
     // MARK: - Properties
-    private var socket: URLSessionWebSocketTask?
-    var onMessage: (([String: Any]) -> Void)?
-
+    
+    private var webSocketTask: URLSessionWebSocketTask?
+    
+    /// Callback for incoming messages.
+    /// Result type allows for robust error handling upstream.
+    var onMessageReceived: ((Result<[String: Any], SignalingError>) -> Void)?
+    
     private let serverURL = URL(string: "wss://englishcallingapp.onrender.com")!
+    
+    // Connection State
+    @Published private(set) var isConnected: Bool = false
 
-    // MARK: - Connect
-    func connect() {
-        close() // ensure clean state
-
-        let session = URLSession(configuration: .default)
-        socket = session.webSocketTask(with: serverURL)
-        socket?.resume()
-
-        print("🟢 Signaling connecting to \(serverURL)")
-        listen()
+    // MARK: - Configuration
+    
+    private let urlSession: URLSession
+    
+    init() {
+        let config = URLSessionConfiguration.default
+        config.waitsForConnectivity = true
+        config.timeoutIntervalForRequest = 30
+        self.urlSession = URLSession(configuration: config)
     }
 
-    // MARK: - Join matchmaking
-    func join(userId: String) {
-        send([
+    // MARK: - Connection Management
+    
+    func connect() {
+        disconnect() // Ensure clean slate
+        
+        webSocketTask = urlSession.webSocketTask(with: serverURL)
+        webSocketTask?.resume()
+        
+        // Optimistically set connected, real validation happens on messages
+        isConnected = true
+        print("[SignalingClient] Connector started: \(serverURL)")
+        
+        listenForMessages()
+    }
+    
+    func disconnect() {
+        guard isConnected || webSocketTask != nil else { return }
+        
+        webSocketTask?.cancel(with: .goingAway, reason: nil)
+        webSocketTask = nil
+        isConnected = false
+        print("[SignalingClient] Disconnected")
+    }
+    
+    // MARK: - Matchmaking Handlers
+    
+    func sendJoinRequest(userId: String) {
+        let payload: [String: Any] = [
             "type": "join",
             "userId": userId
-        ])
-        print("📨 Sent join for user: \(userId)")
+        ]
+        send(payload)
+        print("[SignalingClient] 📨 Join request sent for user: \(userId)")
+    }
+    
+    func sendSDP(type: String, sdp: String) {
+        let payload: [String: Any] = [
+            "type": type,
+            "sdp": sdp
+        ]
+        send(payload)
+    }
+    
+    func sendCandidate(sdp: String, sdpMid: String?, sdpMLineIndex: Int32) {
+         let payload: [String: Any] = [
+            "type": "candidate",
+            "candidate": sdp,
+            "sdpMid": sdpMid ?? "",
+            "sdpMLineIndex": sdpMLineIndex
+        ]
+        send(payload)
     }
 
-    // MARK: - Send message
-    func send(_ dict: [String: Any]) {
-        guard let socket else { return }
+    // MARK: - Private Messaging Logic
+    
+    func send(_ dictionary: [String: Any]) {
+        guard let socket = webSocketTask else {
+            print("[SignalingClient] ❌ Error: Socket not connected")
+            return 
+        }
 
         do {
-            let data = try JSONSerialization.data(withJSONObject: dict)
-            let text = String(data: data, encoding: .utf8) ?? ""
-            socket.send(.string(text)) { error in
-                if let error {
-                    print("❌ Send error:", error)
+            let data = try JSONSerialization.data(withJSONObject: dictionary)
+            if let text = String(data: data, encoding: .utf8) {
+                socket.send(.string(text)) { [weak self] error in
+                    if let error = error {
+                        print("[SignalingClient] ❌ Send failed: \(error.localizedDescription)")
+                        self?.isConnected = false
+                    }
                 }
             }
         } catch {
-            print("❌ JSON encode error:", error)
+            print("[SignalingClient] ❌ JSON Encoding failed: \(error.localizedDescription)")
         }
     }
 
-    // MARK: - Listen for messages
-    private func listen() {
-        socket?.receive { [weak self] result in
-            guard let self else { return }
-
+    private func listenForMessages() {
+        webSocketTask?.receive { [weak self] result in
+            guard let self = self else { return }
+            
             switch result {
             case .success(let message):
-                switch message {
-                case .string(let text):
-                    if let data = text.data(using: .utf8),
-                       let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
-                        print("⬇️ Received:", json)
-                        DispatchQueue.main.async {
-                            self.onMessage?(json)
-                        }
-                    }
-                case .data(let data):
-                    if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
-                        print("⬇️ Received:", json)
-                        DispatchQueue.main.async {
-                            self.onMessage?(json)
-                        }
-                    }
-                @unknown default:
-                    break
-                }
-
-                // continue listening
-                self.listen()
-
+                self.handleIncomingMessage(message)
+                self.listenForMessages() // Recursive loop
+                
             case .failure(let error):
-                print("❌ Receive error:", error)
+                print("[SignalingClient] ❌ Receive error: \(error.localizedDescription)")
+                self.isConnected = false
+                self.onMessageReceived?(.failure(.connectionFailed))
             }
         }
     }
-
-    // MARK: - Close connection
-    func close() {
-        socket?.cancel(with: .goingAway, reason: nil)
-        socket = nil
+    
+    private func handleIncomingMessage(_ message: URLSessionWebSocketTask.Message) {
+        var jsonData: Data?
+        
+        switch message {
+        case .string(let text):
+            jsonData = text.data(using: .utf8)
+        case .data(let data):
+            jsonData = data
+        @unknown default:
+            return
+        }
+        
+        guard let data = jsonData,
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            print("[SignalingClient] ⚠️ Received invalid JSON data")
+            onMessageReceived?(.failure(.invalidData))
+            return
+        }
+        
+        // Dispatch to main thread for safety if updating UI logic
+        DispatchQueue.main.async {
+            self.onMessageReceived?(.success(json))
+        }
     }
 }

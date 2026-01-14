@@ -8,29 +8,36 @@
 import SwiftUI
 
 struct OnboardingContainerView: View {
-    @StateObject var manager = OnboardingManager()
-    @StateObject var theme = ThemeManager()
-
+    @StateObject private var viewModel = OnboardingViewModel()
+    
     var body: some View {
-        ZStack {
-            switch manager.step {
-            case .screen1:
-                Screen01_ConfidenceView(manager: manager)
-            case .screen2:
-                Screen04_PersonaView(manager: manager)
-            case .screen3:
-                Screen05_NameView(manager: manager)
-            case .screen4:
-                Screen06_AgeColorView(manager: manager)
-            case .screen5:
-                LocationScreen(manager: manager)
-            case .screen8:
-                AuthenticationScreen(manager: manager)
-            
+        Group {
+            switch viewModel.currentStep {
+            case .splash:
+                OnboardingSplashView(viewModel: viewModel)
+            case .intro:
+                OnboardingIntroView(viewModel: viewModel)
+            case .phone:
+                OnboardingPhoneView(viewModel: viewModel)
+            case .otp:
+                OnboardingOTPView(viewModel: viewModel)
+            case .name:
+                OnboardingNameView(viewModel: viewModel)
+            case .age:
+                OnboardingAgeView(viewModel: viewModel)
+            case .photo:
+                OnboardingPhotoView(viewModel: viewModel)
+            case .location:
+                OnboardingLocationView(viewModel: viewModel)
+            case .completion:
+                OnboardingCompletionView(viewModel: viewModel)
             }
-            
         }
-        .accentColor(theme.accentColor)
-        .animation(.easeInOut, value: manager.step)
+        .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
+        .animation(.spring(), value: viewModel.currentStep)
     }
+}
+
+#Preview {
+    OnboardingContainerView()
 }

@@ -14,6 +14,7 @@ import Combine
 
 class AuthManager: NSObject, ObservableObject {
     @Published var user: User?
+    @Published var isOnboardingCompleted: Bool = false
     @Published var errorMessage: String = ""
     
     // Singleton instance
@@ -73,8 +74,13 @@ class AuthManager: NSObject, ObservableObject {
         do {
             try Auth.auth().signOut()
             self.user = nil
+            self.isOnboardingCompleted = false
         } catch {
             print("Error signing out")
         }
+    }
+    
+    func completeOnboarding() {
+        self.isOnboardingCompleted = true
     }
 }
