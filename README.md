@@ -1,113 +1,100 @@
-# English ji iOS App
+# EnglishJi - Real-time Audio Language Learning
 
-A real-time iOS app for practicing English through live audio calls. The project provides a mobile client that establishes peer-to-peer audio sessions using WebRTC and a lightweight Node.js signaling server to coordinate session setup. Implementations prioritize correctness, low-latency audio, and a clear MVVM-based code organization.
+![Platform](https://img.shields.io/badge/Platform-iOS_16.0%2B-blue.svg)
+![Swift](https://img.shields.io/badge/Swift-5.9-orange.svg)
+![Architecture](https://img.shields.io/badge/Architecture-MVVM%2B_Coordinators-green.svg)
 
-## Overview
-English Ji App enables two users to connect over audio calls for language practice. It handles microphone capture, real-time transport with WebRTC, and session signaling while keeping presentation and business logic separated for maintainability and testability.
+**EnglishJi** is a production-grade iOS application designed to facilitate real-time English language practice through peer-to-peer audio calls. 
 
-## Key features
-- Peer-to-peer real-time audio calls using WebRTC
-- Node.js signaling server for SDP and ICE exchange
-- MVVM architecture with clear separation of View, ViewModel, and Services
-- Low-level WebRTC integration and performance-sensitive logic
-- Mixed Swift/SwiftUI and UIKit UI with Objective-C bridges for WebRTC components
-
-## Technical architecture
-- iOS client: UI (SwiftUI + UIKit) ⇄ ViewModels (MVVM) ⇄ WebRTC layer (Objective-C/Swift wrappers)
-- Signaling server: Node.js WebSocket/HTTP server that brokers offers/answers and ICE candidates
-- Media path: direct peer-to-peer audio transport (WebRTC) once signaling completes
-- Responsibilities:
-  - Client: UI, local media capture, peer connection lifecycle, reconnection and retry logic
-  - Server: session management and lightweight signaling only
-
-## Tech stack
-- Client
-  - Languages: Swift (UI, view models), Objective-C (WebRTC integration)
-  - Frameworks: SwiftUI, UIKit, WebRTC (GoogleWebRTC or equivalent)
-  - Architecture: MVVM
-- Backend
-  - Node.js (signaling server)
-  - WebSocket / HTTP for signaling
-- Tooling
-  - Xcode (build & run)
-  - CocoaPods or Swift Package Manager for iOS dependencies
-  - Node/npm for server
-
-## High-level folder structure
-- /ios or /App
-  - Views/          — SwiftUI / UIKit views
-  - ViewModels/     — MVVM view models and presentation logic
-  - Services/       — signaling client, WebRTC manager, audio utilities
-  - Vendor/         — prebuilt WebRTC artifacts or third-party frameworks (if present)
-  - Resources/      — Info.plist, assets, permissions
-- /server
-  - index.js / server.js — Node.js signaling entry point
-  - package.json         — server dependencies and scripts
-- /Scripts or /tools    — build helpers, generation scripts
-- /Tests                — unit / integration tests (when present)
-- README.md             — this document
-
-## How to run (basic)
-Prerequisites
-- macOS with Xcode (recommended)
-- Node.js (14+)
-- Swift Package Manager (as used by the project)
-- Physical iOS device for full audio testing (simulator has limited audio I/O)
-
-Server
-1. Clone the repo:
-   - git clone https://github.com/kirtidhwajpatra/EnglishJi
-2. Start the signaling server:
-   - cd EnglishCallingApp/server
-   - npm install
-   - npm start
-3. Verify server logs and configured port.
-
-iOS client
-1. Resolve iOS dependencies:
-   - If Podfile exists:
-     - cd EnglishCallingApp/ios (or project root)
-     - pod install
-     - open the workspace (.xcworkspace)
-   - If SPM is used:
-     - open the Xcode project and let SPM resolve packages
-2. Configure runtime settings:
-   - Set the signaling server URL in app configuration (Config/Constants)
-   - Set a valid signing team and bundle identifier
-   - Ensure Info.plist includes NSMicrophoneUsageDescription
-   - Enable Background Modes → Audio if required
-3. Build & run on a device:
-   - Select a physical device and run from Xcode
-   - Use two devices (or simulator + device where supported) pointed at the same signaling server to verify end-to-end audio
-
-Notes
-- WebRTC frameworks may require prebuilt binaries or specific Pod/SPM configuration. Follow repository-specific instructions if available.
-- For NAT traversal reliability, a TURN server may be required for some network environments.
-
-## Status
-In development — core audio calling and signaling features implemented; polish and extended features remain.
-
-## Future improvements
-- VoIP push notifications (PushKit) for reliable incoming-call delivery
-- TURN server integration for improved connectivity across restrictive NATs
-- Automated tests for signaling and connection lifecycle
-- Audio quality tuning: adaptive bitrate and echo cancellation tuning
-- Session recording, analytics, and privacy-aware logging
-- Optional group call capability and basic moderation controls
-
-## Contribution guidelines
-Submit focused pull requests with:
-- A concise change description
-- Relevant tests or manual test steps
-- Any dependency or setup updates reflected in the README or scripts
-
-Refer to the repository LICENSE file for usage and distribution terms.
-
-## Screenshots
+Built with a focus on **engineering excellence**, this project demonstrates advanced competency in **low-level systems programming**, **concurrency**, and **clean architecture**.
 
 <p float="left">
-  <img src="screenshots/HomeScreen.jpg" width="250" />
-  <img src="screenshots/SearchingScreen.jpg" width="250" />
-  <img src="screenshots/ConnectionPhases.jpg" width="250" />
-  <img src="screenshots/CallInProgress.jpg" width="250" />
+  <img src="screenshots/HomeScreen.jpg" width="200" style="border-radius: 12px; margin-right: 10px;" />
+  <img src="screenshots/SearchingScreen.jpg" width="200" style="border-radius: 12px; margin-right: 10px;" />
+  <img src="screenshots/CallInProgress.jpg" width="200" style="border-radius: 12px;" />
 </p>
+
+---
+
+## 🚀 Engineering Highlights
+
+This codebase goes beyond standard UI development, solving complex problems in real-time communication and state management.
+
+### 1. Robust Audio Session Management (`Core/Audio`)
+Handling iOS audio sessions correctly is notoriously difficult. EnglishJi implements a dedicated **AudioSessionManager** that:
+-   **Configures hardware-aligned I/O**: Forces 48kHz sample rates and 5ms buffer durations for ultra-low latency.
+-   **Manages Interruptions**: Gracefully handles incoming phone calls (GSM) and Siri interruptions, auto-resuming the VoIP session when possible.
+-   **Smart Routing**: Detects route changes (headphones unplugged) and seamlessly falls back to the speaker.
+-   **Category Management**: Utilizes `AVAudioSession.Category.playAndRecord` with `.voiceChat` mode for optimal echo cancellation and side-tone suppression.
+
+### 2. Thread-Safe Concurrency & State
+-   **MainActor Isolation**: Critical UI state in `WebRTCManager` is isolated to the main thread, eliminating strict concurrency warnings and runtime crashes.
+-   **Atomic Operations**: Connection state transitions (`Idle` -> `Searching` -> `Connected`) are guarded against race conditions, ensuring predictable behavior even during rapid user interactions.
+-   **Memory Safety**: Rigorous use of `[weak self]` in async closures prevents retain cycles—crucial for long-lived signaling connections.
+
+### 3. Modular "Core" Architecture
+The app maps feature complexity to a clean directory structure, decoupling low-level drivers from the UI.
+
+```text
+EnglishJi/
+├── Core/               # System-level logic (No UI dependencies)
+│   ├── Audio/          # AudioSessionManager (AVFoundation)
+│   ├── WebRTC/         # WebRTCManager & WebRTCClient (GoogleWebRTC)
+│   └── Networking/     # SignalingClient (WebSocket/Starscream alternative)
+├── ViewModel/          # MVVM Logic (ChatViewModel, etc.)
+└── Views/              # Pure SwiftUI Views
+```
+
+### 4. Custom WebRTC Integration
+Instead of relying on heavy third-party wrappers, EnglishJi interfaces directly with `GoogleWebRTC` for maximum control:
+-   **Unified Plan SDP**: Modern SDP negotiation for future-proof compatibility.
+-   **ICE Candidate Queuing**: Handles the common "race" where candidates arrive before the remote description is set.
+-   **Stats Monitoring**: Real-time monitoring of RTT (Round Trip Time) and packet loss for debug overlays.
+
+---
+
+## 🛠 Tech Stack
+
+-   **Language**: Swift 5.9
+-   **UI Framework**: SwiftUI (with UIKit bridges for video rendering views)
+-   **Architecture**: MVVM + Singleton Services (for strictly global hardware resources)
+-   **Networking**: Native `URLSessionWebSocketTask` for signaling (no external socket deps).
+-   **Real-time Media**: WebRTC (Google Binary)
+-   **Dependencies**: Firebase (Auth/Analytics), GoogleSignIn.
+
+---
+
+## 🏃‍♂️ How to Run
+
+### Prerequisites
+-   Xcode 15+
+-   Physical iPhone (Simulator does not support full Microphone/Audio Session routing).
+
+### Setup
+1.  **Clone the Repository**:
+    ```bash
+    git clone https://github.com/kirtidhwajpatra/EnglishJi.git
+    cd EnglishJi
+    ```
+2.  **Dependencies**:
+    -   Open `EnglishJi.xcodeproj`.
+    -   Xcode Package Manager will automatically resolve `GoogleWebRTC` and `Firebase`.
+3.  **Sign & Build**:
+    -   Select your Development Team in "Signing & Capabilities".
+    -   Build and Run on a **physical device**.
+
+---
+
+## 🔮 Future Improvements
+
+-   **PushKit Integration**: To wake the app for incoming calls when terminated (VoIP Push).
+-   **CallKit Integration**: To present the native system calling UI (Lock Screen integration).
+-   **Unit Tests**: Adding XCTest coverage for the `SignalingClient` state machine.
+
+---
+
+## 👨‍💻 Author
+
+**Kirtidhwaj Patra** - *Senior iOS Engineer*
+
+*Built with passion for clean code and seamless user experiences.*
