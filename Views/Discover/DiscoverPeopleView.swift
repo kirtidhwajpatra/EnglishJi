@@ -175,7 +175,7 @@ struct DiscoverPeopleView: View {
                     }) {
                         Image(systemName: "xmark")
                             .font(.system(size: 18, weight: .bold))
-                            .foregroundColor(Color(hex: "1F3B34"))
+                            .foregroundColor(Color.ejDarkerGreen)
                             .frame(width: 50, height: 50)
                             .background(
                                 Circle()
@@ -194,7 +194,7 @@ struct DiscoverPeopleView: View {
                     .font(.system(size: 24, weight: .regular, design: .rounded))
                     .kerning(-0.8)
                     .multilineTextAlignment(.center)
-                    .foregroundColor(Color(hex: "1F3B34"))
+                    .foregroundColor(Color.ejDarkerGreen)
 //                    .lineSpacing(-(24 )
                     .padding(.top, 0)
                     .padding(.bottom, 20)
@@ -309,7 +309,7 @@ struct DiscoverCard: View {
                 HStack(spacing: 8) {
                     Text("  \(user.name), \(user.age)")
                         .font(.system(size: 22, weight: .regular, design: .serif))
-                        .foregroundColor(Color(hex: "1F3B34"))
+                        .foregroundColor(Color.ejDarkerGreen)
                         .padding(.bottom, 8)
                     
                     // Green Dot
@@ -325,7 +325,7 @@ struct DiscoverCard: View {
                 // Bio
                 Text("Exploring the platform & trying to\nbuild the fluency...")
                     .font(.system(size: 12, weight: .regular))
-                    .foregroundColor(Color(hex: "1F3B34").opacity(0.6))
+                    .foregroundColor(Color.ejDarkerGreen.opacity(0.6))
                     .multilineTextAlignment(.center)
                     .lineSpacing(3)
                     .fixedSize(horizontal: false, vertical: true)
@@ -337,24 +337,24 @@ struct DiscoverCard: View {
                     Button(action: {}) {
                         Text("Follow")
                             .font(.system(size: 16, weight: .regular))
-                            .foregroundColor(Color(hex: "1F3B34"))
+                            .foregroundColor(Color.ejDarkerGreen)
                             .padding(.horizontal, 28)
                             .padding(.vertical, 12)
                             .background(
                                 Capsule()
-                                    .stroke(Color(hex: "1F3B34"), lineWidth: 1)
+                                    .stroke(Color.ejDarkerGreen, lineWidth: 1)
                             )
                     }
                     
                     Button(action: {}) {
                         ZStack {
                             Circle()
-                                .fill(Color(hex: "1F3B34"))
+                                .fill(Color.ejDarkerGreen)
                                 .frame(width: 48, height: 48)
                             
                             PaperPlaneIcon()
                                 .frame(width: 20, height: 20)
-                                .foregroundColor(Color(hex: "DDEE88"))
+                                .foregroundColor(Color.ejLightGreen)
                                 .offset(x: 1, y: 02)
                                 .scaleEffect(1.6)
                         }
@@ -377,12 +377,12 @@ struct FilterPill: View {
         HStack(spacing: 4) {
             Text(title)
                 .font(.system(size: 15, weight: .regular))
-                .foregroundColor(Color(hex: "1F3B34"))
+                .foregroundColor(Color.ejDarkerGreen)
             
             if hasArrow {
                 Image(systemName: "chevron.up.chevron.down")
                     .font(.system(size: 10))
-                    .foregroundColor(Color(hex: "1F3B34").opacity(0.6))
+                    .foregroundColor(Color.ejDarkerGreen.opacity(0.6))
             }
         }
         .padding(.horizontal, 18)

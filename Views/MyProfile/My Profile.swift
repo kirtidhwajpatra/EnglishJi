@@ -125,8 +125,8 @@ struct UpgradeBanner: View {
                 .kerning(CGFloat(-0.4))
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
-                .background(Color(hex: "DDEE88")) // Lime Green
-                .foregroundColor(Color(hex: "1F3B34")) // Dark Text
+                .background(Color.ejLightGreen) // Lime Green
+                .foregroundColor(Color.ejDarkerGreen) // Dark Text
                 .cornerRadius(20)
         }
         .padding(.vertical, 12)

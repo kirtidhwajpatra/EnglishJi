@@ -91,10 +91,10 @@ struct LoadingScreen: View {
                 // New Badge
                 Text("New")
                     .font(.system(size: 10, weight: .bold))
-                    .foregroundColor(Color(hex: "1F3B34"))
+                    .foregroundColor(Color.ejDarkerGreen)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
-                    .background(Color(hex: "DDEE88"))
+                    .background(Color.ejLightGreen)
                     .cornerRadius(12)
                     .position(x: 140-20, y: 20) // Approximate
                     .offset(x: -70 + 20, y: -70 + 20) // Adjusting to frame
@@ -249,10 +249,10 @@ struct GameContent: View {
                         Text("Play Again")
                     }
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(Color(hex: "1F3B34"))
+                    .foregroundColor(Color.ejDarkerGreen)
                     .padding(.horizontal, 32)
                     .padding(.vertical, 14)
-                    .background(Color(hex: "DDEE88")) // Lime Green
+                    .background(Color.ejLightGreen) // Lime Green
                     .cornerRadius(30)
                 }
             }

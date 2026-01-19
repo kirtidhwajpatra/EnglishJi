@@ -4,58 +4,40 @@ struct OnboardingPhoneView: View {
     @ObservedObject var viewModel: OnboardingViewModel
     
     var body: some View {
-        VStack(spacing: 20) {
-            Spacer()
-            
-            Text("Enter your number")
-                .font(.title2)
-                .fontWeight(.medium)
-                .foregroundColor(.black)
-            
-            Spacer()
-            
-            HStack {
-                Text("+91") // Hardcoded for now, or use picker
-                    .font(.title3)
-                    .fontWeight(.bold)
-                    .padding()
-                    .background(Color.gray.opacity(0.1))
-                    .cornerRadius(8)
+        OnboardingLayout(
+            stepIndex: 1,
+            direction: viewModel.navigationDirection,
+            onBack: { viewModel.moveToPreviousStep() }
+        ) {
+            VStack {
+                OnboardingTitle("Enter your number", subtitle: "We'll send you a verification code to keep your account safe.")
                 
-                TextField("760-996-3811", text: $viewModel.phoneNumber)
-                    .keyboardType(.numberPad)
-                    .font(.title3)
-                    .padding()
-                    .background(Color.gray.opacity(0.1))
-                    .cornerRadius(8)
-            }
-            .padding(.horizontal)
-            
-            Spacer()
-            
-            Button(action: {
-                // Trigger OTP send
-                viewModel.sendOTP()
-            }) {
-                HStack {
-                    if viewModel.isLoading {
-                        ProgressView()
-                    } else {
-                        Text("Next")
-                    }
+                HStack(spacing: 12) {
+                    Text("🇮🇳 +91")
+                        .font(.system(size: 18, weight: .bold))
+                        .padding()
+                        .frame(height: 56)
+                        .background(Color(.secondarySystemBackground))
+                        .cornerRadius(16)
+                    
+                    OnboardingTextField(
+                        placeholder: "Mobile Number",
+                        text: $viewModel.phoneNumber,
+                        contentType: .telephoneNumber,
+                        keyboardType: .numberPad
+                    )
                 }
-                .font(.headline)
-                .foregroundColor(.ejDarkerGreen)
-                .padding(.vertical, 16)
-                .padding(.horizontal, 40)
-                .background(Color.ejLightGreen)
-                .cornerRadius(30)
+                .padding(.horizontal)
+                
+                Spacer()
+                
+                OnboardingButton(
+                    title: viewModel.isLoading ? "Sending..." : "Continue",
+                    isDisabled: viewModel.phoneNumber.count < 10 || viewModel.isLoading,
+                    action: { viewModel.sendOTP() }
+                )
             }
-            .padding(.bottom, 50)
-            .disabled(viewModel.phoneNumber.isEmpty || viewModel.isLoading)
         }
-        .padding()
-        .background(Color.white.ignoresSafeArea())
     }
 }
 

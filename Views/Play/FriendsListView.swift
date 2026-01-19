@@ -6,8 +6,8 @@ struct FriendsListView: View {
     @State private var searchText = ""
     
     // Theme Colors
-    let darkText = Color(hex: "1F3B34")
-    let playButtonGreen = Color(hex: "355E3B") // Deep forest green
+    let darkText = Color.ejDarkerGreen
+    let playButtonGreen = Color.ejDarkerGreen // Deep forest green
     let lightGreyBg = Color(hex: "F2F2F7")
     
     // Dummy Data Model
@@ -117,7 +117,7 @@ struct FriendsListView: View {
                                     Text("Play")
                                         .font(.system(size: 13, weight: .medium))
                                 }
-                                .foregroundColor(Color(hex: "DDEE88")) // Lime/Yellowish Text
+                                .foregroundColor(Color.ejLightGreen) // Lime/Yellowish Text
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 8)
                                 .background(playButtonGreen) // Dark Green BG

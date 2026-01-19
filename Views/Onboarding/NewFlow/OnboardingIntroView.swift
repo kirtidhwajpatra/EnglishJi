@@ -43,59 +43,51 @@ struct OnboardingIntroView: View {
     }
     
     var body: some View {
-        ZStack {
-            // Background
-            Color.white.ignoresSafeArea()
-            
-            // Text Stack
-            VStack(spacing: theme.lineSpacing) {
-                ForEach(Array(theme.words.enumerated()), id: \.offset) { index, word in
-                    Text(word)
-                        .font(theme.font)
-                        .fontWeight(.heavy) // Fallback if custom font fails
-                        .multilineTextAlignment(.center)
-                        .blur(radius: calculateBlur(for: index))
-                        .opacity(calculateOpacity(for: index))
-                        .scaleEffect(calculateScale(for: index))
+        OnboardingLayout(
+            stepIndex: 0,
+            direction: viewModel.navigationDirection,
+            showProgress: false,
+            onBack: { viewModel.moveToPreviousStep() }
+        ) {
+            ZStack {
+                // Text Stack
+                VStack(spacing: theme.lineSpacing) {
+                    ForEach(Array(theme.words.enumerated()), id: \.offset) { index, word in
+                        Text(word)
+                            .font(.system(size: 60, weight: .heavy, design: .rounded))
+                            .multilineTextAlignment(.center)
+                            .blur(radius: calculateBlur(for: index))
+                            .opacity(calculateOpacity(for: index))
+                            .scaleEffect(calculateScale(for: index))
+                    }
                 }
-            }
-            .overlay(
-                LinearGradient(colors: theme.gradientColors, startPoint: gradientStart, endPoint: gradientEnd)
-                    .mask(
-                        VStack(spacing: theme.lineSpacing) {
-                            ForEach(Array(theme.words.enumerated()), id: \.offset) { index, word in
-                                Text(word)
-                                    .font(theme.font)
-                                    .fontWeight(.heavy)
-                                    .multilineTextAlignment(.center)
-                                    .opacity(index <= visibleIndex ? 1 : 0)
-                                    .scaleEffect(calculateScale(for: index))
+                .overlay(
+                    LinearGradient(colors: [.blue, .purple, .blue], startPoint: gradientStart, endPoint: gradientEnd)
+                        .mask(
+                            VStack(spacing: theme.lineSpacing) {
+                                ForEach(Array(theme.words.enumerated()), id: \.offset) { index, word in
+                                    Text(word)
+                                        .font(.system(size: 60, weight: .heavy, design: .rounded))
+                                        .multilineTextAlignment(.center)
+                                        .opacity(index <= visibleIndex ? 1 : 0)
+                                        .scaleEffect(calculateScale(for: index))
+                                }
                             }
-                        }
+                        )
+                )
+                .offset(y: currentOffset)
+                
+                // Get Started Button
+                VStack {
+                    Spacer()
+                    OnboardingButton(
+                        title: "Get Started",
+                        action: { viewModel.moveToNextStep() }
                     )
-            )
-            .offset(y: currentOffset)
-            .animation(.spring(response: 0.5, dampingFraction: 0.75), value: visibleIndex)
-            
-            // Get Started Button
-            VStack {
-                Spacer()
-                Button(action: {
-                    viewModel.moveToNextStep()
-                }) {
-                    Text("Get started")
-                        .font(.headline)
-                        .foregroundColor(.ejDarkerGreen)
-                        .padding(.vertical, 16)
-                        .padding(.horizontal, 40)
-                        .background(Color.ejLightGreen)
-                        .cornerRadius(30)
+                    .opacity(visibleIndex == theme.words.count - 1 ? 1 : 0)
                 }
-                .padding(.bottom, 50)
-                // Show button only after animation finishes the last word
-                .opacity(visibleIndex == theme.words.count - 1 ? 1 : 0)
-                .animation(.easeIn, value: visibleIndex)
             }
+            .animation(.spring(response: 0.5, dampingFraction: 0.75), value: visibleIndex)
         }
         .onAppear {
             startSequence()

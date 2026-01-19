@@ -49,7 +49,7 @@ struct AICompanionFace: View {
             SVGStarShape()
                 // 🔥 GRADIENT FACE
                 .fill(
-                    Color(hex: "2C564C")
+                    Color.ejDarkerGreen
                 )
                 // Slightly larger frame than the circle to accommodate the shape's indentations
                 .frame(width: 140, height: 140)
@@ -61,7 +61,7 @@ struct AICompanionFace: View {
                 .rotationEffect(.degrees(Double(lookOffset.width) * 0.1))
             
             // 3. THE EYES CONTAINER
-            HStack(spacing: 8) {
+            HStack(spacing: 4) {
                 SmoothEyeView(
                     lookOffset: lookOffset,
                     isBlinking: isBlinking,
@@ -171,12 +171,7 @@ struct SmoothEyeView: View {
                 ZStack {
                     Circle()
                         .fill(Color.black)
-                        .frame(width: 14, height: 14)
-                    
-                    Circle()
-                        .fill(Color.white)
-                        .frame(width: 5, height: 5)
-                        .offset(x: -3, y: -3)
+                        .frame(width: 20, height: 20)
                 }
                 .offset(lookOffset) // The pupil moves full distance
                 .mask(

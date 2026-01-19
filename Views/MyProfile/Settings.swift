@@ -12,8 +12,8 @@ struct SettingsView: View {
     @Environment(\.dismiss) var dismiss
     
     // Theme Colors
-    let limeGreen = Color(hex: "DDEE88")
-    let darkText = Color(hex: "1F3B34")
+    let limeGreen = Color.ejLightGreen
+    let darkText = Color.ejDarkerGreen
     
     @State private var isCallExperienceExpanded = true // Expanded by default
     
@@ -211,8 +211,8 @@ struct SettingsLinkRow: View {
     var isStandalone: Bool = false
     
     // Theme Colors
-    let limeGreen = Color(hex: "DDEE88")
-    let darkText = Color(hex: "1F3B34")
+    let limeGreen = Color.ejLightGreen
+    let darkText = Color.ejDarkerGreen
     
     var body: some View {
         Button(action: {}) {

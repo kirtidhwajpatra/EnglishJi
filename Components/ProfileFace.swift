@@ -106,7 +106,7 @@ struct HandDrawnFaceIcon: View {
         ZStack {
             // ... (Your existing Circle & Gradient code stays here) ...
             Circle()
-                .fill(Color(hex: "D6E978"))
+                .fill(Color.ejLightGreen)
                 .opacity(1.0)
             
             // ... (Your existing Mouth & Hair code stays here) ...

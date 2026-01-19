@@ -6,73 +6,30 @@ struct OnboardingNameView: View {
     @State private var lastName: String = ""
     
     var body: some View {
-        VStack(spacing: 20) {
-            // Progress dots (Mockup shows them)
-            HStack(spacing: 4) {
-                Circle().fill(Color.ejDarkerGreen).frame(width: 8, height: 8)
-                Circle().fill(Color.gray.opacity(0.3)).frame(width: 8, height: 8)
-                Circle().fill(Color.gray.opacity(0.3)).frame(width: 8, height: 8)
-                Circle().fill(Color.gray.opacity(0.3)).frame(width: 8, height: 8)
-            }
-            .padding(.top, 20)
-            
-            HStack(spacing: 20) {
-                Text("Name")
-                    .font(.caption)
-                    .fontWeight(.bold)
-                    .foregroundColor(.ejDarkerGreen)
-                Text("Age")
-                    .font(.caption)
-                    .foregroundColor(.gray)
-                Text("Photo")
-                    .font(.caption)
-                    .foregroundColor(.gray)
-                Text("Location")
-                    .font(.caption)
-                    .foregroundColor(.gray)
-            }
-            
-            Spacer()
-            
-            VStack(spacing: 15) {
-                TextField("First Name", text: $viewModel.firstName)
-                    .font(.title3)
-                    .multilineTextAlignment(.center)
-                    .padding()
-                    .overlay(Divider(), alignment: .bottom)
+        OnboardingLayout(
+            stepIndex: 3,
+            direction: viewModel.navigationDirection,
+            onBack: { viewModel.moveToPreviousStep() }
+        ) {
+            VStack {
+                OnboardingTitle("What's your name?", subtitle: "This is how you'll appear to other learners on EnglishJi.")
                 
-                TextField("Middle Name", text: $middleName)
-                    .font(.title3)
-                    .multilineTextAlignment(.center)
-                    .padding()
-                    .overlay(Divider(), alignment: .bottom)
+                VStack(spacing: 20) {
+                    OnboardingTextField(placeholder: "First Name", text: $viewModel.firstName, contentType: .givenName)
+                    
+                    OnboardingTextField(placeholder: "Last Name (Optional)", text: $lastName, contentType: .familyName)
+                }
+                .padding(.horizontal)
                 
-                TextField("Last Name", text: $lastName)
-                    .font(.title3)
-                    .multilineTextAlignment(.center)
-                    .padding()
-                    .overlay(Divider(), alignment: .bottom)
+                Spacer()
+                
+                OnboardingButton(
+                    title: "Continue",
+                    isDisabled: viewModel.firstName.isEmpty,
+                    action: { viewModel.moveToNextStep() }
+                )
             }
-            .padding(.horizontal, 40)
-            
-            Spacer()
-            
-            Button(action: {
-                viewModel.moveToNextStep()
-            }) {
-                Text("Next")
-                    .font(.headline)
-                    .foregroundColor(.ejDarkerGreen)
-                    .padding(.vertical, 16)
-                    .padding(.horizontal, 40)
-                    .background(Color.ejLightGreen)
-                    .cornerRadius(30)
-            }
-            .padding(.bottom, 50)
-            .disabled(viewModel.firstName.isEmpty)
         }
-        .padding()
-        .background(Color.white.ignoresSafeArea())
     }
 }
 

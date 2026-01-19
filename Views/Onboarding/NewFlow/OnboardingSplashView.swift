@@ -5,33 +5,27 @@ struct OnboardingSplashView: View {
     
     var body: some View {
         ZStack {
-            Color.white.ignoresSafeArea()
+            Color(.systemBackground).ignoresSafeArea()
             
             VStack {
                 Spacer()
                 
-                // Logo Placeholder (Using AppIcon logic or image asset)
-                Image("appicon") // Assuming this asset exists from previous steps
+                Image("appicon")
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 100, height: 100)
-                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                    .frame(width: 120, height: 120)
+                    .clipShape(RoundedRectangle(cornerRadius: 28))
+                    .shadow(color: Color.black.opacity(0.1), radius: 20, x: 0, y: 10)
                 
                 Spacer()
                 
-                // New Loading Indicator or similar branding
-                GeometryReader { geometry in
-                    Capsule()
-                        .fill(Color.gray.opacity(0.3))
-                        .frame(width: 50, height: 4)
-                        .position(x: geometry.size.width / 2, y: geometry.size.height - 50)
-                }
-                .frame(height: 50)
+                ProgressView()
+                    .scaleEffect(1.2)
+                    .padding(.bottom, 60)
             }
         }
         .onAppear {
-            // Auto advance after delay
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                 viewModel.moveToNextStep()
             }
         }

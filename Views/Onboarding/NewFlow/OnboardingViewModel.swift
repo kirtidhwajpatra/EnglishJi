@@ -17,6 +17,13 @@ class OnboardingViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     
+    enum NavigationDirection {
+        case forward
+        case backward
+    }
+    
+    @Published var navigationDirection: NavigationDirection = .forward
+    
     enum OnboardingStep: CaseIterable {
         case splash
         case intro
@@ -34,7 +41,8 @@ class OnboardingViewModel: ObservableObject {
               currentIndex < OnboardingStep.allCases.count - 1 else {
             return
         }
-        withAnimation {
+        navigationDirection = .forward
+        withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
             currentStep = OnboardingStep.allCases[currentIndex + 1]
         }
     }
@@ -44,7 +52,8 @@ class OnboardingViewModel: ObservableObject {
               currentIndex > 0 else {
             return
         }
-        withAnimation {
+        navigationDirection = .backward
+        withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
             currentStep = OnboardingStep.allCases[currentIndex - 1]
         }
     }

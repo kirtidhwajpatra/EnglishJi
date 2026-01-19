@@ -96,14 +96,14 @@ struct HomeView: View {
                         Text("Find a partner to\npractice your English")
                             .font(.system(size: 22, weight: .regular)) // Reduced to 22 for better balance
                             .multilineTextAlignment(.center)
-                            .foregroundColor(Color(hex: "1F3B34"))
+                            .foregroundColor(Color.ejDarkerGreen)
                             .padding(.bottom, 25)
                             .padding(.top, 50)
                     }
                     ZStack(alignment: .bottom) {
                         // A. Card Background
                         RoundedRectangle(cornerRadius: cardCornerRadius)
-                            .fill(Color(hex: "D6E978")) // Light Green
+                            .fill(Color.ejLightGreen)
 //                            .shadow(color: .black.opacity(0.04), radius: 25, y: 10)
                         
                         // B. CONTENT STACK
@@ -134,7 +134,7 @@ struct HomeView: View {
 //                                        Text("Find a partner to\npractice your English")
 //                                            .font(.system(size: 20, weight: .regular))
 //                                            .multilineTextAlignment(.center)
-//                                            .foregroundColor(Color(hex: "1F3B34")) // Dark Green Text
+//                                            .foregroundColor(Color.ejDarkerGreen) // Dark Green Text
 //                                            .padding(.bottom, 20)
                                         
 //                                    }
@@ -151,13 +151,13 @@ struct HomeView: View {
                                                     .font(.system(size: 10))
                                             }
                                             .font(.system(size: 16, weight: .light))
-                                            .foregroundColor(Color(hex: "1F3B34"))
+                                            .foregroundColor(Color.ejDarkerGreen)
                                         }
                                         .frame(maxWidth: .infinity)
                                         
                                         Divider()
                                             .frame(height: 20)
-                                            .overlay(Color(hex: "1F3B34").opacity(0.2))
+                                            .overlay(Color.ejDarkerGreen.opacity(0.3))
                                         
                                         // 2. Level
                                         Button(action: {
@@ -169,13 +169,13 @@ struct HomeView: View {
                                                     .font(.system(size: 10))
                                             }
                                             .font(.system(size: 16, weight: .light))
-                                            .foregroundColor(Color(hex: "1F3B34"))
+                                            .foregroundColor(Color.ejDarkerGreen)
                                         }
                                         .frame(maxWidth: .infinity)
                                         
                                         Divider()
                                             .frame(height: 20)
-                                            .overlay(Color(hex: "1F3B34").opacity(0.2))
+                                            .overlay(Color.ejDarkerGreen.opacity(0.3))
                                         
                                         // 3. Country
                                         Button(action: {
@@ -187,7 +187,7 @@ struct HomeView: View {
                                                     .font(.system(size: 10))
                                             }
                                             .font(.system(size: 16, weight: .light))
-                                            .foregroundColor(Color(hex: "1F3B34"))
+                                            .foregroundColor(Color.ejDarkerGreen)
                                         }
                                         .frame(maxWidth: .infinity)
                                     }

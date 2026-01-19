@@ -15,7 +15,7 @@ struct PlayHubView: View {
     let systemColor = Color(hex: "FCA5A5")
     let systemIconBg = Color(hex: "923126") // Dark red/brown
     
-    let darkText = Color(hex: "1F3B34") // Dark Green text
+    let darkText = Color.ejDarkerGreen // Dark Green text
     
     var body: some View {
         NavigationStack {

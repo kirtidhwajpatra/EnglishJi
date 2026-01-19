@@ -4,30 +4,32 @@ struct OnboardingCompletionView: View {
     @ObservedObject var viewModel: OnboardingViewModel
     
     var body: some View {
-        VStack {
-            Spacer()
-            
-            Text("Yeee.. Let's smash 💃")
-                .font(.custom("Futura-Bold", size: 28))
-                .fontWeight(.bold)
-                .foregroundColor(.ejDarkerGreen)
-            
-            Spacer()
-            
-            // Logo
-            Image("appicon")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 60, height: 60)
-                .clipShape(RoundedRectangle(cornerRadius: 15))
-            
-            Spacer()
-                .frame(height: 50)
-        }
-        .padding()
-        .background(Color.white.ignoresSafeArea())
-        .onAppear {
-            viewModel.completeOnboarding()
+        OnboardingLayout(
+            stepIndex: 7,
+            direction: viewModel.navigationDirection,
+            showProgress: false,
+            onBack: { viewModel.moveToPreviousStep() }
+        ) {
+            VStack {
+                Spacer()
+                
+                OnboardingIllustration(systemName: "sparkles", color: .yellow)
+                
+                OnboardingTitle("You're all set!", subtitle: "Welcome to EnglishJi. Let's start practicing your English with learners worldwide.")
+                
+                if viewModel.isLoading {
+                    ProgressView()
+                        .padding(.top, 20)
+                }
+                
+                Spacer()
+                
+                OnboardingButton(
+                    title: "Start Learning",
+                    isLoading: viewModel.isLoading,
+                    action: { viewModel.completeOnboarding() }
+                )
+            }
         }
     }
 }

@@ -24,7 +24,7 @@ struct GameSelectionView: View {
     var showBackButton: Bool = true
     
     // Theme Colors
-    let darkText = Color(hex: "1F3B34") // Dark Green text
+    let darkText = Color.ejDarkerGreen // Dark Green text
     
     // Static Data matching the screenshot
     private static let games: [GameItem] = [
@@ -192,10 +192,10 @@ struct GameCard: View {
                         Spacer()
                         Text("New")
                             .font(.system(size: 10, weight: .bold))
-                            .foregroundColor(Color(hex: "1F3B34")) // Dark Text
+                            .foregroundColor(Color.ejDarkerGreen) // Dark Text
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
-                            .background(Color(hex: "DDEE88")) // Lime Green
+                            .background(Color.ejLightGreen) // Lime Green
                             .cornerRadius(12)
                             .padding([.top, .trailing], 16)
                     }
