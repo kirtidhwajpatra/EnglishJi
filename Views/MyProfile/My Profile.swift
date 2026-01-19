@@ -46,8 +46,7 @@ struct ProfileView: View {
             _bio = State(initialValue: user.bio)
             _gender = State(initialValue: user.gender == .male ? "Male" : "Female")
             _profileImageURL = State(initialValue: user.image)
-            _country = State(initialValue: "Online") // Using flag/mock
-            // Mock stats for discover users
+            _country = State(initialValue: "Online")
             _friends = State(initialValue: "\(Int.random(in: 10...300))")
             _minutes = State(initialValue: "\(Int.random(in: 50...1000))")
             _visitors = State(initialValue: "\(Int.random(in: 5...100))")
@@ -64,7 +63,7 @@ struct ProfileView: View {
                 // 1. Custom Navigation Bar
                 ProfileNavBar(onBack: { dismiss() })
                 
-                // 2. Upgrade Banner (Hide in Edit Mode AND ReadOnly)
+                // 2. Upgrade Banner
                 if !isEditing && !isReadOnly {
                     UpgradeBanner()
                         .transition(.move(edge: .top).combined(with: .opacity))
@@ -79,9 +78,10 @@ struct ProfileView: View {
                     focusedField: _focusedField
                 )
                 
-                // 4. Stats Row (Friends, Mins, Visitors) - Read Only usually
+                // 4. Stats Row
                 StatsRow(friends: friends, minutes: minutes, visitors: visitors)
-                    .opacity(isEditing ? 0.6 : 1.0) // Dim slightly in edit mode to suggest non-editable
+                    .opacity(isEditing ? 0.4 : 1.0)
+                    .grayscale(isEditing ? 1.0 : 0.0)
                 
                 // 5. Interests Section
                 InterestsSection(
@@ -91,10 +91,10 @@ struct ProfileView: View {
                     focusedField: _focusedField
                 )
                 
-                // 6. Location Placeholder
+                // 6. Location
                 LocationSection(location: $location, isEditing: isEditing, focusedField: _focusedField)
                 
-                // 7. Contact Info (Hide for ReadOnly)
+                // 7. Contact Info
                 if !isReadOnly {
                     ContactInfoSection(
                         phone: $phoneNumber,
@@ -113,33 +113,32 @@ struct ProfileView: View {
                     focusedField: _focusedField
                 )
                 
-                // 9. Edit/Save Button (Hide for ReadOnly)
+                // 9. Edit/Save Button
                 if !isReadOnly {
                     Button {
-                        withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                        HapticManager.shared.lightImpact()
+                        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
                             isEditing.toggle()
                         }
                     } label: {
                         HStack {
                             Image(systemName: isEditing ? "checkmark" : "sparkles")
                                 .id(isEditing)
-                                .transition(.scale.combined(with: .opacity))
-                            Text(isEditing ? "Save Profile" : "Edit Profile")
+                                .transition(.scale.combined(with: .opacity).animation(.bouncy))
+                            Text(isEditing ? "Save Changes" : "Edit Profile")
                                 .transition(.push(from: .bottom))
                         }
                         .font(.headline)
-                        .foregroundColor(isEditing ? .white : .white)
+                        .foregroundColor(isEditing ? .black : .white)
                         .frame(maxWidth: .infinity)
                         .frame(height: 56)
                         .background(isEditing ? Color.ejLightGreen : Color(hex: "1C1C1E"))
-                        .foregroundColor(isEditing ? Color.ejDarkerGreen : .white)
                         .cornerRadius(28)
+                        .shadow(color: isEditing ? Color.ejLightGreen.opacity(0.3) : .clear, radius: 10, y: 5)
                     }
                     .padding(.top, 10)
                     .padding(.bottom, 40)
                     .padding(.horizontal, 10)
-                    // Change text color for "Save" button to be dark since background is light green
-                    .foregroundColor(isEditing ? Color.black : Color.white)
                 }
             }
             .padding(.horizontal, 20)
@@ -225,8 +224,8 @@ struct UpgradeBanner: View {
                 .kerning(CGFloat(-0.4))
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
-                .background(Color.ejLightGreen) // Lime Green
-                .foregroundColor(Color.ejDarkerGreen) // Dark Text
+                .background(Color.ejLightGreen)
+                .foregroundColor(Color.ejDarkerGreen)
                 .cornerRadius(20)
         }
         .padding(.vertical, 12)
@@ -259,7 +258,7 @@ struct ProfileHeader: View {
                     )
                     .frame(width: 88, height: 88)
                 
-                // Image
+                // Image or Placeholder
                 AsyncImage(url: URL(string: imageURL)) { img in
                     img.resizable().aspectRatio(contentMode: .fill)
                 } placeholder: {
@@ -268,59 +267,46 @@ struct ProfileHeader: View {
                 .frame(width: 80, height: 80)
                 .clipShape(Circle())
                 
+                // Edit Overlay
                 if isEditing {
                     ZStack {
-                        Color.black.opacity(0.4)
+                        VisualEffectBlur(blurStyle: .systemUltraThinMaterialDark)
                         Image(systemName: "camera.fill")
                             .font(.title2)
                             .foregroundColor(.white)
                     }
                     .frame(width: 80, height: 80)
                     .clipShape(Circle())
-                    .transition(.opacity)
+                    .transition(.opacity.animation(.easeInOut(duration: 0.2)))
                 }
             }
             .onTapGesture {
                 if isEditing {
-                    // Logic to change photo
+                    HapticManager.shared.lightImpact()
                 }
             }
             
             VStack(spacing: 6) {
-                if isEditing {
-                    TextField("Name", text: $name)
-                        .font(.system(size: 28, weight: .regular, design: .rounded))
-                        .multilineTextAlignment(.center)
-                        .focused($focusedField, equals: .name)
-                        .submitLabel(.next)
-                        .padding(.horizontal)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(Color.gray.opacity(0.1))
-                        )
-                    
-                    TextField("Bio", text: $bio, axis: .vertical)
-                        .font(.system(size: 14))
-                        .multilineTextAlignment(.center)
-                        .focused($focusedField, equals: .bio)
-                        .padding(8)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(Color.gray.opacity(0.1))
-                        )
-                        .frame(minHeight: 44)
-                } else {
-                    Text(name)
-                        .font(.system(size: 28, weight: .regular, design: .rounded))
-                        .kerning(CGFloat(-0.4))
-                        .foregroundColor(.black)
-                    
-                    Text(bio)
-                        .font(.system(size: 14))
-                        .foregroundColor(.gray)
-                        .multilineTextAlignment(.center)
-                        .lineSpacing(2)
-                }
+                EditableField(
+                    text: $name,
+                    isEditing: isEditing,
+                    placeholder: "Your Name",
+                    font: .system(size: 28, weight: .regular, design: .rounded),
+                    alignment: .center,
+                    fieldId: .name,
+                    focusedField: _focusedField
+                )
+                
+                EditableField(
+                    text: $bio,
+                    isEditing: isEditing,
+                    placeholder: "Short bio...",
+                    font: .system(size: 14),
+                    alignment: .center,
+                    fieldId: .bio,
+                    focusedField: _focusedField,
+                    axis: .vertical
+                )
             }
         }
     }
@@ -380,6 +366,9 @@ struct InterestsSection: View {
     @Binding var newInterestText: String
     var isEditing: Bool
     @FocusState var focusedField: ProfileView.ProfileField?
+    
+    // Jiggle Animation State
+    @State private var isJiggling = false
 
     let columns = [GridItem(.adaptive(minimum: 100), spacing: 8)]
     
@@ -391,21 +380,28 @@ struct InterestsSection: View {
                 ForEach(interests) { interest in
                     ZStack(alignment: .topTrailing) {
                         TagView(text: interest.text, icon: interest.icon, color: Color(hex: interest.colorHex), textColor: Color(hex: interest.textColorHex))
+                            .rotationEffect(.degrees(isEditing ? -1 : 0))
+                            .animation(
+                                isEditing ? Animation.linear(duration: 0.15).repeatForever(autoreverses: true) : .default,
+                                value: isEditing
+                            )
                         
                         if isEditing {
                             Button {
+                                HapticManager.shared.lightImpact()
                                 if let index = interests.firstIndex(where: { $0.id == interest.id }) {
                                     withAnimation {
                                         interests.remove(at: index)
                                     }
                                 }
                             } label: {
-                                Image(systemName: "xmark.circle.fill")
+                                Image(systemName: "minus.circle.fill")
                                     .foregroundStyle(.white, .red)
-                                    .font(.system(size: 18))
-                                    .background(Circle().fill(.white)) // White background for X
+                                    .font(.system(size: 20))
+                                    .background(Circle().fill(.white))
                             }
-                            .offset(x: 6, y: -6)
+                            .offset(x: 8, y: -8)
+                            .transition(.scale)
                         }
                     }
                 }
@@ -415,9 +411,10 @@ struct InterestsSection: View {
                         Image(systemName: "plus")
                             .font(.caption)
                             .foregroundColor(.gray)
-                        TextField("Add...", text: $newInterestText)
+                        TextField("Add Interest", text: $newInterestText)
                             .font(.system(size: 16))
                             .focused($focusedField, equals: .newInterest)
+                            .submitLabel(.done)
                             .onSubmit {
                                 if !newInterestText.isEmpty {
                                     withAnimation {
@@ -427,10 +424,13 @@ struct InterestsSection: View {
                                 }
                             }
                     }
-                    .padding(.vertical, 8)
+                    .padding(.vertical, 10)
                     .padding(.horizontal, 12)
-                    .background(Color(hex: "F2F2F7"))
-                    .cornerRadius(8)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .strokeBorder(style: StrokeStyle(lineWidth: 1, dash: [4]))
+                            .foregroundColor(.gray.opacity(0.5))
+                    )
                 }
             }
             .padding()
@@ -475,17 +475,19 @@ struct LocationSection: View {
                 HStack {
                     Image(systemName: "mappin.and.ellipse")
                         .foregroundColor(.gray)
-                    TextField("Enter Location", text: $location)
+                    TextField("Location", text: $location)
                         .focused($focusedField, equals: .location)
+                        .font(.system(size: 16))
                 }
                 .padding()
                 .background(Color(hex: "F2F2F7"))
                 .cornerRadius(12)
                 .padding(.vertical)
+                .transition(.opacity)
             } else {
                 RoundedRectangle(cornerRadius: 16)
                     .fill(Color(hex: "F2F2F7"))
-                    .frame(height: 240) // Placeholder for Map
+                    .frame(height: 240)
                     .overlay(
                         VStack(spacing: 8) {
                             Image(systemName: "map")
@@ -497,6 +499,7 @@ struct LocationSection: View {
                         }
                     )
                     .padding(.vertical)
+                    .transition(.opacity)
             }
         }
     }
@@ -515,7 +518,7 @@ struct ContactInfoSection: View {
             
             VStack(spacing: 0) {
                 // Phone
-                VStack(spacing: 8) {
+                VStack(spacing: 12) {
                     HStack {
                         Image(systemName: "phone")
                             .font(.callout)
@@ -524,18 +527,16 @@ struct ContactInfoSection: View {
                             .font(.callout)
                             .foregroundColor(.gray)
                     }
-                    if isEditing {
-                        TextField("Phone", text: $phone)
-                            .font(.system(size: 22, weight: .regular, design: .rounded))
-                            .multilineTextAlignment(.center)
-                            .focused($focusedField, equals: .phone)
-                            .keyboardType(.phonePad)
-                            .background(Color.gray.opacity(0.05))
-                            .cornerRadius(8)
-                    } else {
-                        Text(phone)
-                            .font(.system(size: 22, weight: .regular, design: .rounded))
-                    }
+                    EditableField(
+                        text: $phone,
+                        isEditing: isEditing,
+                        placeholder: "Phone",
+                        font: .system(size: 22, weight: .regular, design: .rounded),
+                        alignment: .center,
+                        fieldId: .phone,
+                        focusedField: _focusedField,
+                        keyboardType: .phonePad
+                    )
                 }
                 .padding(.bottom, 16)
                 
@@ -547,7 +548,7 @@ struct ContactInfoSection: View {
                     .padding(.bottom, 16)
                 
                 // Email
-                VStack(spacing: 8) {
+                VStack(spacing: 12) {
                     HStack {
                         Image(systemName: "envelope")
                             .font(.callout)
@@ -556,19 +557,16 @@ struct ContactInfoSection: View {
                             .font(.callout)
                             .foregroundColor(.gray)
                     }
-                    if isEditing {
-                        TextField("Email", text: $email)
-                            .font(.system(size: 22, weight: .regular, design: .rounded))
-                            .multilineTextAlignment(.center)
-                            .focused($focusedField, equals: .email)
-                            .keyboardType(.emailAddress)
-                            .textInputAutocapitalization(.never)
-                            .background(Color.gray.opacity(0.05))
-                            .cornerRadius(8)
-                    } else {
-                        Text(email)
-                            .font(.system(size: 22, weight: .regular, design: .rounded))
-                    }
+                    EditableField(
+                        text: $email,
+                        isEditing: isEditing,
+                        placeholder: "Email",
+                        font: .system(size: 22, weight: .regular, design: .rounded),
+                        alignment: .center,
+                        fieldId: .email,
+                        focusedField: _focusedField,
+                        keyboardType: .emailAddress
+                    )
                 }
             }
             .frame(maxWidth: .infinity)
@@ -599,7 +597,7 @@ struct DemographicsSection: View {
             .padding(.horizontal, 10)
             .padding()
         }
-        .padding(.bottom, 40) // Extra padding at bottom
+        .padding(.bottom, 40)
     }
 }
 
@@ -616,19 +614,63 @@ struct EditableDemographicItem: View {
                 .font(.callout)
                 .foregroundColor(.gray)
             
+            EditableField(
+                text: $value,
+                isEditing: isEditing,
+                placeholder: label,
+                font: .system(size: 20, weight: .regular, design: .rounded),
+                alignment: .center,
+                fieldId: fieldId,
+                focusedField: _focusedField
+            )
+            .frame(maxWidth: 100)
+        }
+    }
+}
+
+// MARK: - Generic Editable Field Component
+struct EditableField: View {
+    @Binding var text: String
+    var isEditing: Bool
+    var placeholder: String
+    var font: Font
+    var alignment: TextAlignment = .leading
+    var fieldId: ProfileView.ProfileField
+    @FocusState.Binding var focusedField: ProfileView.ProfileField?
+    var axis: Axis = .horizontal
+    var keyboardType: UIKeyboardType = .default
+    
+    var body: some View {
+        ZStack {
+            // Read-Only View (Bottom layer)
+            Text(text.isEmpty ? placeholder : text)
+                .font(font)
+                .foregroundColor(text.isEmpty ? .gray : .black)
+                .multilineTextAlignment(alignment)
+                .lineSpacing(2)
+                .opacity(isEditing ? 0 : 1) // Fade out when editing
+            
+            // Editable View (Top layer)
             if isEditing {
-                TextField(label, text: $value)
-                    .font(.system(size: 20, weight: .regular, design: .rounded))
-                    .multilineTextAlignment(.center)
+                TextField(placeholder, text: $text, axis: axis)
+                    .font(font)
+                    .multilineTextAlignment(alignment)
                     .focused($focusedField, equals: fieldId)
-                    .frame(maxWidth: 100)
-                    .background(Color.gray.opacity(0.05))
-                    .cornerRadius(8)
-            } else {
-                Text(value)
-                    .font(.system(size: 22, weight: .regular, design: .rounded))
+                    .keyboardType(keyboardType)
+                    .submitLabel(.done)
+                    .padding(8)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(Color.gray.opacity(0.08)) 
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(focusedField == fieldId ? Color.ejLightGreen : Color.clear, lineWidth: 1.5)
+                    )
+                    .opacity(isEditing ? 1 : 0) // Fade in
             }
         }
+        .animation(.easeInOut(duration: 0.2), value: isEditing)
     }
 }
 
@@ -645,6 +687,19 @@ struct SectionHeader: View {
                 .foregroundColor(.gray)
         }
         .padding(.horizontal, 4)
+    }
+}
+
+// Blur View Helper for iOS
+struct VisualEffectBlur: UIViewRepresentable {
+    var blurStyle: UIBlurEffect.Style
+    
+    func makeUIView(context: Context) -> UIVisualEffectView {
+        return UIVisualEffectView(effect: UIBlurEffect(style: blurStyle))
+    }
+    
+    func updateUIView(_ uiView: UIVisualEffectView, context: Context) {
+        uiView.effect = UIBlurEffect(style: blurStyle)
     }
 }
 

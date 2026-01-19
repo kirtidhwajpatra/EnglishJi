@@ -8,214 +8,228 @@
 import SwiftUI
 
 struct UserProfileView: View {
-    let user: UserProfile
+    let user: DetailedUserProfile
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: 24) {
-                // 1. Navigation Bar
-                HStack {
-                    Button(action: { dismiss() }) {
-                        Image(systemName: "arrow.left")
-                            .font(.system(size: 20, weight: .semibold))
-                            .foregroundColor(.black)
-                            .padding(10)
-                            .background(Color.gray.opacity(0.1))
-                            .clipShape(Circle())
-                    }
-                    Spacer()
-                    
-                    // Options/Report button could go here
-                    Button(action: {}) {
-                        Image(systemName: "ellipsis")
-                            .font(.system(size: 20, weight: .semibold))
-                            .foregroundColor(.black)
-                            .rotationEffect(.degrees(90))
-                    }
-                }
-                .padding(.horizontal)
-                .padding(.top, 10)
-                
-                // 2. Profile Header (Avatar + Online Status)
-                VStack(spacing: 16) {
-                    ZStack(alignment: .bottomTrailing) {
-                        // Avatar
-                        AsyncImage(url: URL(string: user.profileImageURL)) { image in
-                            image.resizable()
-                                .aspectRatio(contentMode: .fill)
-                        } placeholder: {
-                            Color.gray.opacity(0.2)
-                        }
-                        .frame(width: 120, height: 120)
+        ZStack(alignment: .top) {
+            // 1. Immersive Header Background
+            LinearGradient(
+                colors: [.ejDarkerGreen, .ejLightGreen.opacity(0.8)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+            .frame(height: 300)
+            
+            // Custom Nav Bar (Transparent)
+            HStack {
+                Button(action: { dismiss() }) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 18, weight: .bold)) // Slightly bolder
+                        .foregroundColor(.white)
+                        .padding(10)
+                        .background(.ultraThinMaterial)
                         .clipShape(Circle())
-                        .overlay(
-                            Circle()
-                                .stroke(
-                                    LinearGradient(
-                                        colors: [.blue, .purple, .pink],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    ),
-                                    lineWidth: 4
-                                )
-                        )
+                }
+                Spacer()
+                
+                // Menu / Report
+                Button(action: {}) {
+                    Image(systemName: "ellipsis")
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundColor(.white)
+                        .rotationEffect(.degrees(90))
+                        .padding(10)
+                        .background(.ultraThinMaterial)
+                        .clipShape(Circle())
+                }
+            }
+            .padding(.horizontal)
+            .padding(.top, 10) //SafeArea padding usually handled by ZStack, but adding a bit for margin
+            .zIndex(2) // Ensure it's above everything
+            
+            
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 0) {
+                    // Spacer for Header visual
+                    Spacer()
+                        .frame(height: 140)
+                    
+                    // 2. Main Profile Card
+                    VStack(spacing: 0) {
                         
-                        // Online Status Indicator
-                        if user.isOnline {
-                            ZStack {
-                                Circle()
-                                    .fill(Color.white)
-                                    .frame(width: 24, height: 24)
+                        // Avatar Overlapping
+                        ZStack(alignment: .bottomTrailing) {
+                            AvatarView(url: user.profileImageURL, size: 130)
+                                .padding(.top, -65) // Half of height to overlap
+                                .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: 5)
+                            
+                            if user.isOnline {
                                 Circle()
                                     .fill(Color.green)
-                                    .frame(width: 18, height: 18)
+                                    .frame(width: 20, height: 20)
+                                    .overlay(Circle().stroke(Color.white, lineWidth: 3))
+                                    .offset(x: -6, y: -6)
+                                    .padding(.top, -65) // Match avatar
                             }
-                            .offset(x: -4, y: -4)
                         }
-                    }
-                    
-                    // Name & Bio
-                    VStack(spacing: 8) {
-                        Text(user.name)
-                            .font(.system(size: 28, weight: .bold, design: .rounded))
-                            .foregroundColor(.black)
                         
-                        Text(user.bio)
-                            .font(.system(size: 16))
-                            .foregroundColor(.gray)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 32)
-                            .lineSpacing(4)
-                    }
-                }
-                
-                // 3. Action Buttons
-                HStack(spacing: 16) {
-                    Button(action: {}) {
-                        HStack {
-                            Image(systemName: "message.fill")
-                            Text("Message")
+                        // Name & Bio
+                        VStack(spacing: 8) {
+                            Text(user.name)
+                                .font(.system(size: 32, weight: .heavy, design: .rounded))
+                                .foregroundColor(.black)
+                                .multilineTextAlignment(.center)
+                            
+                            if !user.badges.isEmpty {
+                                HStack(spacing: 8) {
+                                    ForEach(user.badges, id: \.self) { badge in
+                                        Text(badge)
+                                            .font(.caption2)
+                                            .fontWeight(.bold)
+                                            .padding(.vertical, 4)
+                                            .padding(.horizontal, 8)
+                                            .background(Color.ejLightGreen.opacity(0.3))
+                                            .foregroundColor(.ejDarkerGreen)
+                                            .cornerRadius(8)
+                                    }
+                                }
+                                .padding(.top, 4)
+                            }
+                            
+                            Text(user.bio)
+                                .font(.subheadline)
+                                .foregroundColor(.gray.opacity(0.8))
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 32)
+                                .padding(.top, 8)
+                                .lineLimit(3)
                         }
-                        .font(.headline)
-                        .foregroundColor(Color.ejDarkerGreen)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 54)
-                        .background(Color.ejLightGreen)
-                        .cornerRadius(27)
-                    }
-                    
-                    Button(action: {}) {
-                        HStack {
-                            Image(systemName: "person.badge.plus.fill")
-                            Text("Add Friend")
+                        .padding(.top, 16)
+                        
+                        // 3. Social Interaction Buttons (Prominent)
+                        HStack(spacing: 16) {
+                            Button(action: {}) {
+                                Label("Message", systemImage: "bubble.left.fill")
+                                    .font(.system(size: 18, weight: .semibold))
+                                    .foregroundColor(.white)
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 56)
+                                    .background(Color.ejDarkerGreen)
+                                    .cornerRadius(20)
+                                    .shadow(color: Color.ejDarkerGreen.opacity(0.3), radius: 8, x: 0, y: 4)
+                            }
+                            
+                            Button(action: {}) {
+                                Image(systemName: "person.badge.plus")
+                                    .font(.system(size: 20, weight: .semibold))
+                                    .foregroundColor(.white)
+                                    .frame(width: 56, height: 56)
+                                    .background(Color.black)
+                                    .cornerRadius(20)
+                            }
                         }
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 54)
-                        .background(Color(hex: "1C1C1E"))
-                        .cornerRadius(27)
-                    }
-                }
-                .padding(.horizontal, 20)
-                
-                // 4. Stats Row
-                HStack(spacing: 12) {
-                    ProfileStatCard(value: "\(user.stats.friends)", label: "Friends")
-                    ProfileStatCard(value: "\(user.stats.gamesPlayed)", label: "Games", valueColor: .purple)
-                    ProfileStatCard(value: "\(user.stats.streakDays)", label: "Day Streak", valueColor: .orange)
-                }
-                .padding(.horizontal, 20)
-                
-                // 5. Interests
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("Interests")
-                        .font(.title3)
-                        .fontWeight(.bold)
-                        .padding(.horizontal, 20)
-                    
-                    FlowLayout(spacing: 10) {
-                        ForEach(user.interests, id: \.self) { interest in
-                            Text(interest)
-                                .font(.system(size: 16, weight: .medium))
-                                .padding(.vertical, 8)
-                                .padding(.horizontal, 16)
-                                .background(Color.gray.opacity(0.1))
-                                .cornerRadius(20)
+                        .padding(.vertical, 24)
+                        .padding(.horizontal, 40)
+                        
+                        Divider()
+                            .padding(.horizontal, 40)
+                            .padding(.bottom, 24)
+                        
+                        // 4. Quick Stats (Gamified)
+                        HStack(spacing: 40) {
+                            GamifiedStat(value: "\(user.stats.friends)", label: "Friends", icon: "person.2.fill")
+                            GamifiedStat(value: "\(user.stats.gamesPlayed)", label: "Games", icon: "gamecontroller.fill")
+                            GamifiedStat(value: "\(user.stats.streakDays)", label: "Streak", icon: "flame.fill", isHighlight: true)
                         }
+                        .padding(.bottom, 32)
+                        
+                        // 5. Shared Interests
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text("Interests")
+                                .font(.headline)
+                                .foregroundColor(.gray)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.leading, 24)
+                            
+                            FlowLayout(spacing: 12) {
+                                ForEach(user.interests, id: \.self) { interest in
+                                    Text(interest)
+                                        .font(.system(size: 16, weight: .medium))
+                                        .padding(.vertical, 10)
+                                        .padding(.horizontal, 18)
+                                        .background(Color.gray.opacity(0.1)) // Safe color
+                                        .foregroundColor(.black)
+                                        .cornerRadius(12)
+                                }
+                            }
+                            .padding(.horizontal, 24)
+                        }
+                        .padding(.bottom, 50)
+                        
                     }
-                    .padding(.horizontal, 20)
+                    .background(Color.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
                 }
-                
-                // 6. Details Section (Location, Join Date)
-                VStack(spacing: 0) {
-                    ProfileDetailRow(icon: "mappin.and.ellipse", text: user.location)
-                    Divider().padding(.leading, 50)
-                    ProfileDetailRow(icon: "calendar", text: "Joined \(formattedDate(user.joinDate))")
-                }
-                .background(Color.gray.opacity(0.05))
-                .cornerRadius(16)
-                .padding(.horizontal, 20)
-                .padding(.bottom, 40)
             }
         }
-        .background(Color.white.ignoresSafeArea())
-    }
-    
-    private func formattedDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .none
-        return formatter.string(from: date)
+        .background(Color(white: 0.95).ignoresSafeArea()) // Safe background color
     }
 }
 
-// MARK: - Subviews
+// MARK: - Components
 
-struct ProfileStatCard: View {
+struct AvatarView: View {
+    let url: String
+    let size: CGFloat
+    
+    var body: some View {
+        AsyncImage(url: URL(string: url)) { image in
+            image
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+        } placeholder: {
+            Color.gray.opacity(0.2)
+        }
+        .frame(width: size, height: size)
+        .clipShape(Circle())
+        .overlay(
+            Circle().stroke(Color.white, lineWidth: 6)
+        )
+    }
+}
+
+struct GamifiedStat: View {
     let value: String
     let label: String
-    var valueColor: Color = .black
+    let icon: String
+    var isHighlight: Bool = false
     
     var body: some View {
-        VStack(spacing: 4) {
-            Text(value)
-                .font(.system(size: 24, weight: .bold, design: .rounded))
-                .foregroundColor(valueColor)
+        VStack(spacing: 6) {
+            ZStack {
+                Circle()
+                    .fill(isHighlight ? Color.ejLightGreen.opacity(0.2) : Color.gray.opacity(0.05))
+                    .frame(width: 50, height: 50)
+                
+                Image(systemName: icon)
+                    .font(.system(size: 20))
+                    .foregroundColor(isHighlight ? .ejDarkerGreen : .gray)
+            }
             
-            Text(label)
-                .font(.caption)
-                .fontWeight(.medium)
-                .foregroundColor(.gray)
+            VStack(spacing: 0) {
+                Text(value)
+                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                    .foregroundColor(.black)
+                Text(label)
+                    .font(.caption)
+                    .foregroundColor(.gray)
+            }
         }
-        .frame(maxWidth: .infinity)
-        .frame(height: 80)
-        .background(Color.gray.opacity(0.05))
-        .cornerRadius(16)
     }
 }
 
-struct ProfileDetailRow: View {
-    let icon: String
-    let text: String
-    
-    var body: some View {
-        HStack(spacing: 16) {
-            Image(systemName: icon)
-                .font(.system(size: 20))
-                .foregroundColor(.gray)
-                .frame(width: 24)
-            
-            Text(text)
-                .font(.system(size: 17))
-                .foregroundColor(.primary)
-            
-            Spacer()
-        }
-        .padding(16)
-    }
-}
 
 // Simple FlowLayout implementation for tags
 struct FlowLayout: Layout {
@@ -277,7 +291,6 @@ struct FlowLayout: Layout {
         return rows
     }
 }
-
 
 #Preview {
     UserProfileView(user: .mock)

@@ -20,9 +20,10 @@ struct OnboardingPhotoView: View {
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(.ejDarkerGreen)
                 
-                Text("You can always change it later")
+                Text("A photo increases trust and match rates by 40%.\nYou can always change it later.")
                     .font(.caption)
                     .foregroundColor(.gray)
+                    .multilineTextAlignment(.center)
                     .padding(.bottom, 20)
                 
                 Button(action: {

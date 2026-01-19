@@ -15,6 +15,13 @@ struct OnboardingLocationView: View {
             VStack {
                 Spacer()
                 
+                Text("To suggest local meetups and time-zone aligned partners.")
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 40)
+                    .padding(.bottom, 30)
+                
                 VStack(spacing: 30) {
                     // City Selection
                     Menu {

@@ -13,6 +13,13 @@ struct OnboardingAgeView: View {
             VStack {
                 Spacer()
                 
+                Text("We use this to match you with peers in your age group for comfortable practice.")
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 40)
+                    .padding(.bottom, 20)
+                
                 // Custom Wheel Picker
                 ZStack {
                     // Selection Highlight

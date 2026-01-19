@@ -46,6 +46,13 @@ struct OnboardingPhoneView: View {
                     isDisabled: viewModel.phoneNumber.count < 10,
                     action: { viewModel.sendOTP() }
                 )
+                
+                Text("By clicking Next, you agree to our [Terms of Service](https://englishji.com/terms) and [Privacy Policy](https://englishji.com/privacy).")
+                    .font(.caption2)
+                    .foregroundColor(.gray)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 40)
+                    .padding(.bottom, 10)
             }
         }
     }

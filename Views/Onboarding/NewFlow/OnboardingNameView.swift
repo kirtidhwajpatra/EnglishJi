@@ -18,6 +18,12 @@ struct OnboardingNameView: View {
                 VStack(spacing: 20) {
                     OnboardingTextField(placeholder: "First Name", text: $viewModel.firstName, contentType: .givenName)
                     
+                    Text("This will be your visible identity in the community.")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.leading, 8)
+                    
                     // Optional Last Name if needed, or just one name field as per original ViewModel
                     // Looking at image: Top Text "Veena", Bottom Text "Singh". Implicitly First/Last.
                     // Adding a local state for Last Name or just ignoring since ViewModel only has `name`?

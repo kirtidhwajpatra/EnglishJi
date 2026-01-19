@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct UserProfile: Identifiable, Codable {
+struct DetailedUserProfile: Identifiable, Codable {
     let id: String
     let name: String
     let profileImageURL: String
@@ -17,9 +17,10 @@ struct UserProfile: Identifiable, Codable {
     let stats: UserStats
     let isOnline: Bool
     let joinDate: Date
+    let badges: [String]
     
     // For preview/mock data
-    static let mock = UserProfile(
+    static let mock = DetailedUserProfile(
         id: "user_123",
         name: "Aarav Sharma",
         profileImageURL: "https://i.pravatar.cc/300?img=11",
@@ -28,7 +29,8 @@ struct UserProfile: Identifiable, Codable {
         interests: ["Travel", "Movies", "Cricket", "Food"],
         stats: UserStats(friends: 142, gamesPlayed: 56, streakDays: 12),
         isOnline: true,
-        joinDate: Date().addingTimeInterval(-86400 * 365) // Joined 1 year ago
+        joinDate: Date().addingTimeInterval(-86400 * 365), // Joined 1 year ago
+        badges: ["🏆 Ludo King", "🔥 7 Day Streak", "🗣️ Fluent"]
     )
 }
 
