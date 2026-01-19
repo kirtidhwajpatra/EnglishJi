@@ -7,32 +7,36 @@ struct OnboardingAgeView: View {
         OnboardingLayout(
             stepIndex: 4,
             direction: viewModel.navigationDirection,
+            showProfileProgress: true,
             onBack: { viewModel.moveToPreviousStep() }
         ) {
             VStack {
-                OnboardingTitle("How old are you?", subtitle: "We use this to find partners in a similar age group.")
-                
                 Spacer()
                 
-                Picker("Age", selection: $viewModel.age) {
-                    ForEach(13...100, id: \.self) { age in
-                        Text("\(age)")
-                            .font(.system(size: 32, weight: .semibold, design: .rounded))
-                            .tag(age)
+                // Custom Wheel Picker
+                ZStack {
+                    // Selection Highlight
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.gray.opacity(0.1))
+                        .frame(height: 60)
+                        .padding(.horizontal, 40)
+                    
+                    Picker("Age", selection: $viewModel.age) {
+                        ForEach(16...100, id: \.self) { age in
+                            Text("\(age)")
+                                .font(.system(size: 32, weight: .bold)) // Large font
+                                .foregroundColor(.ejDarkerGreen)
+                                .tag(age)
+                        }
                     }
+                    .pickerStyle(.wheel)
+                    .frame(height: 200)
                 }
-                .pickerStyle(.wheel)
-                .labelsHidden()
-                .padding()
-                .background(Color(.secondarySystemBackground))
-                .cornerRadius(16)
-                .padding(.horizontal)
                 
                 Spacer()
                 
                 OnboardingButton(
-                    title: "Continue",
-                    isDisabled: false,
+                    title: "Next",
                     action: { viewModel.moveToNextStep() }
                 )
             }

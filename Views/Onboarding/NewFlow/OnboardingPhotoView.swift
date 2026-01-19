@@ -10,12 +10,20 @@ struct OnboardingPhotoView: View {
         OnboardingLayout(
             stepIndex: 5,
             direction: viewModel.navigationDirection,
+            showProfileProgress: true,
             onBack: { viewModel.moveToPreviousStep() }
         ) {
             VStack {
-                OnboardingTitle("Add a photo", subtitle: "Help others recognize you. You can change this later.")
-                
                 Spacer()
+                
+                Text("Upload Picture")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(.ejDarkerGreen)
+                
+                Text("You can always change it later")
+                    .font(.caption)
+                    .foregroundColor(.gray)
+                    .padding(.bottom, 20)
                 
                 Button(action: {
                     showingImagePicker = true
@@ -27,48 +35,33 @@ struct OnboardingPhotoView: View {
                                 .scaledToFill()
                                 .frame(width: 180, height: 180)
                                 .clipShape(Circle())
-                                .overlay(Circle().stroke(Color.white, lineWidth: 4))
-                                .shadow(radius: 10)
                         } else {
                             Circle()
-                                .fill(Color(.secondarySystemBackground))
+                                .stroke(Color.ejDarkerGreen.opacity(0.3), lineWidth: 1) // Thin stroke
                                 .frame(width: 180, height: 180)
-                                .overlay(
-                                    Circle()
-                                        .stroke(style: StrokeStyle(lineWidth: 2, dash: [10]))
-                                        .foregroundColor(Color.blue)
-                                )
                             
-                            VStack(spacing: 8) {
-                                Image(systemName: "camera.fill")
-                                    .font(.system(size: 40))
-                                    .foregroundColor(.blue)
-                                Text("Upload")
-                                    .font(.subheadline)
-                                    .fontWeight(.medium)
-                                    .foregroundColor(.blue)
-                            }
+                            Image(systemName: "plus")
+                                .font(.system(size: 40))
+                                .foregroundColor(.ejDarkerGreen)
                         }
                     }
                 }
                 .photosPicker(isPresented: $showingImagePicker, selection: $selectedItem)
-                .onChange(of: selectedItem) { newItem in
-                    Task {
-                        if let data = try? await newItem?.loadTransferable(type: Data.self),
-                           let uiImage = UIImage(data: data) {
-                            viewModel.profileImage = uiImage
-                        }
-                    }
-                }
                 
                 Spacer()
                 
-                // Allow skipping layout if needed, but for now enforcing "Continue"
                 OnboardingButton(
-                    title: viewModel.profileImage == nil ? "Skip for now" : "Continue",
-                    isDisabled: false, // Always enabled (skip or continue)
+                    title: "Next",
                     action: { viewModel.moveToNextStep() }
                 )
+            }
+            .onChange(of: selectedItem) { newItem in
+                Task {
+                    if let data = try? await newItem?.loadTransferable(type: Data.self),
+                       let uiImage = UIImage(data: data) {
+                        viewModel.profileImage = uiImage
+                    }
+                }
             }
         }
     }

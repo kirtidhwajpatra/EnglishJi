@@ -7,20 +7,17 @@ struct OnboardingCompletionView: View {
         OnboardingLayout(
             stepIndex: 7,
             direction: viewModel.navigationDirection,
-            showProgress: false,
             onBack: { viewModel.moveToPreviousStep() }
         ) {
             VStack {
                 Spacer()
                 
-                OnboardingIllustration(systemName: "sparkles", color: .yellow)
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 80))
+                    .foregroundColor(.ejLightGreen)
+                    .padding(.bottom, 20)
                 
-                OnboardingTitle("You're all set!", subtitle: "Welcome to EnglishJi. Let's start practicing your English with learners worldwide.")
-                
-                if viewModel.isLoading {
-                    ProgressView()
-                        .padding(.top, 20)
-                }
+                OnboardingTitle("You're all set!", subtitle: "Welcome to EnglishJi.")
                 
                 Spacer()
                 

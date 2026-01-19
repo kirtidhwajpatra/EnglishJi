@@ -9,37 +9,13 @@ struct OnboardingLocationView: View {
         OnboardingLayout(
             stepIndex: 6,
             direction: viewModel.navigationDirection,
+            showProfileProgress: true,
             onBack: { viewModel.moveToPreviousStep() }
         ) {
             VStack {
-                OnboardingTitle("Where are you from?", subtitle: "We'll show you learners and activities near your area.")
+                Spacer()
                 
-                OnboardingIllustration(systemName: "hand.wave.fill", color: .orange)
-                
-                VStack(spacing: 20) {
-                    // Country Selection
-                    Menu {
-                        Button("India") { country = "India" }
-                        Button("USA") { country = "USA" }
-                        Button("United Kingdom") { country = "UK" }
-                        Button("Canada") { country = "Canada" }
-                    } label: {
-                        HStack {
-                            Text("Country")
-                                .font(.body)
-                                .foregroundColor(.secondary)
-                            Spacer()
-                            Text(country)
-                                .font(.system(size: 18, weight: .bold, design: .rounded))
-                                .foregroundColor(.primary)
-                            Image(systemName: "chevron.right")
-                                .font(.caption2.bold())
-                                .foregroundColor(.secondary)
-                        }
-                        .padding(20)
-                        .background(RoundedRectangle(cornerRadius: 20).fill(Color(.secondarySystemBackground)))
-                    }
-                    
+                VStack(spacing: 30) {
                     // City Selection
                     Menu {
                         Button("New Delhi") { city = "New Delhi" }
@@ -47,28 +23,50 @@ struct OnboardingLocationView: View {
                         Button("Bangalore") { city = "Bangalore" }
                         Button("Other") { city = "Other" }
                     } label: {
-                        HStack {
-                            Text("City")
-                                .font(.body)
-                                .foregroundColor(.secondary)
-                            Spacer()
-                            Text(city)
-                                .font(.system(size: 18, weight: .bold, design: .rounded))
-                                .foregroundColor(.primary)
-                            Image(systemName: "chevron.right")
-                                .font(.caption2.bold())
-                                .foregroundColor(.secondary)
+                        VStack(spacing: 8) {
+                            HStack {
+                                Text(city)
+                                    .font(.system(size: 18))
+                                    .foregroundColor(.black)
+                                Spacer()
+                                Image(systemName: "chevron.down")
+                                    .font(.caption)
+                                    .foregroundColor(.gray)
+                            }
+                            Divider()
+                                .frame(height: 1.5)
+                                .background(Color.ejDarkerGreen)
                         }
-                        .padding(20)
-                        .background(RoundedRectangle(cornerRadius: 20).fill(Color(.secondarySystemBackground)))
+                    }
+                    
+                    // Country Selection
+                    Menu {
+                        Button("India") { country = "India" }
+                        Button("USA") { country = "USA" }
+                        Button("UK") { country = "UK" }
+                    } label: {
+                        VStack(spacing: 8) {
+                            HStack {
+                                Text(country)
+                                    .font(.system(size: 18))
+                                    .foregroundColor(.black)
+                                Spacer()
+                                Image(systemName: "chevron.down")
+                                    .font(.caption)
+                                    .foregroundColor(.gray)
+                            }
+                            Divider()
+                                .frame(height: 1.5)
+                                .background(Color.ejDarkerGreen)
+                        }
                     }
                 }
-                .padding(.horizontal)
+                .padding(.horizontal, 40)
                 
                 Spacer()
                 
                 OnboardingButton(
-                    title: "Continue",
+                    title: "Next",
                     action: {
                         viewModel.location = "\(city), \(country)"
                         viewModel.moveToNextStep()

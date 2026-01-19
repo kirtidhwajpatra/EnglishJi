@@ -5,7 +5,7 @@ struct OnboardingSplashView: View {
     
     var body: some View {
         ZStack {
-            Color(.systemBackground).ignoresSafeArea()
+            Color.white.ignoresSafeArea()
             
             VStack {
                 Spacer()
@@ -14,13 +14,6 @@ struct OnboardingSplashView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 120, height: 120)
-                    .clipShape(RoundedRectangle(cornerRadius: 28))
-                    .shadow(color: Color.black.opacity(0.1), radius: 20, x: 0, y: 10)
-                
-                Spacer()
-                
-                ProgressView()
-                    .scaleEffect(1.2)
                     .padding(.bottom, 60)
             }
         }

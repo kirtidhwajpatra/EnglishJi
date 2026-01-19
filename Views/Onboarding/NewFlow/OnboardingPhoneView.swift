@@ -10,30 +10,40 @@ struct OnboardingPhoneView: View {
             onBack: { viewModel.moveToPreviousStep() }
         ) {
             VStack {
-                OnboardingTitle("Enter your number", subtitle: "We'll send you a verification code to keep your account safe.")
+                OnboardingTitle("Enter your number")
                 
-                HStack(spacing: 12) {
-                    Text("🇮🇳 +91")
+                Spacer()
+                
+                HStack(spacing: 16) {
+                    // Country Code Box
+                    Text("+91")
                         .font(.system(size: 18, weight: .bold))
-                        .padding()
-                        .frame(height: 56)
-                        .background(Color(.secondarySystemBackground))
-                        .cornerRadius(16)
+                        .foregroundColor(.ejDarkerGreen)
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 16)
+                        .background(Color.gray.opacity(0.1))
+                        .cornerRadius(8)
                     
-                    OnboardingTextField(
-                        placeholder: "Mobile Number",
-                        text: $viewModel.phoneNumber,
-                        contentType: .telephoneNumber,
-                        keyboardType: .numberPad
-                    )
+                    // Phone Number Input
+                    VStack(spacing: 8) {
+                        TextField("999-999-9999", text: $viewModel.phoneNumber)
+                            .font(.system(size: 24, weight: .bold))
+                            .foregroundColor(.ejDarkerGreen)
+                            .keyboardType(.numberPad)
+                            .textContentType(.telephoneNumber)
+                        
+                        Rectangle()
+                            .fill(viewModel.phoneNumber.isEmpty ? Color.gray.opacity(0.3) : Color.ejDarkerGreen)
+                            .frame(height: 1.5)
+                    }
                 }
-                .padding(.horizontal)
+                .padding(.horizontal, 40)
                 
                 Spacer()
                 
                 OnboardingButton(
-                    title: viewModel.isLoading ? "Sending..." : "Continue",
-                    isDisabled: viewModel.phoneNumber.count < 10 || viewModel.isLoading,
+                    title: "Next",
+                    isDisabled: viewModel.phoneNumber.count < 10,
                     action: { viewModel.sendOTP() }
                 )
             }

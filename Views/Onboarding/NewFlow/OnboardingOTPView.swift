@@ -14,10 +14,12 @@ struct OnboardingOTPView: View {
             onBack: { viewModel.moveToPreviousStep() }
         ) {
             VStack {
-                OnboardingTitle("Verification code", subtitle: "Enter the 6-digit code sent to\n\(viewModel.phoneNumber)")
+                OnboardingTitle("Enter OTP")
+                
+                Spacer()
                 
                 ZStack {
-                    // Hidden background TextField
+                    // Hidden Input
                     TextField("", text: $viewModel.otpCode)
                         .keyboardType(.numberPad)
                         .focused($isKeyboardFocused)
@@ -26,70 +28,42 @@ struct OnboardingOTPView: View {
                             if newValue.count > otpLength {
                                 viewModel.otpCode = String(newValue.prefix(otpLength))
                             }
-                            if newValue.count == otpLength {
-                                // Auto submit or just unfocus
-                                isKeyboardFocused = false
-                            }
                         }
                     
-                    // Visual OTP Boxes
+                    // Visual Circles
                     HStack(spacing: 12) {
                         ForEach(0..<otpLength, id: \.self) { index in
                             ZStack {
-                                RoundedRectangle(cornerRadius: 16)
-                                    .fill(Color(.secondarySystemBackground))
-                                    .frame(width: 50, height: 64)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 16)
-                                            .stroke(boxColor(for: index), lineWidth: 2)
-                                    )
+                                Circle()
+                                    .fill(Color.gray.opacity(0.1))
+                                    .frame(width: 44, height: 44)
                                 
                                 if viewModel.otpCode.count > index {
                                     let char = String(Array(viewModel.otpCode)[index])
                                     Text(char)
-                                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                                        .font(.system(size: 20, weight: .bold))
+                                        .foregroundColor(.ejDarkerGreen)
                                 }
                             }
                         }
                     }
                 }
-                .padding(.top, 20)
-                .onTapGesture {
-                    isKeyboardFocused = true
-                }
-                
-                Button(action: {
-                    viewModel.sendOTP() // Reuse send function for resend
-                }) {
-                    Text("Resend code")
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
-                        .foregroundColor(.blue)
-                        .padding(.top, 30)
-                }
+                .onTapGesture { isKeyboardFocused = true }
                 
                 Spacer()
                 
                 OnboardingButton(
-                    title: "Verify",
+                    title: "Submit",
                     isDisabled: viewModel.otpCode.count < otpLength,
                     isLoading: viewModel.isLoading,
                     action: { viewModel.verifyOTP() }
                 )
             }
         }
-        .onAppear {
-            isKeyboardFocused = true
-        }
+        .onAppear { isKeyboardFocused = true }
     }
     
     @FocusState private var isKeyboardFocused: Bool
-    
-    private func boxColor(for index: Int) -> Color {
-        if viewModel.otpCode.count == index && isKeyboardFocused {
-            return .blue
-        }
-        return .clear
-    }
 }
 
 #Preview {

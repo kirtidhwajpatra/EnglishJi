@@ -2,70 +2,50 @@ import SwiftUI
 
 // MARK: - Onboarding Layout Wrapper
 struct OnboardingLayout<Content: View>: View {
-    let stepIndex: Int // Index in the data flow (1 to totalSteps)
-    let totalSteps: Int
+    let stepIndex: Int
     let direction: OnboardingViewModel.NavigationDirection
-    let showProgress: Bool
-    let onBack: () -> Void
+    let showProfileProgress: Bool
+    let onBack: (() -> Void)?
     let content: Content
     
-    init(stepIndex: Int, totalSteps: Int = 6, direction: OnboardingViewModel.NavigationDirection, showProgress: Bool = true, onBack: @escaping () -> Void, @ViewBuilder content: () -> Content) {
+    init(
+        stepIndex: Int,
+        direction: OnboardingViewModel.NavigationDirection,
+        showProfileProgress: Bool = false,
+        onBack: (() -> Void)? = nil,
+        @ViewBuilder content: () -> Content
+    ) {
         self.stepIndex = stepIndex
-        self.totalSteps = totalSteps
         self.direction = direction
-        self.showProgress = showProgress
+        self.showProfileProgress = showProfileProgress
         self.onBack = onBack
         self.content = content()
     }
     
     var body: some View {
         ZStack {
-            // Adaptive Background with subtle gradient
-            Group {
-                Color(.systemBackground)
-                LinearGradient(
-                    colors: [Color.blue.opacity(0.05), Color.clear, Color.blue.opacity(0.05)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            }
-            .ignoresSafeArea()
+            Color.white.ignoresSafeArea() // Design is strictly white clean
             
             VStack(spacing: 0) {
-                // Header (Nav + Progress)
-                HStack {
-                    Button(action: onBack) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 18, weight: .bold))
-                            .foregroundColor(.primary)
-                            .frame(width: 40, height: 40)
-                            .background(Circle().fill(Color(.secondarySystemBackground)))
-                            .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
-                    }
-                    
-                    Spacer()
-                    
-                    if showProgress {
-                        // Progress Indicator (Premium Pill style)
-                        HStack(spacing: 6) {
-                            ForEach(1...totalSteps, id: \.self) { index in
-                                Capsule()
-                                    .fill(index <= stepIndex ? Color.blue : Color(.systemGray4))
-                                    .frame(width: index == stepIndex ? 24 : 8, height: 6)
-                                    .animation(.spring(), value: stepIndex)
+                // Header Area
+                ZStack {
+                    if let onBack = onBack {
+                        HStack {
+                            Button(action: onBack) {
+                                Image(systemName: "arrow.left")
+                                    .font(.system(size: 20, weight: .medium))
+                                    .foregroundColor(.black)
+                                    .padding()
                             }
+                            Spacer()
                         }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .background(Capsule().fill(Color(.secondarySystemBackground)))
                     }
                     
-                    Spacer()
-                    
-                    Spacer().frame(width: 40) // Balance the back button
+                    if showProfileProgress {
+                        OnboardingProfileProgress(currentStep: stepForProgress(stepIndex))
+                    }
                 }
-                .padding(.horizontal)
-                .padding(.top, 10)
+                .frame(height: 60)
                 
                 // Content with directional transition
                 Group {
@@ -83,14 +63,51 @@ struct OnboardingLayout<Content: View>: View {
                             ))
                     }
                 }
-                .id(stepIndex) // Force transition on step change
+                .id(stepIndex)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
     }
+    
+    // Map overall step index to profile progress step (0-3)
+    // 3=Name, 4=Age, 5=Photo, 6=Location
+    func stepForProgress(_ index: Int) -> Int {
+        return max(0, index - 3)
+    }
 }
 
-// MARK: - Styled Components
+// MARK: - Profile Progress Header
+struct OnboardingProfileProgress: View {
+    let currentStep: Int // 0: Name, 1: Age, 2: Photo, 3: Location
+    let steps = ["Name", "Age", "Photo", "Location"]
+    
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(0..<steps.count, id: \.self) { index in
+                VStack(spacing: 4) {
+                    Circle()
+                        .fill(index <= currentStep ? Color.ejDarkerGreen : Color.gray.opacity(0.3))
+                        .frame(width: 10, height: 10)
+                    
+                    Text(steps[index])
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(index <= currentStep ? .ejDarkerGreen : .gray)
+                }
+                .frame(maxWidth: .infinity)
+                
+                // Connector Line
+                if index < steps.count - 1 {
+                    Rectangle()
+                        .fill(Color.gray.opacity(0.3))
+                        .frame(height: 1)
+                }
+            }
+        }
+        .padding(.horizontal, 40)
+    }
+}
+
+// MARK: - Components
 
 struct OnboardingTitle: View {
     let text: String
@@ -102,24 +119,23 @@ struct OnboardingTitle: View {
     }
     
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 12) {
             Text(text)
-                .font(.system(size: 34, weight: .heavy, design: .rounded))
-                .foregroundColor(.primary)
+                .font(.custom("Futura-Bold", size: 32)) // Trying to match the heavy font
+                .fontWeight(.bold) // Fallback
+                .foregroundColor(.ejDarkerGreen)
                 .multilineTextAlignment(.center)
-                .fixedSize(horizontal: false, vertical: true)
             
             if let subtitle = subtitle {
                 Text(subtitle)
-                    .font(.system(size: 17, weight: .medium, design: .rounded))
-                    .foregroundColor(.secondary)
+                    .font(.body)
+                    .foregroundColor(.gray)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal, 30)
-                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 40)
             }
         }
-        .padding(.top, 40)
-        .padding(.bottom, 20)
+        .padding(.top, 20)
+        .padding(.bottom, 30)
     }
 }
 
@@ -129,26 +145,27 @@ struct OnboardingTextField: View {
     var contentType: UITextContentType? = nil
     var keyboardType: UIKeyboardType = .default
     
-    @FocusState private var isFocused: Bool
-    
     var body: some View {
-        TextField(placeholder, text: $text)
-            .focused($isFocused)
-            .padding(20)
-            .background(
-                RoundedRectangle(cornerRadius: 22)
-                    .fill(Color(.secondarySystemBackground))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 22)
-                    .stroke(isFocused ? Color.blue : Color.clear, lineWidth: 2)
-            )
-            .font(.system(size: 19, weight: .semibold, design: .rounded))
-            .textContentType(contentType)
-            .keyboardType(keyboardType)
-            .autocorrectionDisabled()
-            .textInputAutocapitalization(.words)
-            .animation(.easeInOut(duration: 0.2), value: isFocused)
+        VStack(spacing: 8) {
+            ZStack(alignment: .leading) {
+                if text.isEmpty {
+                    Text(placeholder)
+                        .foregroundColor(.gray.opacity(0.5))
+                        .font(.system(size: 18))
+                }
+                TextField("", text: $text)
+                    .foregroundColor(.black)
+                    .font(.system(size: 18))
+                    .textContentType(contentType)
+                    .keyboardType(keyboardType)
+            }
+            .padding(.vertical, 8)
+            
+            Divider()
+                .frame(height: 1.5)
+                .background(text.isEmpty ? Color.gray.opacity(0.3) : Color.ejDarkerGreen)
+        }
+        .padding(.horizontal, 4)
     }
 }
 
@@ -158,7 +175,7 @@ struct OnboardingButton: View {
     let isLoading: Bool
     let action: () -> Void
     
-    init(title: String, isDisabled: Bool = false, isLoading: Bool = false, action: @escaping () -> Void) {
+    init(title: String = "Next", isDisabled: Bool = false, isLoading: Bool = false, action: @escaping () -> Void) {
         self.title = title
         self.isDisabled = isDisabled
         self.isLoading = isLoading
@@ -173,44 +190,20 @@ struct OnboardingButton: View {
             ZStack {
                 if isLoading {
                     ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        .progressViewStyle(CircularProgressViewStyle(tint: .black))
                 } else {
                     Text(title)
-                        .font(.system(size: 20, weight: .bold, design: .rounded))
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.black) // Design shows black/dark text on lime
                 }
             }
-            .foregroundColor(.white)
             .frame(maxWidth: .infinity)
-            .frame(height: 64)
-            .background(
-                RoundedRectangle(cornerRadius: 24)
-                    .fill(isDisabled ? Color(.systemGray4) : Color.blue)
-            )
-            .shadow(color: isDisabled ? .clear : Color.blue.opacity(0.35), radius: 15, x: 0, y: 8)
+            .frame(height: 56)
+            .background(isDisabled ? Color.gray.opacity(0.3) : Color.ejLightGreen)
+            .cornerRadius(30)
         }
         .disabled(isDisabled || isLoading)
-        .padding(.horizontal, 24)
+        .padding(.horizontal, 40)
         .padding(.bottom, 30)
-    }
-}
-
-// MARK: - Icons & Visuals
-
-struct OnboardingIllustration: View {
-    let systemName: String
-    let color: Color
-    
-    var body: some View {
-        ZStack {
-            Circle()
-                .fill(color.opacity(0.1))
-                .frame(width: 140, height: 140)
-            
-            Image(systemName: systemName)
-                .font(.system(size: 60, weight: .bold))
-                .foregroundColor(color)
-                .shadow(color: color.opacity(0.3), radius: 10, x: 0, y: 5)
-        }
-        .padding(.vertical, 20)
     }
 }

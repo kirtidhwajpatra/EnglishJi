@@ -13,6 +13,7 @@ struct DiscoverPeopleView: View {
     @State private var showFilters = false
     @State private var selectedFilter = "All"
     @State private var viewMode: ViewMode = .cards // Default to preferred Card style
+    @State private var selectedUser: DiscoverUser?
     
     // Scroll & Visibility State
     @State private var showNavigation = true
@@ -220,6 +221,9 @@ struct DiscoverPeopleView: View {
                             ForEach(users) { user in
                                 DiscoverCardContainer(user: user, parentWidth: fullGeo.size.width)
                                     .frame(width: fullGeo.size.width * 0.72, height: fullGeo.size.height)
+                                    .onTapGesture {
+                                        selectedUser = user
+                                    }
                             }
                         }
                         .scrollTargetLayoutIfAvailable()
@@ -233,6 +237,9 @@ struct DiscoverPeopleView: View {
                 
                
             }
+        }
+        .fullScreenCover(item: $selectedUser) { user in
+            ProfileView(user: user)
         }
     }
 }
@@ -428,20 +435,7 @@ struct ScallopedProfileShape: Shape {
     }
 }
 
-struct DiscoverUser: Identifiable {
-    let id = UUID()
-    let name: String
-    let gender: Gender
-    let flag: String
-    let bio: String
-    let age: Int
-    let image: String
-    let blobColor: Color
-    let cardColor: Color
-    var accents: [Color]?
-    
-    enum Gender { case male, female }
-}
+
 
 #Preview {
     DiscoverPeopleView()

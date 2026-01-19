@@ -46,52 +46,31 @@ struct OnboardingIntroView: View {
         OnboardingLayout(
             stepIndex: 0,
             direction: viewModel.navigationDirection,
-            showProgress: false,
-            onBack: { viewModel.moveToPreviousStep() }
+            onBack: nil
         ) {
-            ZStack {
-                // Text Stack
-                VStack(spacing: theme.lineSpacing) {
-                    ForEach(Array(theme.words.enumerated()), id: \.offset) { index, word in
-                        Text(word)
-                            .font(.system(size: 60, weight: .heavy, design: .rounded))
-                            .multilineTextAlignment(.center)
-                            .blur(radius: calculateBlur(for: index))
-                            .opacity(calculateOpacity(for: index))
-                            .scaleEffect(calculateScale(for: index))
-                    }
-                }
-                .overlay(
-                    LinearGradient(colors: [.blue, .purple, .blue], startPoint: gradientStart, endPoint: gradientEnd)
-                        .mask(
-                            VStack(spacing: theme.lineSpacing) {
-                                ForEach(Array(theme.words.enumerated()), id: \.offset) { index, word in
-                                    Text(word)
-                                        .font(.system(size: 60, weight: .heavy, design: .rounded))
-                                        .multilineTextAlignment(.center)
-                                        .opacity(index <= visibleIndex ? 1 : 0)
-                                        .scaleEffect(calculateScale(for: index))
-                                }
-                            }
-                        )
-                )
-                .offset(y: currentOffset)
+            VStack {
+                Spacer()
                 
-                // Get Started Button
-                VStack {
-                    Spacer()
-                    OnboardingButton(
-                        title: "Get Started",
-                        action: { viewModel.moveToNextStep() }
-                    )
-                    .opacity(visibleIndex == theme.words.count - 1 ? 1 : 0)
+                VStack(spacing: 8) {
+                    Text("Create")
+                    Text("momentum")
+                    Text("by")
+                    Text("choosing")
+                    Text("action")
+                    Text("daily.")
                 }
+                .font(.custom("Futura-Bold", size: 48))
+                .fontWeight(.heavy)
+                .foregroundColor(.ejDarkerGreen)
+                .multilineTextAlignment(.center)
+                
+                Spacer()
+                
+                OnboardingButton(
+                    title: "Get started",
+                    action: { viewModel.moveToNextStep() }
+                )
             }
-            .animation(.spring(response: 0.5, dampingFraction: 0.75), value: visibleIndex)
-        }
-        .onAppear {
-            startSequence()
-            startGradientAnimation()
         }
     }
     
