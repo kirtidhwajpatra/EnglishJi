@@ -69,6 +69,31 @@ class OnboardingViewModel: ObservableObject {
         }
     }
     
+    func signInWithGoogle() {
+        isLoading = true
+        errorMessage = nil
+        
+        AuthManager.shared.signInWithGoogle { [weak self] success in
+            guard let self = self else { return }
+            self.isLoading = false
+            
+            if success {
+                print("Google Sign In Successful")
+                // On success, we assume the user is authenticated. 
+                // We might want to fetch their profile or just assume they are "new" and need to complete onboarding?
+                // Or if they are returning, we might skip onboarding. 
+                // For this flow, let's assume we proceed to next step OR complete if they are already fully registered.
+                // But typically onboarding is for NEW users.
+                // Let's assume we move to Name step if name is missing, or completion.
+                // For now, mirroring previous logic:
+                 AuthManager.shared.completeOnboarding()
+            } else {
+                print("Google Sign In Failed")
+                self.errorMessage = AuthManager.shared.errorMessage
+            }
+        }
+    }
+    
     func verifyOTP() {
         isLoading = true
         // Simulate network delay

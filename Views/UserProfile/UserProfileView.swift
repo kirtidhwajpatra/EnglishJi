@@ -9,289 +9,245 @@ import SwiftUI
 
 struct UserProfileView: View {
     let user: DetailedUserProfile
-    @Environment(\.dismiss) var dismiss
+    var namespace: Namespace.ID? = nil // Optional for preview compatibility
+    var matchID: String? = nil
+    @Binding var isPresented: Bool // Replaces dismiss environment for custom transition handling
+    
+    // Design Reference Colors
+    // Adaptive Background: Light Blue in Light Mode, Dark Slate/Black in Dark Mode
+    // Design Reference Colors
+    // Adaptive Background: Light Blue in Light Mode, Dark Slate/Black in Dark Mode
+    private var cardBackground: Color {
+        // Use standard systemBackground for Dark Mode compliance, or explicit dark color.
+        Color(uiColor: .systemBackground)
+    }
+    
+    // Light Blue shim for Light Mode? The user wanted specific "Light Blue".
+    // I will use a ZStack with .systemBackground and a blue tint if colorScheme is light.
+    @Environment(\.colorScheme) var colorScheme
+    
+    private var actualCardBackground: Color {
+        colorScheme == .dark ? Color(hex: "121212") : Color(hex: "E3F2FD")
+    }
+    
+    private let blobColor = Color(hex: "3C3C3C")      // Dark Blob (Okay in both?)
+    private var primaryText: Color { .primary }
+    private var secondaryText: Color { .secondary }
+    private let accentGreen = Color(hex: "034836") // Keep brand
     
     var body: some View {
-        ZStack(alignment: .top) {
-            // 1. Immersive Header Background
-            LinearGradient(
-                colors: [.ejDarkerGreen, .ejLightGreen.opacity(0.8)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-            .frame(height: 300)
+        ZStack {
+            // Main Background
+            actualCardBackground
+                .ignoresSafeArea()
+                .matchedGeometryEffect(id: "card_bg_\(matchID ?? "")", in: namespace ?? Namespace().wrappedValue, isSource: true)
             
-            // Custom Nav Bar (Transparent)
-            HStack {
-                Button(action: { dismiss() }) {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 18, weight: .bold)) // Slightly bolder
-                        .foregroundColor(.white)
-                        .padding(10)
-                        .background(.ultraThinMaterial)
-                        .clipShape(Circle())
-                }
-                Spacer()
-                
-                // Menu / Report
-                Button(action: {}) {
-                    Image(systemName: "ellipsis")
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundColor(.white)
-                        .rotationEffect(.degrees(90))
-                        .padding(10)
-                        .background(.ultraThinMaterial)
-                        .clipShape(Circle())
-                }
-            }
-            .padding(.horizontal)
-            .padding(.top, 10) //SafeArea padding usually handled by ZStack, but adding a bit for margin
-            .zIndex(2) // Ensure it's above everything
-            
-            
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 0) {
-                    // Spacer for Header visual
+            VStack(spacing: 0) {
+                // 1. Navigation / Close
+                HStack {
                     Spacer()
-                        .frame(height: 140)
-                    
-                    // 2. Main Profile Card
+                    Button(action: {
+                        withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                            isPresented = false
+                        }
+                    }) {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundColor(.primary) // Adaptive
+                            .padding(12)
+                            .background(Color(uiColor: .tertiarySystemGroupedBackground))
+                            .clipShape(Circle())
+                    }
+                }
+                .padding(.horizontal, 24)
+                .padding(.top, 10)
+                .transition(.opacity.animation(.easeInOut(duration: 0.2).delay(0.1)))
+                
+                ScrollView(showsIndicators: false) {
                     VStack(spacing: 0) {
+                        // ... (Scalloped Image - No Changes Needed if blob is dark) ...
+                        // 2. Scalloped Profile Image
+                        ZStack(alignment: .topTrailing) {
+                            ZStack {
+                                ScallopedProfileShape(customAmplitude: 6)
+                                    .fill(blobColor)
+                                    .frame(width: 220, height: 220)
+                                    .matchedGeometryEffect(id: "avatar_blob_\(matchID ?? "")", in: namespace ?? Namespace().wrappedValue, isSource: true)
+                                
+                                AsyncImage(url: URL(string: user.profileImageURL)) { image in
+                                    image
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                        .frame(width: 200, height: 200)
+                                        .clipShape(ScallopedProfileShape(customAmplitude: 5))
+                                } placeholder: {
+                                    Color.gray.opacity(0.3)
+                                        .frame(width: 200, height: 200)
+                                }
+                                .matchedGeometryEffect(id: "avatar_img_\(matchID ?? "")", in: namespace ?? Namespace().wrappedValue, isSource: true)
+                            }
+                            
+                            // Flag Badge
+                            Text("🇺🇸")
+                                .font(.system(size: 32))
+                                .padding(8)
+                                .background(Circle().fill(Color(uiColor: .systemBackground))) // Adaptive
+                                .offset(x: 10, y: 20)
+                        }
+                        .padding(.top, 20)
                         
-                        // Avatar Overlapping
-                        ZStack(alignment: .bottomTrailing) {
-                            AvatarView(url: user.profileImageURL, size: 130)
-                                .padding(.top, -65) // Half of height to overlap
-                                .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: 5)
+                        // 3. Name & Age
+                        HStack(alignment: .top, spacing: 6) {
+                            Text("\(user.name), 24")
+                                .font(.system(size: 28, weight: .regular, design: .default))
+                                .foregroundColor(primaryText)
+                                .matchedGeometryEffect(id: "user_name_\(matchID ?? "")", in: namespace ?? Namespace().wrappedValue, isSource: true)
                             
                             if user.isOnline {
                                 Circle()
                                     .fill(Color.green)
-                                    .frame(width: 20, height: 20)
-                                    .overlay(Circle().stroke(Color.white, lineWidth: 3))
-                                    .offset(x: -6, y: -6)
-                                    .padding(.top, -65) // Match avatar
+                                    .frame(width: 8, height: 8)
+                                    .overlay(Circle().stroke(Color(uiColor: .systemBackground), lineWidth: 1))
                             }
                         }
+                        .padding(.top, 24)
                         
-                        // Name & Bio
-                        VStack(spacing: 8) {
-                            Text(user.name)
-                                .font(.system(size: 32, weight: .heavy, design: .rounded))
-                                .foregroundColor(.black)
-                                .multilineTextAlignment(.center)
-                            
-                            if !user.badges.isEmpty {
-                                HStack(spacing: 8) {
-                                    ForEach(user.badges, id: \.self) { badge in
-                                        Text(badge)
-                                            .font(.caption2)
-                                            .fontWeight(.bold)
-                                            .padding(.vertical, 4)
-                                            .padding(.horizontal, 8)
-                                            .background(Color.ejLightGreen.opacity(0.3))
-                                            .foregroundColor(.ejDarkerGreen)
-                                            .cornerRadius(8)
-                                    }
-                                }
-                                .padding(.top, 4)
+                        // Bio Tagline
+                        Text("Exploring the platform & trying to\nbuild the fluency...")
+                            .font(.system(size: 14))
+                            .foregroundColor(secondaryText)
+                            .multilineTextAlignment(.center)
+                            .lineSpacing(4)
+                            .padding(.top, 8)
+                            .padding(.horizontal, 40)
+                        
+                        // 4. Interest Pills (Adaptive Text)
+                        HStack(spacing: 8) {
+                            ForEach(user.interests.prefix(3), id: \.self) { interest in
+                                Text(interest)
+                                    .font(.system(size: 13, weight: .regular))
+                                    .foregroundColor(.primary) // Adaptive
+                                    .padding(.vertical, 6)
+                                    .padding(.horizontal, 16)
+                                    .background(
+                                        Capsule()
+                                            .stroke(Color.primary, lineWidth: 1) // Adaptive border
+                                    )
+                                    //.background(Capsule().fill(Color.white.opacity(0.5)))
                             }
-                            
-                            Text(user.bio)
-                                .font(.subheadline)
-                                .foregroundColor(.gray.opacity(0.8))
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal, 32)
-                                .padding(.top, 8)
-                                .lineLimit(3)
                         }
-                        .padding(.top, 16)
+                        .padding(.top, 24)
+                        .padding(.bottom, 12)
                         
-                        // 3. Social Interaction Buttons (Prominent)
-                        HStack(spacing: 16) {
-                            Button(action: {}) {
-                                Label("Message", systemImage: "bubble.left.fill")
-                                    .font(.system(size: 18, weight: .semibold))
-                                    .foregroundColor(.white)
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 56)
-                                    .background(Color.ejDarkerGreen)
-                                    .cornerRadius(20)
-                                    .shadow(color: Color.ejDarkerGreen.opacity(0.3), radius: 8, x: 0, y: 4)
-                            }
-                            
-                            Button(action: {}) {
-                                Image(systemName: "person.badge.plus")
-                                    .font(.system(size: 20, weight: .semibold))
-                                    .foregroundColor(.white)
-                                    .frame(width: 56, height: 56)
-                                    .background(Color.black)
-                                    .cornerRadius(20)
-                            }
+                        // Second row
+                         HStack(spacing: 8) {
+                             Text("Riding")
+                                 .font(.system(size: 13))
+                                 .foregroundColor(.primary)
+                                 .padding(.vertical, 6)
+                                 .padding(.horizontal, 16)
+                                 .background(Capsule().stroke(Color.primary, lineWidth: 1))
+                             
+                             Text("Beach 🏖️")
+                                 .font(.system(size: 13))
+                                 .foregroundColor(.primary)
+                                 .padding(.vertical, 6)
+                                 .padding(.horizontal, 16)
+                                 .background(Capsule().stroke(Color.primary, lineWidth: 1))
+                         }
+                         .padding(.bottom, 32)
+                        
+                        // Divider
+                        Rectangle()
+                            .fill(Color.gray.opacity(0.1))
+                            .frame(height: 1)
+                            .padding(.horizontal, 32)
+                        
+                        // 5. Stats Row
+                        HStack(spacing: 0) {
+                            Spacer()
+                            StatColumn(value: "\(user.stats.friends)", label: "Friends", color: .primary)
+                            Spacer()
+                            StatColumn(value: "340", label: "Min", color: Color(hex: "A376F8"))
+                            Spacer()
+                            StatColumn(value: "670", label: "Win", color: Color(hex: "4CAF50"))
+                            Spacer()
                         }
                         .padding(.vertical, 24)
-                        .padding(.horizontal, 40)
                         
-                        Divider()
-                            .padding(.horizontal, 40)
-                            .padding(.bottom, 24)
-                        
-                        // 4. Quick Stats (Gamified)
-                        HStack(spacing: 40) {
-                            GamifiedStat(value: "\(user.stats.friends)", label: "Friends", icon: "person.2.fill")
-                            GamifiedStat(value: "\(user.stats.gamesPlayed)", label: "Games", icon: "gamecontroller.fill")
-                            GamifiedStat(value: "\(user.stats.streakDays)", label: "Streak", icon: "flame.fill", isHighlight: true)
-                        }
-                        .padding(.bottom, 32)
-                        
-                        // 5. Shared Interests
-                        VStack(alignment: .leading, spacing: 16) {
-                            Text("Interests")
-                                .font(.headline)
-                                .foregroundColor(.gray)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.leading, 24)
+                        // 6. Location Card
+                        ZStack(alignment: .bottomTrailing) {
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color(uiColor: .secondarySystemGroupedBackground)) // Adaptive
+                                .frame(height: 120)
+                                .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
                             
-                            FlowLayout(spacing: 12) {
-                                ForEach(user.interests, id: \.self) { interest in
-                                    Text(interest)
-                                        .font(.system(size: 16, weight: .medium))
-                                        .padding(.vertical, 10)
-                                        .padding(.horizontal, 18)
-                                        .background(Color.gray.opacity(0.1)) // Safe color
-                                        .foregroundColor(.black)
-                                        .cornerRadius(12)
-                                }
-                            }
-                            .padding(.horizontal, 24)
+                            Text(user.location)
+                                .font(.system(size: 14, weight: .regular))
+                                .foregroundColor(.primary)
+                                .padding(16)
                         }
-                        .padding(.bottom, 50)
+                        .padding(.horizontal, 24)
+                        .padding(.bottom, 40)
+                        
+                        // 7. Action Buttons
+                        HStack(spacing: 16) {
+                            // Following Button
+                            Button(action: {}) {
+                                Text("Following")
+                                    .font(.system(size: 20, weight: .regular))
+                                    .foregroundColor(colorScheme == .dark ? .white : accentGreen)
+                                    .padding(.horizontal, 32)
+                                    .padding(.vertical, 14)
+                                    .overlay(
+                                        Capsule()
+                                            .stroke(colorScheme == .dark ? .white : accentGreen, lineWidth: 1.5)
+                                    )
+                            }
+                            
+                            // Message Button
+                            Button(action: {}) {
+                                Circle()
+                                    .fill(accentGreen)
+                                    .frame(width: 54, height: 54)
+                                    .overlay(
+                                        Image(systemName: "paperplane.fill")
+                                            .font(.system(size: 20))
+                                            .foregroundColor(Color(hex: "D5F147"))
+                                    )
+                            }
+                        }
+                        .padding(.bottom, 40)
                         
                     }
-                    .background(Color.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
+                    .padding(.bottom, 40)
                 }
             }
         }
-        .background(Color(white: 0.95).ignoresSafeArea()) // Safe background color
     }
 }
 
-// MARK: - Components
+// MARK: - Subviews
 
-struct AvatarView: View {
-    let url: String
-    let size: CGFloat
-    
-    var body: some View {
-        AsyncImage(url: URL(string: url)) { image in
-            image
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-        } placeholder: {
-            Color.gray.opacity(0.2)
-        }
-        .frame(width: size, height: size)
-        .clipShape(Circle())
-        .overlay(
-            Circle().stroke(Color.white, lineWidth: 6)
-        )
-    }
-}
-
-struct GamifiedStat: View {
+struct StatColumn: View {
     let value: String
     let label: String
-    let icon: String
-    var isHighlight: Bool = false
+    let color: Color
     
     var body: some View {
-        VStack(spacing: 6) {
-            ZStack {
-                Circle()
-                    .fill(isHighlight ? Color.ejLightGreen.opacity(0.2) : Color.gray.opacity(0.05))
-                    .frame(width: 50, height: 50)
-                
-                Image(systemName: icon)
-                    .font(.system(size: 20))
-                    .foregroundColor(isHighlight ? .ejDarkerGreen : .gray)
-            }
-            
-            VStack(spacing: 0) {
-                Text(value)
-                    .font(.system(size: 20, weight: .bold, design: .rounded))
-                    .foregroundColor(.black)
-                Text(label)
-                    .font(.caption)
-                    .foregroundColor(.gray)
-            }
+        VStack(spacing: 4) {
+            Text(value)
+                .font(.system(size: 32, weight: .regular))
+                .foregroundColor(color)
+            Text(label)
+                .font(.system(size: 14))
+                .foregroundColor(.secondary)
         }
     }
 }
 
 
-// Simple FlowLayout implementation for tags
-struct FlowLayout: Layout {
-    var spacing: CGFloat
-    
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let rows = arrangeSubviews(proposal: proposal, subviews: subviews)
-        if rows.isEmpty { return .zero }
-        return CGSize(width: proposal.width ?? 0, height: rows.last!.maxY)
-    }
-    
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        let rows = arrangeSubviews(proposal: proposal, subviews: subviews)
-        for row in rows {
-            for element in row.elements {
-                element.subview.place(at: CGPoint(x: bounds.minX + element.x, y: bounds.minY + element.y), proposal: .unspecified)
-            }
-        }
-    }
-    
-    struct Row {
-        var elements: [Element] = []
-        var maxY: CGFloat = 0
-    }
-    
-    struct Element {
-        var subview: LayoutSubview
-        var x: CGFloat
-        var y: CGFloat
-    }
-    
-    func arrangeSubviews(proposal: ProposedViewSize, subviews: Subviews) -> [Row] {
-        var rows: [Row] = []
-        var currentRow = Row()
-        var currentX: CGFloat = 0
-        var currentY: CGFloat = 0
-        let maxWidth = proposal.width ?? .infinity
-        
-        for subview in subviews {
-            let size = subview.sizeThatFits(.unspecified)
-            
-            if currentX + size.width > maxWidth {
-                // New row
-                currentY = (rows.last?.maxY ?? 0) + spacing
-                rows.append(currentRow)
-                currentRow = Row()
-                currentX = 0
-            }
-            
-            currentRow.elements.append(Element(subview: subview, x: currentX, y: currentY))
-            currentRow.maxY = max(currentRow.maxY, currentY + size.height)
-            currentX += size.width + spacing
-        }
-        
-        if !currentRow.elements.isEmpty {
-            rows.append(currentRow)
-        }
-        
-        return rows
-    }
-}
-
-#Preview {
-    UserProfileView(user: .mock)
-}
+//
+//#Preview {
+//    UserProfileView(user: .mock)
+//}

@@ -160,94 +160,116 @@ struct DiscoverPeopleView: View {
         )
     ]
     
+    // Namespace for Animation
+    @Namespace private var animationNameSpace
+    @State private var showDetail = false
+    
     var body: some View {
-        ZStack(alignment: .top) {
-            Color.white.ignoresSafeArea()
+        ZStack {
             
+            // 1. MAIN SCROLLABLE CONTENT
             VStack(spacing: 0) {
-                
-                
-                // Close Button
+                // ... Header ...
                 HStack {
                     Spacer()
-                    
-                    Button(action: {
-                        // Action can be added later
-                    }) {
+                    Button(action: {}) {
                         Image(systemName: "xmark")
                             .font(.system(size: 18, weight: .bold))
                             .foregroundColor(Color.ejDarkerGreen)
-                            .frame(width: 50, height: 50)
-                            .background(
-                                Circle()
-                                    .stroke(Color.gray.opacity(0.2), lineWidth: 1)
-                            )
+                            .padding(10)
+                            .background(Circle().stroke(Color.gray.opacity(0.2), lineWidth: 1))
                     }
-                    
-                    
                 }
                 .padding(.horizontal, 30)
                 .padding(.top, 10)
-//                .padding(.bottom, 10)
+                .opacity(showDetail ? 0 : 1) // Hide when detail is open
 
-                // Header
+                // Header Text
                 Text("Find real humans\nbased on your taste🍊")
                     .font(.system(size: 24, weight: .regular, design: .rounded))
                     .kerning(-0.8)
                     .multilineTextAlignment(.center)
                     .foregroundColor(Color.ejDarkerGreen)
-//                    .lineSpacing(-(24 )
-                    .padding(.top, 0)
                     .padding(.bottom, 20)
+                    .opacity(showDetail ? 0 : 1)
                 
-                // Filter Row
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 6) {
-                        FilterPill(title: "All", isSelected: false)
-                        FilterPill(title: "Gender", isSelected: false, hasArrow: true)
-                        FilterPill(title: "Nearby", isSelected: false)
-                        FilterPill(title: "Level", isSelected: false, hasArrow: true)
-                        FilterPill(title: "Country", isSelected: false)
-                        FilterPill(title: "City", isSelected: false)
-                    }
-                    .padding(.horizontal, 24)
-                }
-                .padding(.bottom, 30)
-                
-                // Horizontal Carousel
-                GeometryReader { fullGeo in
+                // Content Layer
+                VStack(spacing: 0) {
+                    // Filter Row
                     ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: -18) { // Changed to HStack for stability
-                            ForEach(users) { user in
-                                DiscoverCardContainer(user: user, parentWidth: fullGeo.size.width)
-                                    .frame(width: fullGeo.size.width * 0.72, height: fullGeo.size.height)
-                                    .onTapGesture {
-                                        selectedUser = user
-                                    }
-                            }
+                        HStack(spacing: 6) {
+                            FilterPill(title: "All", isSelected: false)
+                            FilterPill(title: "Gender", isSelected: false, hasArrow: true)
+                            FilterPill(title: "Nearby", isSelected: false)
+                            FilterPill(title: "Level", isSelected: false, hasArrow: true)
+                            FilterPill(title: "Country", isSelected: false)
+                            FilterPill(title: "City", isSelected: false)
                         }
-                        .scrollTargetLayoutIfAvailable()
-                        .padding(.horizontal, fullGeo.size.width * 0.14) // (100 - 72) / 2 = 14% padding to center
+                        .padding(.horizontal, 24)
                     }
-                    .scrollTargetBehaviorIfAvailable()
+                    .padding(.bottom, 20)
+                    .opacity(showDetail ? 0 : 1)
+                    
+                    // Carousel Layer
+                    GeometryReader { fullGeo in
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: -18) {
+                                ForEach(users) { user in
+                                    if selectedUser?.id != user.id || !showDetail {
+                                        DiscoverCardContainer(user: user, parentWidth: fullGeo.size.width, namespace: animationNameSpace)
+                                            .frame(width: fullGeo.size.width * 0.72, height: fullGeo.size.height)
+                                            .onTapGesture {
+                                                withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                                                    selectedUser = user
+                                                    showDetail = true
+                                                }
+                                            }
+                                    } else {
+                                        Rectangle().fill(Color.clear)
+                                            .frame(width: fullGeo.size.width * 0.72, height: fullGeo.size.height)
+                                    }
+                                }
+                            }
+                            .scrollTargetLayoutIfAvailable()
+                            .padding(.horizontal, fullGeo.size.width * 0.14)
+                        }
+                        .scrollTargetBehaviorIfAvailable()
+                    }
+                    .frame(height: 440)
+                    // Removed ignoresSafeArea to prevent overlap with bottom tab bar or edges incorrectly
                 }
-                .frame(height: 440) // Reduced Height Further
                 
                 Spacer()
-                
-               
             }
-        }
-        .fullScreenCover(item: $selectedUser) { user in
-            ProfileView(user: user)
+            .blur(radius: showDetail ? 20 : 0) // Blur background when detail is open
+            
+            // 2. EXPANDED DETAIL VIEW OVERLAY
+            if let user = selectedUser, showDetail {
+                // Convert DiscoverUser -> DetailedUserProfile
+                let detailedUser = DetailedUserProfile(
+                    id: user.id.uuidString,
+                    name: user.name,
+                    profileImageURL: user.image,
+                    bio: user.bio,
+                    location: "Mumbai, India",
+                    interests: ["Reading", "Travel", "Movies"],
+                    stats: UserStats(friends: 72, gamesPlayed: 340, streakDays: 670),
+                    isOnline: true,
+                    joinDate: Date(),
+                    badges: [user.flag]
+                )
+                
+                UserProfileView(user: detailedUser, namespace: animationNameSpace, matchID: user.id.uuidString, isPresented: $showDetail)
+                    .zIndex(10)
+            }
         }
     }
 }
-
 // MARK: - Carousel Item Container
 struct DiscoverCardContainer: View {
     let user: DiscoverUser
     let parentWidth: CGFloat
+    var namespace: Namespace.ID // Passed from parent
     
     var body: some View {
         GeometryReader { geo in
@@ -255,18 +277,14 @@ struct DiscoverCardContainer: View {
             let midX = frame.midX
             let screenWidth = UIScreen.main.bounds.width
             let screenCenter = screenWidth / 2
-            
-            // Distance from center
             let distance = abs(midX - screenCenter)
             let maxDistance = screenWidth / 2
             
             // Physics
             let scale = max(0.4, 1.0 - (distance / maxDistance) * 0.2)
-            let opacity = max(0.9, 1.0 - (distance / maxDistance) * 0.3)
             
-            DiscoverCard(user: user)
+            DiscoverCard(user: user, namespace: namespace)
                 .scaleEffect(scale)
-                .opacity(opacity)
                 .animation(.spring(response: 0.4, dampingFraction: 0.8), value: distance)
         }
     }
@@ -275,38 +293,34 @@ struct DiscoverCardContainer: View {
 // MARK: - Visual Card
 struct DiscoverCard: View {
     let user: DiscoverUser
+    var namespace: Namespace.ID
     
     var body: some View {
         ZStack {
             // Card Background
-            RoundedRectangle(cornerRadius: 48) // Rounded corners to match image
+            RoundedRectangle(cornerRadius: 48)
                 .fill(user.cardColor)
+                .matchedGeometryEffect(id: "card_bg_\(user.id.uuidString)", in: namespace)
             
             VStack(spacing: 0) {
-                Spacer() 
+                Spacer()
                 
-                ZStack(alignment: .center) { // Center alignment for perfect concentric circles
-                    // Blob Background (No Image)
+                ZStack(alignment: .center) {
                     ScallopedProfileShape(customAmplitude: 5)
-                        .fill(user.blobColor) // Dark Blob
-                        .frame(width: 200, height: 200) // Slightly smaller than 220 to fit better
-                        // Removed User Image as requested
+                        .fill(user.blobColor)
+                        .frame(width: 200, height: 200)
+                        .matchedGeometryEffect(id: "avatar_blob_\(user.id.uuidString)", in: namespace)
                     
-                    // Badges Layer
-                    ZStack {
-                        // Flag Badge
-                        Text(user.flag)
-                            .font(.system(size: 22))
-                            .frame(width: 40, height: 40)
-                            .background(Circle().fill(Color.white))
-                            .overlay(
-                                Circle()
-                                    .stroke(user.cardColor, lineWidth: 4) // Border same color as card background -> cutout effect
-                            )
-                            .offset(x: 64, y: -78) // Manual offset from center
-                        
-                        
-                    }
+                    // Flag Badge
+                    Text(user.flag)
+                        .font(.system(size: 22))
+                        .frame(width: 40, height: 40)
+                        .background(Circle().fill(Color.white))
+                        .overlay(
+                            Circle()
+                                .stroke(user.cardColor, lineWidth: 4)
+                        )
+                        .offset(x: 64, y: -78)
                 }
                 .frame(height: 220)
                 
@@ -317,62 +331,43 @@ struct DiscoverCard: View {
                     Text("  \(user.name), \(user.age)")
                         .font(.system(size: 22, weight: .regular, design: .serif))
                         .foregroundColor(Color.ejDarkerGreen)
+                        .matchedGeometryEffect(id: "user_name_\(user.id.uuidString)", in: namespace)
                         .padding(.bottom, 8)
-                    
-                    // Green Dot
-                    Circle()
-                        .fill(Color(hex: "4CAF50"))
-                        .frame(width: 08, height: 08)
-                        .overlay(Circle().stroke(Color.white, lineWidth: 0.5))
-                        .offset(x: -5, y: -18) // Should be bottom right
                 }
-                
-                
                 
                 // Bio
                 Text("Exploring the platform & trying to\nbuild the fluency...")
-                    .font(.system(size: 12, weight: .regular))
+                    .font(.system(size: 12))
                     .foregroundColor(Color.ejDarkerGreen.opacity(0.6))
                     .multilineTextAlignment(.center)
-                    .lineSpacing(3)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 20) // Reduced padding
+                    .lineLimit(2)
+                    .padding(.bottom, 20)
                 
                 // Buttons
                 HStack(spacing: 12) {
                     Button(action: {}) {
                         Text("Follow")
-                            .font(.system(size: 16, weight: .regular))
+                            .font(.system(size: 16))
                             .foregroundColor(Color.ejDarkerGreen)
                             .padding(.horizontal, 28)
                             .padding(.vertical, 12)
-                            .background(
-                                Capsule()
-                                    .stroke(Color.ejDarkerGreen, lineWidth: 1)
-                            )
+                            .background(Capsule().stroke(Color.ejDarkerGreen, lineWidth: 1))
                     }
                     
                     Button(action: {}) {
                         ZStack {
-                            Circle()
-                                .fill(Color.ejDarkerGreen)
-                                .frame(width: 48, height: 48)
-                            
-                            PaperPlaneIcon()
-                                .frame(width: 20, height: 20)
+                            Circle().fill(Color.ejDarkerGreen).frame(width: 48, height: 48)
+                            Image(systemName: "paperplane.fill")
                                 .foregroundColor(Color.ejLightGreen)
-                                .offset(x: 1, y: 02)
-                                .scaleEffect(1.6)
                         }
                     }
                 }
-                .padding(.top, 10)
-                .padding(.bottom, 30) // Reduced padding
+                .padding(.bottom, 30)
             }
         }
     }
 }
+
 
 // MARK: - Filter Pill
 struct FilterPill: View {

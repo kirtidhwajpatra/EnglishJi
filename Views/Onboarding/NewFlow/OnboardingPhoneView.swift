@@ -14,6 +14,45 @@ struct OnboardingPhoneView: View {
                 
                 Spacer()
                 
+                // Google Sign In
+                Button(action: {
+                    viewModel.signInWithGoogle()
+                }) {
+                    Circle()
+                        .fill(Color.white)
+                        .frame(width: 50, height: 50)
+                        .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
+                        .overlay(
+                            // Placeholder G Logo - In a real app this would be an Image asset
+                            Text("G")
+                                .font(.system(size: 26, weight: .bold))
+                                .foregroundStyle(
+                                    LinearGradient(
+                                        colors: [.blue, .red, .yellow, .green],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                        )
+                }
+                .padding(.bottom, 20)
+                
+                // OR Divider
+                HStack {
+                    Rectangle()
+                        .fill(Color.gray.opacity(0.3))
+                        .frame(height: 1)
+                    Text("OR")
+                        .font(.system(size: 12))
+                        .foregroundColor(.gray)
+                        .padding(.horizontal, 8)
+                    Rectangle()
+                        .fill(Color.gray.opacity(0.3))
+                        .frame(height: 1)
+                }
+                .frame(maxWidth: 200)
+                .padding(.bottom, 20)
+                
                 HStack(spacing: 16) {
                     // Country Code Box
                     Text("+91")

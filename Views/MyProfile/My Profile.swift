@@ -75,7 +75,7 @@ struct ProfileView: View {
                     bio: $bio,
                     imageURL: profileImageURL,
                     isEditing: isEditing,
-                    focusedField: _focusedField
+                    focusedField: $focusedField
                 )
                 
                 // 4. Stats Row
@@ -88,11 +88,11 @@ struct ProfileView: View {
                     interests: $interests,
                     newInterestText: $newInterestText,
                     isEditing: isEditing,
-                    focusedField: _focusedField
+                    focusedField: $focusedField
                 )
                 
                 // 6. Location
-                LocationSection(location: $location, isEditing: isEditing, focusedField: _focusedField)
+                LocationSection(location: $location, isEditing: isEditing, focusedField: $focusedField)
                 
                 // 7. Contact Info
                 if !isReadOnly {
@@ -100,7 +100,7 @@ struct ProfileView: View {
                         phone: $phoneNumber,
                         email: $email,
                         isEditing: isEditing,
-                        focusedField: _focusedField
+                        focusedField: $focusedField
                     )
                 }
                 
@@ -110,7 +110,7 @@ struct ProfileView: View {
                     gender: $gender,
                     dob: $dob,
                     isEditing: isEditing,
-                    focusedField: _focusedField
+                    focusedField: $focusedField
                 )
                 
                 // 9. Edit/Save Button
@@ -241,7 +241,7 @@ struct ProfileHeader: View {
     @Binding var bio: String
     var imageURL: String
     var isEditing: Bool
-    @FocusState var focusedField: ProfileView.ProfileField?
+    @FocusState.Binding var focusedField: ProfileView.ProfileField?
     
     var body: some View {
         VStack(spacing: 12) {
@@ -294,7 +294,7 @@ struct ProfileHeader: View {
                     font: .system(size: 28, weight: .regular, design: .rounded),
                     alignment: .center,
                     fieldId: .name,
-                    focusedField: _focusedField
+                    focusedField: $focusedField
                 )
                 
                 EditableField(
@@ -304,7 +304,7 @@ struct ProfileHeader: View {
                     font: .system(size: 14),
                     alignment: .center,
                     fieldId: .bio,
-                    focusedField: _focusedField,
+                    focusedField: $focusedField,
                     axis: .vertical
                 )
             }
@@ -365,7 +365,7 @@ struct InterestsSection: View {
     @Binding var interests: [InterestTag]
     @Binding var newInterestText: String
     var isEditing: Bool
-    @FocusState var focusedField: ProfileView.ProfileField?
+    @FocusState.Binding var focusedField: ProfileView.ProfileField?
     
     // Jiggle Animation State
     @State private var isJiggling = false
@@ -465,7 +465,7 @@ struct TagView: View {
 struct LocationSection: View {
     @Binding var location: String
     var isEditing: Bool
-    @FocusState var focusedField: ProfileView.ProfileField?
+    @FocusState.Binding var focusedField: ProfileView.ProfileField?
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -510,7 +510,7 @@ struct ContactInfoSection: View {
     @Binding var phone: String
     @Binding var email: String
     var isEditing: Bool
-    @FocusState var focusedField: ProfileView.ProfileField?
+    @FocusState.Binding var focusedField: ProfileView.ProfileField?
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -534,7 +534,7 @@ struct ContactInfoSection: View {
                         font: .system(size: 22, weight: .regular, design: .rounded),
                         alignment: .center,
                         fieldId: .phone,
-                        focusedField: _focusedField,
+                        focusedField: $focusedField,
                         keyboardType: .phonePad
                     )
                 }
@@ -564,7 +564,7 @@ struct ContactInfoSection: View {
                         font: .system(size: 22, weight: .regular, design: .rounded),
                         alignment: .center,
                         fieldId: .email,
-                        focusedField: _focusedField,
+                        focusedField: $focusedField,
                         keyboardType: .emailAddress
                     )
                 }
@@ -581,7 +581,7 @@ struct DemographicsSection: View {
     @Binding var gender: String
     @Binding var dob: String
     var isEditing: Bool
-    @FocusState var focusedField: ProfileView.ProfileField?
+    @FocusState.Binding var focusedField: ProfileView.ProfileField?
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -621,7 +621,7 @@ struct EditableDemographicItem: View {
                 font: .system(size: 20, weight: .regular, design: .rounded),
                 alignment: .center,
                 fieldId: fieldId,
-                focusedField: _focusedField
+                focusedField: $focusedField
             )
             .frame(maxWidth: 100)
         }
